@@ -1,156 +1,205 @@
--- 🌌 Twilight Zone Hub (Styled like .ftgs hub)
--- Created by Ali_hhjjj + ChatGPT
+-- Load WindUI
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
--- Create ScreenGui
-local gui = Instance.new("ScreenGui")
-gui.Name = "TwilightZoneHub"
-gui.ResetOnSpawn = false
-gui.Parent = game:GetService("CoreGui")
+-- Create main window
+local Window = WindUI:CreateWindow({
+    Title = "Twilight Zone",
+    Icon = "ghost",
+    Size = UDim2.new(0, 360, 0, 270)
+})
 
--- Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = gui
+---------------------------------------------------
+-- Autofarm Tab
+---------------------------------------------------
+local FarmTab = Window:Tab({
+    Title = "Autofarm",
+    Icon = "leaf"
+})
 
--- Title Bar
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 35)
-title.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-title.BorderSizePixel = 0
-title.Text = "🌌 Twilight Zone Hub"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Parent = mainFrame
+FarmTab:Button({
+    Title = "Start Autofarm",
+    Icon = "play",
+    Callback = function()
+        print("Autofarm started!")
+    end
+})
 
--- Close Button
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 35, 1, 0)
-closeBtn.Position = UDim2.new(1, -35, 0, 0)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 14
-closeBtn.Parent = title
+FarmTab:Button({
+    Title = "Stop Autofarm",
+    Icon = "stop-circle",
+    Callback = function()
+        print("Autofarm stopped!")
+    end
+})
 
-closeBtn.MouseButton1Click:Connect(function()
-    gui:Destroy()
-end)
+---------------------------------------------------
+-- ESP Tab
+---------------------------------------------------
+local EspTab = Window:Tab({
+    Title = "ESP",
+    Icon = "eye"
+})
 
--- Sidebar
-local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0, 120, 1, -35)
-sidebar.Position = UDim2.new(0, 0, 0, 35)
-sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-sidebar.BorderSizePixel = 0
-sidebar.Parent = mainFrame
+-- Folder to store ESP highlights
+local espFolder = Instance.new("Folder", game.CoreGui)
+espFolder.Name = "TwilightESP"
 
--- Content Frame
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -120, 1, -35)
-content.Position = UDim2.new(0, 120, 0, 35)
-content.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-content.BorderSizePixel = 0
-content.Parent = mainFrame
-
--- Helper: Create Sidebar Button
-local function createSidebarButton(name, order)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 40)
-    btn.Position = UDim2.new(0, 0, 0, (order-1)*45)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.Parent = sidebar
-    return btn
+-- Function to add ESP
+local function addESP(object, color)
+    if object and not object:FindFirstChild("ESP_Highlight") then
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ESP_Highlight"
+        highlight.FillColor = color
+        highlight.OutlineColor = Color3.new(1,1,1)
+        highlight.Parent = object
+    end
 end
 
--- Pages
-local pages = {}
+-- Function to clear ESP
+local function clearESP()
+    for _, v in pairs(game.Workspace:GetDescendants()) do
+        if v:FindFirstChild("ESP_Highlight") then
+            v.ESP_Highlight:Destroy()
+        end
+    end
+end
 
--- Toggle Page
-local togglePage = Instance.new("Frame")
-togglePage.Size = UDim2.new(1,0,1,0)
-togglePage.BackgroundTransparency = 1
-togglePage.Visible = true
-togglePage.Parent = content
-pages["Toggle"] = togglePage
+EspTab:Toggle({
+    Title = "ESP Spirits",
+    Default = false,
+    Callback = function(state)
+        if state then
+            for _, spirit in pairs(workspace:GetDescendants()) do
+                if spirit.Name:lower():find("spirit") then
+                    addESP(spirit, Color3.fromRGB(0, 255, 255))
+                end
+            end
+        else
+            clearESP()
+        end
+    end
+})
 
--- Toggle Example
-local toggle = Instance.new("TextButton")
-toggle.Size = UDim2.new(0, 200, 0, 40)
-toggle.Position = UDim2.new(0, 20, 0, 20)
-toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-toggle.Text = "Example Toggle: OFF"
-toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggle.Font = Enum.Font.Gotham
-toggle.TextSize = 14
-toggle.Parent = togglePage
+EspTab:Toggle({
+    Title = "ESP Machines",
+    Default = false,
+    Callback = function(state)
+        if state then
+            for _, machine in pairs(workspace:GetDescendants()) do
+                if machine.Name:lower():find("generator") or machine.Name:lower():find("machine") then
+                    addESP(machine, Color3.fromRGB(0, 255, 0))
+                end
+            end
+        else
+            clearESP()
+        end
+    end
+})
 
-local toggleState = false
-toggle.MouseButton1Click:Connect(function()
-    toggleState = not toggleState
-    toggle.Text = "Example Toggle: " .. (toggleState and "ON" or "OFF")
-    print("[Twilight Zone] Toggle switched:", toggleState)
-end)
+---------------------------------------------------
+-- Teleport Tab
+---------------------------------------------------
+local TeleportTab = Window:Tab({
+    Title = "Teleport",
+    Icon = "map"
+})
 
--- Button Page
-local buttonPage = Instance.new("Frame")
-buttonPage.Size = UDim2.new(1,0,1,0)
-buttonPage.BackgroundTransparency = 1
-buttonPage.Visible = false
-buttonPage.Parent = content
-pages["Button"] = buttonPage
+-- Teleport helper
+local function teleportTo(obj)
+    if obj and obj:IsA("Model") and obj:FindFirstChild("HumanoidRootPart") then
+        game.Players.LocalPlayer.Character:PivotTo(obj.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0))
+    elseif obj and obj:IsA("BasePart") then
+        game.Players.LocalPlayer.Character:PivotTo(obj.CFrame + Vector3.new(0, 3, 0))
+    end
+end
 
--- Normal Button
-local btn1 = Instance.new("TextButton")
-btn1.Size = UDim2.new(0, 200, 0, 40)
-btn1.Position = UDim2.new(0, 20, 0, 20)
-btn1.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-btn1.Text = "Run Action"
-btn1.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn1.Font = Enum.Font.Gotham
-btn1.TextSize = 14
-btn1.Parent = buttonPage
+TeleportTab:Button({
+    Title = "Teleport to Elevator",
+    Icon = "arrow-up",
+    Callback = function()
+        local elevator = workspace:FindFirstChild("Elevator")
+        if elevator then
+            teleportTo(elevator)
+        else
+            warn("Elevator not found!")
+        end
+    end
+})
 
-btn1.MouseButton1Click:Connect(function()
-    print("[Twilight Zone] Action button clicked")
-end)
+TeleportTab:Button({
+    Title = "Teleport to Random Machine",
+    Icon = "shuffle",
+    Callback = function()
+        local machines = {}
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("generator") or obj.Name:lower():find("machine") then
+                table.insert(machines, obj)
+            end
+        end
+        if #machines > 0 then
+            local pick = machines[math.random(1, #machines)]
+            teleportTo(pick)
+        else
+            warn("No machines found!")
+        end
+    end
+})
 
--- Locked Button
-local lockedBtn = Instance.new("TextButton")
-lockedBtn.Size = UDim2.new(0, 200, 0, 40)
-lockedBtn.Position = UDim2.new(0, 20, 0, 70)
-lockedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-lockedBtn.Text = "🔒 Locked"
-lockedBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-lockedBtn.Font = Enum.Font.Gotham
-lockedBtn.TextSize = 14
-lockedBtn.AutoButtonColor = false
-lockedBtn.Parent = buttonPage
+---------------------------------------------------
+-- Settings Tab
+---------------------------------------------------
+local SettingsTab = Window:Tab({
+    Title = "Settings",
+    Icon = "settings"
+})
 
-lockedBtn.MouseButton1Click:Connect(function()
-    print("[Twilight Zone] Locked button clicked (no action).")
-end)
+SettingsTab:Toggle({
+    Title = "Infinite Stamina",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            if state then
+                -- Hook stamina values
+                if player:FindFirstChild("Stamina") then
+                    player.Stamina.Value = math.huge
+                end
+                player.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                    player.Character.Humanoid.WalkSpeed = 16
+                end)
+            else
+                if player:FindFirstChild("Stamina") then
+                    player.Stamina.Value = 100
+                end
+            end
+        end
+    end
+})
 
--- Sidebar Buttons Logic
-local toggleBtn = createSidebarButton("Toggle", 1)
-local buttonBtn = createSidebarButton("Button", 2)
+SettingsTab:Toggle({
+    Title = "Hide UI",
+    Default = false,
+    Callback = function(state)
+        game:GetService("CoreGui").TwilightZone.Enabled = not state
+    end
+})
 
-toggleBtn.MouseButton1Click:Connect(function()
-    for _,p in pairs(pages) do p.Visible = false end
-    togglePage.Visible = true
-end)
+---------------------------------------------------
+-- Credits Tab
+---------------------------------------------------
+local CreditsTab = Window:Tab({
+    Title = "Credits",
+    Icon = "star"
+})
 
-buttonBtn.MouseButton1Click:Connect(function()
-    for _,p in pairs(pages) do p.Visible = false end
-    buttonPage.Visible = true
-end)
+CreditsTab:Label({
+    Title = "Made by Ali_hhjjj"
+})
+
+CreditsTab:Label({
+    Title = "Tester / Bug Finder: GoodJOBS3"
+})
+
+CreditsTab:Label({
+    Title = "Special Thanks: Olivia (Riddance Hub / WindUI)"
+})
