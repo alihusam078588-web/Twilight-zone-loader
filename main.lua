@@ -1,65 +1,53 @@
--- main.lua (SAFE test version)
--- A small, harmless Twilight Zone test GUI for loader verification.
--- DOES NOT interact with game state or remotes.
+-- main.lua (Twilight Zone Hub)
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+-- Simple UI Library
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "TwilightZoneUI"
+ScreenGui.Parent = game.CoreGui
 
-print("Twilight Zone main script loaded (SAFE test).")
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 300, 0, 200)
+Frame.Position = UDim2.new(0.3, 0, 0.3, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Frame.Parent = ScreenGui
 
--- small GUI container
-local GUI_NAME = "TZ_Safe_Test_v1"
-if PlayerGui:FindFirstChild(GUI_NAME) then
-    pcall(function() PlayerGui[GUI_NAME]:Destroy() end)
-end
+local Title = Instance.new("TextLabel")
+Title.Text = "🌌 Twilight Zone Hub"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+Title.Parent = Frame
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = GUI_NAME
-screenGui.ResetOnSpawn = false
-screenGui.Parent = PlayerGui
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- Example Button
+local ESPButton = Instance.new("TextButton")
+ESPButton.Text = "Toggle ESP"
+ESPButton.Size = UDim2.new(1, -20, 0, 40)
+ESPButton.Position = UDim2.new(0, 10, 0, 60)
+ESPButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ESPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ESPButton.Font = Enum.Font.SourceSans
+ESPButton.TextSize = 18
+ESPButton.Parent = Frame
 
-local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0,200,0,120)
-frame.Position = UDim2.new(0.02,0,0.15,0)
-frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
-frame.BorderSizePixel = 0
-pcall(function() Instance.new("UICorner", frame).CornerRadius = UDim.new(0,6) end)
-
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, -10, 0, 24)
-title.Position = UDim2.new(0,6,0,6)
-title.BackgroundTransparency = 1
-title.Text = "Twilight Zone (SAFE)"
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 15
-title.TextColor3 = Color3.fromRGB(230,230,230)
-
-local info = Instance.new("TextLabel", frame)
-info.Size = UDim2.new(1, -10, 0, 50)
-info.Position = UDim2.new(0,6,0,34)
-info.BackgroundTransparency = 1
-info.Text = "This is a safe test UI.\nUse this to verify your loader and layout."
-info.Font = Enum.Font.SourceSans
-info.TextSize = 12
-info.TextColor3 = Color3.fromRGB(180,180,180)
-info.TextWrapped = true
-
-local btn = Instance.new("TextButton", frame)
-btn.Size = UDim2.new(1, -12, 0, 28)
-btn.Position = UDim2.new(0,6,1,-38)
-btn.BackgroundColor3 = Color3.fromRGB(80,120,200)
-btn.TextColor3 = Color3.fromRGB(255,255,255)
-btn.Text = "Log Test Message"
-btn.Font = Enum.Font.SourceSansBold
-btn.TextSize = 14
-pcall(function() Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6) end)
-
-btn.MouseButton1Click:Connect(function()
-    print("[TZ-SAFE] Test button clicked by", LocalPlayer.Name)
-    -- update the info label with a small feedback (local only)
-    info.Text = "Last pressed: "..os.date("%X")
+ESPButton.MouseButton1Click:Connect(function()
+    print("[Twilight Zone] ESP toggled!") 
+    -- ⚡ Here we will add the ESP feature
 end)
 
-print("[TZ-SAFE] GUI created. You can now test your loader or launcher.")
+-- Another Example Button
+local SkillcheckButton = Instance.new("TextButton")
+SkillcheckButton.Text = "Always Perfect Skillcheck"
+SkillcheckButton.Size = UDim2.new(1, -20, 0, 40)
+SkillcheckButton.Position = UDim2.new(0, 10, 0, 110)
+SkillcheckButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SkillcheckButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SkillcheckButton.Font = Enum.Font.SourceSans
+SkillcheckButton.TextSize = 18
+SkillcheckButton.Parent = Frame
+
+SkillcheckButton.MouseButton1Click:Connect(function()
+    print("[Twilight Zone] Always Perfect Skillcheck enabled!") 
+    -- ⚡ Here we will add skillcheck bypass code
+end)
