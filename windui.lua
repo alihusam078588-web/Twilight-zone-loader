@@ -1,4 +1,4 @@
--- WindUI Library (with tab switching)
+-- WindUI Library (Draggable + Resizable + Tabs)
 local Library = {}
 Library.__index = Library
 
@@ -12,6 +12,8 @@ function Library:CreateWindow(title)
     MainFrame.Size = UDim2.new(0, 400, 0, 300)
     MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.Active = true
+    MainFrame.Draggable = true -- ✅ draggable
     MainFrame.Parent = ScreenGui
 
     local Title = Instance.new("TextLabel")
@@ -20,6 +22,14 @@ function Library:CreateWindow(title)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Text = title or "Window"
     Title.Parent = MainFrame
+
+    local Resize = Instance.new("TextButton")
+    Resize.Size = UDim2.new(0, 20, 0, 20)
+    Resize.Position = UDim2.new(1, -20, 1, -20)
+    Resize.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    Resize.Text = "↘"
+    Resize.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Resize.Parent = MainFrame
 
     local TabButtons = Instance.new("Frame")
     TabButtons.Size = UDim2.new(0, 100, 1, -30)
@@ -41,6 +51,32 @@ function Library:CreateWindow(title)
         ActiveTab = nil
     }
 
+    -- ✅ Make resizable
+    local UserInputService = game:GetService("UserInputService")
+    local resizing = false
+    local lastPos
+
+    Resize.MouseButton1Down:Connect(function()
+        resizing = true
+        lastPos = UserInputService:GetMouseLocation()
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            resizing = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local newPos = UserInputService:GetMouseLocation()
+            local delta = newPos - lastPos
+            MainFrame.Size = MainFrame.Size + UDim2.new(0, delta.X, 0, delta.Y)
+            lastPos = newPos
+        end
+    end)
+
+    -- ✅ CreateTab system
     function window:CreateTab(name)
         local TabFrame = Instance.new("Frame")
         TabFrame.Size = UDim2.new(1, 0, 1, 0)
