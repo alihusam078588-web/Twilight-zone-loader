@@ -1,34 +1,35 @@
--- main.lua
-
--- Load the library (WindUI from your repo)
+-- Load the WindUI library
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua"))()
 
--- Create the main window
-local Window = Library:Window({
-    text = "Twilight Zone GUI"
+-- Create a main window
+local Window = Library:CreateWindow({
+    Title = "Twilight Zone GUI",
+    Center = true,
+    AutoShow = true,
 })
 
--- Create "Main" tab
-local MainTab = Window:Tab("Main")
+-- Add a tab
+local Tab = Window:CreateTab({
+    Name = "Main",
+    Icon = "rbxassetid://10734950020" -- optional icon
+})
 
--- Add a button inside Main tab
-MainTab:Button({
-    text = "Test Button",
-    callback = function()
-        print("[TZ Loader] Test Button clicked!")
+-- Add a section inside the tab
+local Section = Tab:CreateSection("Main Features")
+
+-- Add a button
+Section:CreateButton({
+    Name = "Fly",
+    Callback = function()
+        print("Fly enabled")
     end
 })
 
--- Create "Other" tab
-local OtherTab = Window:Tab("Other")
-
--- Add a toggle inside Other tab
-OtherTab:Toggle({
-    text = "Test Toggle",
-    state = false,
-    callback = function(state)
-        print("[TZ Loader] Test Toggle set to:", state)
+-- Add a toggle
+Section:CreateToggle({
+    Name = "ESP",
+    Default = false,
+    Callback = function(value)
+        print("ESP is now", value)
     end
 })
-
-print("[TZ Loader] ✅ Twilight Zone GUI loaded successfully!")
