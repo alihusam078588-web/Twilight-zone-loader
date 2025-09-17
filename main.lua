@@ -1,20 +1,42 @@
--- main.lua
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
--- Require WindUI (it’s already loaded by loader.lua)
-local Library = Library or require(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua"))
+-- Create your main window
+local Window = Rayfield:CreateWindow({
+    Name = "Twilight Zone",
+    LoadingTitle = "Twilight Zone Loader",
+    LoadingSubtitle = "by Ali",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "TwilightZone", -- Where configs will save
+       FileName = "TZ_Config"
+    },
+    Discord = {
+       Enabled = false,
+       Invite = "", -- your discord invite
+       RememberJoins = false
+    },
+    KeySystem = false, -- turn on if you want key system
+})
 
--- Create a main window
-local window = Library:CreateWindow("Twilight Zone")
-
--- Add a tab
-local mainTab = window:CreateTab("Main")
+-- Create Tabs
+local MainTab = Window:CreateTab("Main", 4483362458) -- Roblox asset ID for icon
+local OtherTab = Window:CreateTab("Other", 4483362458)
 
 -- Add a button
-mainTab:CreateButton("Click Me", function()
-    print("✅ Button was clicked!")
-end)
+MainTab:CreateButton({
+    Name = "Test Button",
+    Callback = function()
+        print("Button pressed!")
+    end,
+})
 
 -- Add a toggle
-mainTab:CreateToggle("Toggle Me", false, function(state)
-    print("🔘 Toggle is now:", state)
-end)
+OtherTab:CreateToggle({
+    Name = "Test Toggle",
+    CurrentValue = false,
+    Flag = "TestToggle",
+    Callback = function(Value)
+        print("Toggle set to:", Value)
+    end,
+})
