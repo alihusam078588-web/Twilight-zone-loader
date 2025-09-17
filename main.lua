@@ -1,141 +1,54 @@
--- main.lua
--- Twilight Zone Rayfield GUI
--- Made by Ali_hhjjj | Helper: GoodJOBS3 | Special thanks: Olivia
+-- Twilight Zone GUI (Rayfield)
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
+-- Create Window
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone",
-    LoadingTitle = "Twilight Zone GUI",
-    LoadingSubtitle = "by Ali_hhjjj",
+    LoadingTitle = "Twilight Zone Hub",
+    LoadingSubtitle = "by Ali",
     ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "TwilightZone",
-        FileName = "TwilightConfig"
+       Enabled = true,
+       FolderName = "TwilightZone",
+       FileName = "TZHub"
     },
     Discord = {
-        Enabled = false,
-        Invite = "", -- your Discord invite here (optional)
-        RememberJoins = true
+       Enabled = false,
+       Invite = "", -- optional
+       RememberJoins = true
     },
     KeySystem = false
 })
 
-----------------------------------------------------
--- Tabs
-----------------------------------------------------
-local FarmTab = Window:CreateTab("Auto Farm", 4483362458)
-local TeleportTab = Window:CreateTab("Teleport", 4483362458)
-local ESPTab = Window:CreateTab("ESP", 4483362458)
-local MiscTab = Window:CreateTab("Misc", 4483362458)
-local CreditsTab = Window:CreateTab("Credits", 4483362458)
+-- Example Tab
+local MainTab = Window:CreateTab("Main", 4483362458) -- icon is optional
 
-----------------------------------------------------
--- Auto Farm Tab
-----------------------------------------------------
-FarmTab:CreateToggle({
-    Name = "Auto Farm Machines",
-    CurrentValue = false,
-    Flag = "AutoFarmMachines",
-    Callback = function(Value)
-        print("Auto Farm Machines:", Value)
-        -- TODO: Add auto farm logic here
-    end,
+-- Example Button
+MainTab:CreateButton({
+   Name = "Test Button",
+   Callback = function()
+      print("✅ Test Button Pressed!")
+   end
 })
 
-----------------------------------------------------
--- Teleport Tab
-----------------------------------------------------
-TeleportTab:CreateButton({
-    Name = "Teleport to Elevator",
-    Callback = function()
-        print("Teleporting to Elevator...")
-        -- TODO: Add teleport-to-elevator logic
-    end,
+-- Example Toggle
+MainTab:CreateToggle({
+   Name = "Test Toggle",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("🔘 Toggle set to:", Value)
+   end
 })
 
-TeleportTab:CreateButton({
-    Name = "Teleport to Random Machine",
-    Callback = function()
-        print("Teleporting to random machine...")
-        -- TODO: Add teleport-to-random-machine logic
-    end,
+-- Example Slider
+MainTab:CreateSlider({
+   Name = "Test Slider",
+   Range = {0, 100},
+   Increment = 1,
+   Suffix = "%",
+   CurrentValue = 50,
+   Callback = function(Value)
+      print("📊 Slider value:", Value)
+   end,
 })
-
-TeleportTab:CreateToggle({
-    Name = "Auto Teleport to Machines",
-    CurrentValue = false,
-    Flag = "AutoTPMachines",
-    Callback = function(Value)
-        print("Auto Teleport to Machines:", Value)
-        -- TODO: Add auto teleport machine logic
-    end,
-})
-
-TeleportTab:CreateToggle({
-    Name = "Auto Teleport to Elevator when done",
-    CurrentValue = false,
-    Flag = "AutoTPElevator",
-    Callback = function(Value)
-        print("Auto Teleport to Elevator:", Value)
-        -- TODO: Add auto teleport elevator logic
-    end,
-})
-
-----------------------------------------------------
--- ESP Tab
-----------------------------------------------------
-ESPTab:CreateToggle({
-    Name = "ESP Machines",
-    CurrentValue = false,
-    Flag = "ESPMachines",
-    Callback = function(Value)
-        print("ESP Machines:", Value)
-        -- TODO: Add ESP for machines
-    end,
-})
-
-ESPTab:CreateToggle({
-    Name = "ESP Spirits",
-    CurrentValue = false,
-    Flag = "ESPSpirits",
-    Callback = function(Value)
-        print("ESP Spirits:", Value)
-        -- TODO: Add ESP for spirits
-    end,
-})
-
-----------------------------------------------------
--- Misc Tab
-----------------------------------------------------
-MiscTab:CreateToggle({
-    Name = "Infinite Stamina",
-    CurrentValue = false,
-    Flag = "InfiniteStamina",
-    Callback = function(Value)
-        print("Infinite Stamina:", Value)
-        -- TODO: Add stamina logic here
-    end,
-})
-
-MiscTab:CreateSlider({
-    Name = "Walkspeed",
-    Range = {16, 100},
-    Increment = 1,
-    Suffix = "Speed",
-    CurrentValue = 16,
-    Flag = "WalkspeedSlider",
-    Callback = function(Value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-    end,
-})
-
-----------------------------------------------------
--- Credits Tab
-----------------------------------------------------
-CreditsTab:CreateParagraph({
-    Title = "Credits",
-    Content = "Made by Ali_hhjjj\nHelper: GoodJOBS3\nSpecial thanks: Olivia"
-})
-
-print("[TZ] ✅ Twilight Zone Rayfield GUI Loaded!")
