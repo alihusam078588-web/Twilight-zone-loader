@@ -1,224 +1,192 @@
--- Twilight Zone Script (Rayfield GUI Version)
+-- Twilight Zone GUI
 -- Creator: Ali_hhjjj
--- Tester/Helper: GOODJOBS3
--- Special Thanks: Olivia (Creator of Riddance Hub) and Shelly (Riddance Manager) for giving the idea to use Rayfield
+-- Thanks to Olivia (creator of Riddance Hub) and Shelly (Riddance manager) for giving Idea to use Rayfield
 
--- // Load Rayfield
+-- Load Rayfield
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Twilight Zone",
-    LoadingTitle = "Twilight Zone Hub",
-    LoadingSubtitle = "By Ali_hhjjj",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "TwilightZoneConfig",
-        FileName = "TZ_Config"
-    },
-    Discord = {
-        Enabled = false
-    },
-    KeySystem = false
+   Name = "Twilight Zone",
+   LoadingTitle = "Twilight Zone GUI",
+   LoadingSubtitle = "by Ali_hhjjj",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "TwilightZoneCFG",
+      FileName = "TwilightZone"
+   },
+   Discord = {
+      Enabled = false,
+   }
 })
 
-------------------------------------------------
--- Variables
-------------------------------------------------
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
+---------------------------------------------------------------------
+-- Player Tab
+---------------------------------------------------------------------
+local PlayerTab = Window:CreateTab("Player", 4483362458)
 
-local autoMachine = false
-local autoElevator = false
-local espMachines = {}
-local espSpirits = {}
-
-------------------------------------------------
--- Utility
-------------------------------------------------
-local function getMachines()
-    local machinesFolder = Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Machines")
-    local results = {}
-    if machinesFolder then
-        for _, obj in pairs(machinesFolder:GetChildren()) do
-            if obj:IsA("Model") or obj:IsA("Part") then
-                table.insert(results, obj)
-            end
-        end
-    end
-    return results
-end
-
-local function teleportTo(obj)
-    if obj and obj:IsA("Model") or obj:IsA("Part") then
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = obj:GetModelCFrame and obj:GetModelCFrame() or obj.CFrame
-        end
-    end
-end
-
-local function highlight(obj, color)
-    if obj and obj:IsA("Model") or obj:IsA("Part") then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = obj
-        highlight.FillColor = color
-        highlight.FillTransparency = 0.5
-        highlight.OutlineTransparency = 0
-        highlight.Parent = obj
-        return highlight
-    end
-end
-
-------------------------------------------------
--- ESP Tab
-------------------------------------------------
-local EspTab = Window:CreateTab("ESP", 4483362458)
-
-EspTab:CreateToggle({
-    Name = "ESP Machines",
-    CurrentValue = false,
-    Callback = function(value)
-        if value then
-            for _, m in pairs(getMachines()) do
-                local h = highlight(m, Color3.fromRGB(0, 255, 0))
-                table.insert(espMachines, h)
-            end
-        else
-            for _, h in pairs(espMachines) do
-                h:Destroy()
-            end
-            espMachines = {}
-        end
-    end
+PlayerTab:CreateToggle({
+   Name = "Godmode",
+   CurrentValue = false,
+   Flag = "Godmode",
+   Callback = function(Value)
+      if Value then
+         local player = game.Players.LocalPlayer
+         local char = player.Character or player.CharacterAdded:Wait()
+         if char:FindFirstChild("Humanoid") then
+            char.Humanoid.MaxHealth = math.huge
+            char.Humanoid.Health = math.huge
+         end
+      end
+   end
 })
 
-EspTab:CreateToggle({
-    Name = "ESP Spirits",
-    CurrentValue = false,
-    Callback = function(value)
-        if value then
-            for _, s in pairs(Workspace:GetDescendants()) do
-                if s.Name:lower():find("spirit") then
-                    local h = highlight(s, Color3.fromRGB(255, 0, 0))
-                    table.insert(espSpirits, h)
-                end
-            end
-        else
-            for _, h in pairs(espSpirits) do
-                h:Destroy()
-            end
-            espSpirits = {}
-        end
-    end
+PlayerTab:CreateToggle({
+   Name = "Auto Skillcheck",
+   CurrentValue = false,
+   Flag = "Skillcheck",
+   Callback = function(Value)
+      getgenv().AutoSkillcheck = Value
+      while getgenv().AutoSkillcheck do
+         game:GetService("VirtualInputManager"):SendKeyEvent(true, "E", false, game)
+         game:GetService("VirtualInputManager"):SendKeyEvent(false, "E", false, game)
+         task.wait(0.1)
+      end
+   end
 })
 
-------------------------------------------------
+---------------------------------------------------------------------
 -- Teleport Tab
-------------------------------------------------
+---------------------------------------------------------------------
 local TeleportTab = Window:CreateTab("Teleport", 4483362458)
 
 TeleportTab:CreateButton({
-    Name = "Teleport to Random Machine",
-    Callback = function()
-        local machines = getMachines()
-        if #machines > 0 then
-            teleportTo(machines[math.random(1, #machines)])
-        end
-    end
+   Name = "Teleport to Elevator",
+   Callback = function()
+      local player = game.Players.LocalPlayer
+      local char = player.Character or player.CharacterAdded:Wait()
+      local hrp = char:WaitForChild("HumanoidRootPart")
+      local elevator = workspace.Floor:FindFirstChild("Elevator")
+      if elevator then
+         hrp.CFrame = elevator.CFrame + Vector3.new(0,5,0)
+      end
+   end
 })
 
 TeleportTab:CreateButton({
-    Name = "Teleport to Elevator",
-    Callback = function()
-        local elevator = Workspace:FindFirstChild("Elevator")
-        if elevator then
-            teleportTo(elevator)
-        end
-    end
+   Name = "Teleport to Random Machine",
+   Callback = function()
+      local machines = workspace.Floor.Machines:GetChildren()
+      local choices = {}
+      for _,m in ipairs(machines) do
+         if m:FindFirstChild("Front") then
+            table.insert(choices,m.Front)
+         end
+      end
+      if #choices > 0 then
+         local pick = choices[math.random(1,#choices)]
+         local player = game.Players.LocalPlayer
+         local hrp = player.Character.HumanoidRootPart
+         hrp.CFrame = pick.CFrame + Vector3.new(0,3,0)
+      end
+   end
 })
 
-------------------------------------------------
--- Auto Farm Tab
-------------------------------------------------
-local FarmTab = Window:CreateTab("Auto Farm", 4483362458)
-
-FarmTab:CreateToggle({
-    Name = "Auto Teleport to Machines (with Aura)",
-    CurrentValue = false,
-    Callback = function(value)
-        autoMachine = value
-    end
-})
-
-FarmTab:CreateToggle({
-    Name = "Auto Teleport to Elevator (when done)",
-    CurrentValue = false,
-    Callback = function(value)
-        autoElevator = value
-    end
-})
-
--- Auto Loop
-RunService.RenderStepped:Connect(function()
-    if autoMachine then
-        local machines = getMachines()
-        if #machines > 0 then
-            local target = machines[math.random(1, #machines)]
-            teleportTo(target)
-            -- "Aura" effect: spam E key
-            game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.E, false, game)
-            task.wait(0.1)
-            game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.E, false, game)
-        end
-    elseif autoElevator then
-        local elevator = Workspace:FindFirstChild("Elevator")
-        if elevator then
-            teleportTo(elevator)
-        end
-    end
-end)
-
-------------------------------------------------
--- Player Tab
-------------------------------------------------
-local PlayerTab = Window:CreateTab("Player", 4483362458)
-
-PlayerTab:CreateSlider({
-    Name = "Custom WalkSpeed",
-    Range = {16, 200},
-    Increment = 1,
-    CurrentValue = 16,
-    Callback = function(value)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = value
-        end
-    end
-})
-
-PlayerTab:CreateLabel("Godmode: ON")
-PlayerTab:CreateLabel("Auto SkillCheck: ON")
-
-PlayerTab:CreateToggle({
-    Name = "Infinite Stamina",
-    CurrentValue = false,
-    Callback = function(value)
-        if value then
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
-                    LocalPlayer.Character.Humanoid.JumpPower = 50
-                end)
+TeleportTab:CreateToggle({
+   Name = "Auto Teleport Machines (with Aura)",
+   CurrentValue = false,
+   Flag = "AutoTPMachine",
+   Callback = function(Value)
+      getgenv().AutoTPMachine = Value
+      while getgenv().AutoTPMachine do
+         local machines = workspace.Floor.Machines:GetChildren()
+         local choices = {}
+         for _,m in ipairs(machines) do
+            if m:FindFirstChild("Front") then
+               table.insert(choices,m.Front)
             end
-        end
-    end
+         end
+         if #choices > 0 then
+            local pick = choices[math.random(1,#choices)]
+            local player = game.Players.LocalPlayer
+            local hrp = player.Character.HumanoidRootPart
+            hrp.CFrame = pick.CFrame + Vector3.new(0,3,0)
+            
+            -- Spam "E" (Aura effect)
+            for i=1,15 do
+               game:GetService("VirtualInputManager"):SendKeyEvent(true,"E",false,game)
+               game:GetService("VirtualInputManager"):SendKeyEvent(false,"E",false,game)
+               task.wait(0.1)
+            end
+         end
+         task.wait(3)
+      end
+   end
 })
 
-------------------------------------------------
--- Credits Tab
-------------------------------------------------
-local CreditsTab = Window:CreateTab("Credits", 4483362458)
+---------------------------------------------------------------------
+-- ESP Tab
+---------------------------------------------------------------------
+local ESPTab = Window:CreateTab("ESP", 4483362458)
 
-CreditsTab:CreateLabel("Creator: Ali_hhjjj")
-CreditsTab:CreateLabel("Tester/Helper: GOODJOBS3")
-CreditsTab:CreateLabel("Thanks to Olivia (creator of Riddance Hub) and Shelly (Riddance manager) for giving idea to use Rayfield")
+local function highlight(obj,color)
+   if not obj:FindFirstChild("ESP_Highlight") then
+      local hl = Instance.new("Highlight")
+      hl.Name = "ESP_Highlight"
+      hl.FillColor = color
+      hl.OutlineColor = color
+      hl.Adornee = obj
+      hl.Parent = obj
+   end
+end
+
+ESPTab:CreateToggle({
+   Name = "ESP Machines",
+   CurrentValue = false,
+   Flag = "ESPMachines",
+   Callback = function(Value)
+      if Value then
+         for _,m in ipairs(workspace.Floor.Machines:GetChildren()) do
+            if m:FindFirstChild("Front") then
+               highlight(m,"Green")
+            end
+         end
+      else
+         for _,m in ipairs(workspace.Floor.Machines:GetChildren()) do
+            if m:FindFirstChild("ESP_Highlight") then
+               m.ESP_Highlight:Destroy()
+            end
+         end
+      end
+   end
+})
+
+ESPTab:CreateToggle({
+   Name = "ESP Spirits",
+   CurrentValue = false,
+   Flag = "ESPSpirits",
+   Callback = function(Value)
+      if Value then
+         for _,s in ipairs(workspace.Floor.Spirits:GetChildren()) do
+            highlight(s,"Red")
+         end
+      else
+         for _,s in ipairs(workspace.Floor.Spirits:GetChildren()) do
+            if s:FindFirstChild("ESP_Highlight") then
+               s.ESP_Highlight:Destroy()
+            end
+         end
+      end
+   end
+})
+
+---------------------------------------------------------------------
+-- Credits Tab
+---------------------------------------------------------------------
+local Credits = Window:CreateTab("Credits", 4483362458)
+
+Credits:CreateLabel("Creator: Ali_hhjjj")
+Credits:CreateLabel("Tester / Helper: You")
+Credits:CreateLabel("Special Thanks:")
+Credits:CreateLabel("Olivia (creator of Riddance Hub)")
+Credits:CreateLabel("Shelly (Riddance manager)")
+Credits:CreateLabel("For giving Idea to use Rayfield")
