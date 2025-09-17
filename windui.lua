@@ -1,94 +1,118 @@
--- WindUI Library (Real GUI Version)
--- Creates ScreenGui, Frames, Tabs, Buttons, and Toggles
-
+-- WindUI Library (with tab switching)
 local Library = {}
 Library.__index = Library
 
--- Parent GUI to PlayerGui
-local Player = game.Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
-
 -- CreateWindow
 function Library:CreateWindow(title)
-    local window = {}
-    window.Title = title or "Window"
-    window.Tabs = {}
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "TwilightZoneUI"
+    ScreenGui.Parent = game:GetService("CoreGui")
 
-    -- Create the main ScreenGui + Frame
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "WindUI_" .. window.Title
-    screenGui.Parent = PlayerGui
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 400, 0, 300)
+    MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.Parent = ScreenGui
 
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 300, 0, 200)
-    mainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    mainFrame.Parent = screenGui
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = title or "Window"
+    Title.Parent = MainFrame
 
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Text = window.Title
-    titleLabel.Size = UDim2.new(1, 0, 0, 30)
-    titleLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.Parent = mainFrame
+    local TabButtons = Instance.new("Frame")
+    TabButtons.Size = UDim2.new(0, 100, 1, -30)
+    TabButtons.Position = UDim2.new(0, 0, 0, 30)
+    TabButtons.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TabButtons.Parent = MainFrame
 
-    window.Gui = mainFrame
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Size = UDim2.new(1, -100, 1, -30)
+    ContentFrame.Position = UDim2.new(0, 100, 0, 30)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ContentFrame.Parent = MainFrame
 
-    -- CreateTab
+    local window = {
+        Title = Title,
+        Tabs = {},
+        ContentFrame = ContentFrame,
+        TabButtons = TabButtons,
+        ActiveTab = nil
+    }
+
     function window:CreateTab(name)
-        local tab = {}
-        tab.Name = name or "Tab"
-        tab.Elements = {}
+        local TabFrame = Instance.new("Frame")
+        TabFrame.Size = UDim2.new(1, 0, 1, 0)
+        TabFrame.BackgroundTransparency = 1
+        TabFrame.Visible = false
+        TabFrame.Parent = ContentFrame
 
-        local tabFrame = Instance.new("Frame")
-        tabFrame.Size = UDim2.new(1, -10, 1, -40)
-        tabFrame.Position = UDim2.new(0, 5, 0, 35)
-        tabFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        tabFrame.Parent = mainFrame
+        local Button = Instance.new("TextButton")
+        Button.Size = UDim2.new(1, 0, 0, 30)
+        Button.Text = name
+        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        Button.Parent = TabButtons
 
-        tab.Gui = tabFrame
+        local tab = {
+            Name = name,
+            Frame = TabFrame,
+            Elements = {}
+        }
 
-        -- CreateButton
+        Button.MouseButton1Click:Connect(function()
+            if window.ActiveTab then
+                window.ActiveTab.Frame.Visible = false
+            end
+            TabFrame.Visible = true
+            window.ActiveTab = tab
+        end)
+
         function tab:CreateButton(text, callback)
-            local button = Instance.new("TextButton")
-            button.Size = UDim2.new(1, -20, 0, 30)
-            button.Position = UDim2.new(0, 10, 0, (#tab.Elements * 40))
-            button.Text = text or "Button"
-            button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-            button.TextColor3 = Color3.fromRGB(255, 255, 255)
-            button.Parent = tabFrame
+            local Btn = Instance.new("TextButton")
+            Btn.Size = UDim2.new(0, 200, 0, 40)
+            Btn.Position = UDim2.new(0, 10, 0, (#tab.Elements * 50))
+            Btn.Text = text
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            Btn.Parent = TabFrame
 
-            button.MouseButton1Click:Connect(callback or function() end)
-
-            table.insert(tab.Elements, button)
-            return button
+            Btn.MouseButton1Click:Connect(callback)
+            table.insert(tab.Elements, Btn)
         end
 
-        -- CreateToggle
         function tab:CreateToggle(text, default, callback)
-            local toggle = Instance.new("TextButton")
-            toggle.Size = UDim2.new(1, -20, 0, 30)
-            toggle.Position = UDim2.new(0, 10, 0, (#tab.Elements * 40))
-            toggle.Text = (text or "Toggle") .. ": " .. tostring(default or false)
-            toggle.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-            toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-            toggle.Parent = tabFrame
+            local Btn = Instance.new("TextButton")
+            Btn.Size = UDim2.new(0, 200, 0, 40)
+            Btn.Position = UDim2.new(0, 10, 0, (#tab.Elements * 50))
+            Btn.Text = text .. ": " .. tostring(default)
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            Btn.Parent = TabFrame
 
             local state = default or false
-            toggle.MouseButton1Click:Connect(function()
+            Btn.MouseButton1Click:Connect(function()
                 state = not state
-                toggle.Text = (text or "Toggle") .. ": " .. tostring(state)
-                if callback then callback(state) end
+                Btn.Text = text .. ": " .. tostring(state)
+                callback(state)
             end)
 
-            table.insert(tab.Elements, toggle)
-            return toggle
+            table.insert(tab.Elements, Btn)
         end
 
         table.insert(window.Tabs, tab)
+
+        -- Auto-open first tab
+        if not window.ActiveTab then
+            window.ActiveTab = tab
+            TabFrame.Visible = true
+        end
+
         return tab
     end
 
+    print("✅ Window created:", title)
     return window
 end
 
