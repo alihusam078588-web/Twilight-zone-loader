@@ -1,5 +1,6 @@
 -- main.lua
 -- Twilight Zone Rayfield GUI
+-- Made by Ali_hhjjj | Helper: GoodJOBS3 | Special thanks: Olivia
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -17,52 +18,106 @@ local Window = Rayfield:CreateWindow({
         Invite = "", -- your Discord invite here (optional)
         RememberJoins = true
     },
-    KeySystem = false, -- set true if you want a key system
-    KeySettings = {
-        Title = "Twilight Zone | Key System",
-        Subtitle = "Authentication",
-        Note = "Ask Ali_hhjjj for access",
-        FileName = "TwilightKey",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = {"MySecretKey"}
-    }
+    KeySystem = false
 })
 
 ----------------------------------------------------
 -- Tabs
 ----------------------------------------------------
-local MainTab = Window:CreateTab("Main", 4483362458) -- you can change the icon id
+local FarmTab = Window:CreateTab("Auto Farm", 4483362458)
+local TeleportTab = Window:CreateTab("Teleport", 4483362458)
+local ESPTab = Window:CreateTab("ESP", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 local CreditsTab = Window:CreateTab("Credits", 4483362458)
 
 ----------------------------------------------------
--- Main Tab Elements
+-- Auto Farm Tab
 ----------------------------------------------------
-MainTab:CreateButton({
-    Name = "Test Button",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Button Clicked!",
-            Content = "You pressed the Test Button.",
-            Duration = 4,
-            Image = 4483362458,
-        })
-    end
-})
-
-MainTab:CreateToggle({
-    Name = "Test Toggle",
+FarmTab:CreateToggle({
+    Name = "Auto Farm Machines",
     CurrentValue = false,
-    Flag = "TestToggle",
+    Flag = "AutoFarmMachines",
     Callback = function(Value)
-        print("Test Toggle:", Value)
+        print("Auto Farm Machines:", Value)
+        -- TODO: Add auto farm logic here
     end,
 })
 
 ----------------------------------------------------
--- Misc Tab Elements
+-- Teleport Tab
 ----------------------------------------------------
+TeleportTab:CreateButton({
+    Name = "Teleport to Elevator",
+    Callback = function()
+        print("Teleporting to Elevator...")
+        -- TODO: Add teleport-to-elevator logic
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Teleport to Random Machine",
+    Callback = function()
+        print("Teleporting to random machine...")
+        -- TODO: Add teleport-to-random-machine logic
+    end,
+})
+
+TeleportTab:CreateToggle({
+    Name = "Auto Teleport to Machines",
+    CurrentValue = false,
+    Flag = "AutoTPMachines",
+    Callback = function(Value)
+        print("Auto Teleport to Machines:", Value)
+        -- TODO: Add auto teleport machine logic
+    end,
+})
+
+TeleportTab:CreateToggle({
+    Name = "Auto Teleport to Elevator when done",
+    CurrentValue = false,
+    Flag = "AutoTPElevator",
+    Callback = function(Value)
+        print("Auto Teleport to Elevator:", Value)
+        -- TODO: Add auto teleport elevator logic
+    end,
+})
+
+----------------------------------------------------
+-- ESP Tab
+----------------------------------------------------
+ESPTab:CreateToggle({
+    Name = "ESP Machines",
+    CurrentValue = false,
+    Flag = "ESPMachines",
+    Callback = function(Value)
+        print("ESP Machines:", Value)
+        -- TODO: Add ESP for machines
+    end,
+})
+
+ESPTab:CreateToggle({
+    Name = "ESP Spirits",
+    CurrentValue = false,
+    Flag = "ESPSpirits",
+    Callback = function(Value)
+        print("ESP Spirits:", Value)
+        -- TODO: Add ESP for spirits
+    end,
+})
+
+----------------------------------------------------
+-- Misc Tab
+----------------------------------------------------
+MiscTab:CreateToggle({
+    Name = "Infinite Stamina",
+    CurrentValue = false,
+    Flag = "InfiniteStamina",
+    Callback = function(Value)
+        print("Infinite Stamina:", Value)
+        -- TODO: Add stamina logic here
+    end,
+})
+
 MiscTab:CreateSlider({
     Name = "Walkspeed",
     Range = {16, 100},
@@ -78,6 +133,9 @@ MiscTab:CreateSlider({
 ----------------------------------------------------
 -- Credits Tab
 ----------------------------------------------------
-CreditsTab:CreateParagraph({Title = "Credits", Content = "Made by Ali_hhjjj\nHelper: GoodJOBS3\nSpecial Thanks: Olivia"})
+CreditsTab:CreateParagraph({
+    Title = "Credits",
+    Content = "Made by Ali_hhjjj\nHelper: GoodJOBS3\nSpecial thanks: Olivia"
+})
 
-print("[TZ] ✅ Rayfield GUI Loaded!")
+print("[TZ] ✅ Twilight Zone Rayfield GUI Loaded!")
