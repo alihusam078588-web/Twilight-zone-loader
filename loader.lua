@@ -1,36 +1,28 @@
--- loader.lua
--- Twilight Zone Loader by alihusam078
+-- Twilight Zone Loader
+-- Loads WindUI and main.lua from your GitHub repo
 
-local function safeLoad(url, name)
+local function safeLoad(url, description)
     local success, result = pcall(function()
         return game:HttpGet(url)
     end)
-
-    if not success then
-        warn("[TZ Loader] ❌ Failed to load " .. name .. "!")
-        return nil
+    if success then
+        local ok, err = pcall(function()
+            loadstring(result)()
+        end)
+        if not ok then
+            warn("[TZ Loader] ❌ Failed to run " .. description .. ": " .. err)
+        else
+            print("[TZ Loader] ✅ Successfully loaded " .. description .. "!")
+        end
+    else
+        warn("[TZ Loader] ❌ Failed to load " .. description .. "!")
     end
-
-    local fn, err = loadstring(result)
-    if not fn then
-        warn("[TZ Loader] ❌ Error compiling " .. name .. ": " .. tostring(err))
-        return nil
-    end
-
-    print("[TZ Loader] ✅ Successfully loaded " .. name .. "!")
-    return fn()
 end
 
--- Load WindUI library (your repo)
-local Library = safeLoad(
-    "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua",
-    "WindUI library"
-)
+-- Load WindUI library first
+safeLoad("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua", "WindUI library")
 
-if not Library then return end
+-- Load your main GUI
+safeLoad("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua", "Twilight Zone GUI")
 
--- Load main script (your repo)
-safeLoad(
-    "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua",
-    "Twilight Zone GUI"
-)
+print("[TZ Loader] 🚀 Loader finished by Ali_hhjjj")
