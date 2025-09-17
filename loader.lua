@@ -1,10 +1,14 @@
 -- Twilight Zone Loader
+-- Loads main.lua from GitHub repo
+
+local url = "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua"
+
 local success, err = pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam07858-web/Twilight-zone-loader/main/main.lua"))()
+    loadstring(game:HttpGet(url))()
 end)
 
-if success then
-    print("[TZ Loader] ✅ Twilight Zone GUI loaded successfully!")
+if not success then
+    warn("[TZ Loader] ❌ Failed to load main.lua:", err)
 else
-    warn("[TZ Loader] ❌ Failed to load:", err)
+    print("[TZ Loader] ✅ Successfully loaded Twilight Zone Rayfield GUI!")
 end
