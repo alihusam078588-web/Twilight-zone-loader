@@ -1,15 +1,21 @@
 -- Twilight Zone Loader
--- Loads main.lua from your GitHub repo
+-- Author: Ali_hhjjj
+-- Repo: alihusam078588-web/Twilight-zone-loader
 
 local url = "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua"
 
-local success, result = pcall(function()
-    local src = game:HttpGet(url)
-    loadstring(src)()
+local success, response = pcall(function()
+    return game:HttpGet(url)
 end)
 
-if not success then
-    warn("[TZ Loader] ❌ Runtime error:", result)
+if success then
+    local func, loadErr = loadstring(response)
+    if func then
+        print("[TZ Loader] ✅ Successfully loaded Twilight Zone GUI!")
+        func()
+    else
+        warn("[TZ Loader] ❌ Failed to compile main.lua:", loadErr)
+    end
 else
-    print("[TZ Loader] ✅ Twilight Zone GUI loaded successfully from alihusam078588-web/Twilight-zone-loader!")
+    warn("[TZ Loader] ❌ Runtime error: " .. tostring(response))
 end
