@@ -1,74 +1,50 @@
--- WindUI Demo Script (Cleaned & Fixed)
+-- WindUI Library
+-- Provides basic window, tab, button, and toggle functionality
 
--- Load WindUI library
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/FootageSUS/WindUI/main/library.lua"))()
+local Library = {}
+Library.__index = Library
 
--- Localization example
-WindUI.Locale = {
-    ["en"] = {
-        welcome = "Welcome to WindUI!",
-        clickme = "Click Me",
-    },
-    ["es"] = {
-        welcome = "¡Bienvenido a WindUI!",
-        clickme = "Haz clic aquí",
-    }
-}
+-- CreateWindow
+function Library:CreateWindow(title)
+    local window = {}
+    window.Title = title or "Window"
+    window.Tabs = {}
 
--- Theme + transparency settings
-WindUI.Theme = "Dark"
-WindUI.Transparency = 0.15
+    function window:CreateTab(name)
+        local tab = {}
+        tab.Name = name or "Tab"
+        tab.Elements = {}
 
--- Gradient Title Example
-WindUI:Title({
-    Text = "Twilight Zone GUI",
-    Gradient = {
-        Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 128, 255))
-        }
-    }
-})
-
--- Popup Example
-WindUI:Popup({
-    Title = "Hello!",
-    Description = WindUI:GetLocale("welcome"),
-    Buttons = {
-        {
-            Name = WindUI:GetLocale("clickme"),
-            Callback = function()
-                print("Button clicked!")
-            end
-        }
-    }
-})
-
--- Example: Adding your own key system service
-WindUI.Services.MyKeyService = {
-    Name = "My Key System",
-    Icon = "lock", -- can be lucide-react icon name, rbxassetid, or image link
-
-    Args = { "ServiceId" }, -- must match with New function args
-
-    New = function(ServiceId)
-
-        local function validateKey(key)
-            if not key or key == "" then
-                return false, "Key is invalid!"
-            end
-            return true, "Key is valid!"
+        -- CreateButton
+        function tab:CreateButton(text, callback)
+            local button = {
+                Text = text or "Button",
+                Callback = callback or function() end
+            }
+            table.insert(tab.Elements, button)
+            print("🖱️ Button created:", button.Text)
+            return button
         end
 
-        local function copyLink()
-            setclipboard("https://your-key-service-link.com")
+        -- CreateToggle
+        function tab:CreateToggle(text, default, callback)
+            local toggle = {
+                Text = text or "Toggle",
+                State = default or false,
+                Callback = callback or function() end
+            }
+            table.insert(tab.Elements, toggle)
+            print("🔘 Toggle created:", toggle.Text, "default:", toggle.State)
+            return toggle
         end
 
-        return {
-            Verify = validateKey, -- IMPORTANT: key validator
-            Copy = copyLink       -- OPTIONAL: copy link to clipboard
-        }
+        table.insert(window.Tabs, tab)
+        print("📑 Tab created:", tab.Name)
+        return tab
     end
-}
 
-print("✅ WindUI Demo Script Loaded Successfully!")
+    print("🪟 Window created:", window.Title)
+    return window
+end
+
+return Library
