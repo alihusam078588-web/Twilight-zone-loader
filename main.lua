@@ -21,34 +21,132 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
--- Example Tab
-local MainTab = Window:CreateTab("Main", 4483362458)
+---------------------------------------------------------
+-- ESP TAB
+---------------------------------------------------------
+local EspTab = Window:CreateTab("ESP", 4483362458)
 
--- Example Button
-MainTab:CreateButton({
-   Name = "Test Button",
-   Callback = function()
-      print("✅ Test Button Pressed!")
-   end
-})
-
--- Example Toggle
-MainTab:CreateToggle({
-   Name = "Test Toggle",
+EspTab:CreateToggle({
+   Name = "Enable ESP",
    CurrentValue = false,
    Callback = function(Value)
-      print("🔘 Toggle set to:", Value)
+      print("ESP Enabled:", Value)
+      -- TODO: Insert ESP script
    end
 })
 
--- Example Slider
-MainTab:CreateSlider({
-   Name = "Test Slider",
-   Range = {0, 100},
-   Increment = 1,
-   Suffix = "%",
-   CurrentValue = 50,
+EspTab:CreateToggle({
+   Name = "Show Players",
+   CurrentValue = false,
    Callback = function(Value)
-      print("📊 Slider value:", Value)
-   end,
+      print("Show Players:", Value)
+   end
 })
+
+EspTab:CreateToggle({
+   Name = "Show Items",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Show Items:", Value)
+   end
+})
+
+---------------------------------------------------------
+-- TELEPORT TAB
+---------------------------------------------------------
+local TeleportTab = Window:CreateTab("Teleport", 4483362458)
+
+TeleportTab:CreateButton({
+   Name = "Teleport to Machine",
+   Callback = function()
+      print("Teleport to Machine")
+      -- TODO: Insert teleport logic
+   end
+})
+
+TeleportTab:CreateButton({
+   Name = "Teleport to Elevator",
+   Callback = function()
+      print("Teleport to Elevator")
+   end
+})
+
+---------------------------------------------------------
+-- AUTO FARM TAB
+---------------------------------------------------------
+local AutoFarmTab = Window:CreateTab("Auto Farm", 4483362458)
+
+AutoFarmTab:CreateToggle({
+   Name = "Auto Farm",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Auto Farm:", Value)
+   end
+})
+
+AutoFarmTab:CreateToggle({
+   Name = "Auto Collect Items",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Auto Collect:", Value)
+   end
+})
+
+---------------------------------------------------------
+-- PLAYER TAB
+---------------------------------------------------------
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+
+PlayerTab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 200},
+   Increment = 1,
+   Suffix = " speed",
+   CurrentValue = 16,
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end
+})
+
+PlayerTab:CreateToggle({
+   Name = "Godmode",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Godmode:", Value)
+      -- TODO: Add godmode code
+   end
+})
+
+PlayerTab:CreateToggle({
+   Name = "Noclip",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Noclip:", Value)
+      -- TODO: Add noclip code
+   end
+})
+
+PlayerTab:CreateToggle({
+   Name = "Infinite Stamina",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Infinite Stamina:", Value)
+   end
+})
+
+PlayerTab:CreateToggle({
+   Name = "Auto Skillcheck",
+   CurrentValue = false,
+   Callback = function(Value)
+      print("Auto Skillcheck:", Value)
+   end
+})
+
+---------------------------------------------------------
+-- CREDITS TAB
+---------------------------------------------------------
+local CreditsTab = Window:CreateTab("Credits", 4483362458)
+
+CreditsTab:CreateParagraph({Title = "Created by", Content = "Ali_hhjjj"})
+CreditsTab:CreateParagraph({Title = "Tester/Helper", Content = "GOODJOBS3"})
+CreditsTab:CreateParagraph({Title = "Special Thanks", Content = "Olivia (Creator of Riddance Hub) for her Rayfield window"})
