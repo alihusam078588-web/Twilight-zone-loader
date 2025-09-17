@@ -1,6 +1,6 @@
 -- Twilight Zone All-in-One (Rayfield Edition)
 -- GUI + ESP + Teleport + AutoFarm + Player
--- Created by Ali_hhjjj | Tester/Helper: GoodJOBS3
+-- Created by Ali_hhjjj | Tester/Helper: GoodJOBS3 | Special Thanks: Olivia (Riddance Hub)
 
 -- Services
 local Players = game:GetService("Players")
@@ -15,12 +15,8 @@ local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
     LoadingTitle = "Riddance Hub | Twilight Zone",
     LoadingSubtitle = "Created by Ali_hhjjj",
-    ConfigurationSaving = {
-        Enabled = false,
-    },
-    Discord = {
-        Enabled = false,
-    },
+    ConfigurationSaving = {Enabled = false},
+    Discord = {Enabled = false},
     KeySystem = false,
 })
 
@@ -96,12 +92,16 @@ task.spawn(function()
     while true do
         if espMachines then
             for _,m in ipairs(gatherMachines()) do
-                if m.Parent then makeHL(m.Parent,Color3.fromRGB(0,255,0)) end
+                if m.Parent and not espMap[m.Parent] then
+                    makeHL(m.Parent,Color3.fromRGB(0,255,0))
+                end
             end
         end
         if espSpirits and Workspace:FindFirstChild("Spirits") then
             for _,s in ipairs(Workspace.Spirits:GetChildren()) do
-                makeHL(s,Color3.fromRGB(200,0,200))
+                if not espMap[s] then
+                    makeHL(s,Color3.fromRGB(200,0,200))
+                end
             end
         end
         if not espMachines and not espSpirits then clearHL() end
@@ -149,13 +149,16 @@ task.spawn(function()
             if #machines > 0 then
                 local m = machines[math.random(1,#machines)]
                 teleportTo(m)
-                -- machine aura spam E
                 if auraEnabled then
                     local prompt = m:FindFirstChildWhichIsA("ProximityPrompt",true)
                     if prompt then
-                        fireproximityprompt(prompt)
+                        pcall(function() fireproximityprompt(prompt) end)
                     end
                 end
+            else
+                -- no machines left, auto teleport to elevator
+                local elevator = Workspace:FindFirstChild("Elevator")
+                if elevator then teleportTo(findRepPart(elevator)) end
             end
         end
         task.wait(3)
@@ -165,13 +168,13 @@ end)
 task.spawn(function()
     while true do
         if autoElev then
-            local elevator = Workspace:FindFirstChild("Elevator")
-            if elevator then
-                local part = findRepPart(elevator)
-                teleportTo(part)
+            local machines = gatherMachines()
+            if #machines == 0 then
+                local elevator = Workspace:FindFirstChild("Elevator")
+                if elevator then teleportTo(findRepPart(elevator)) end
             end
         end
-        task.wait(5)
+        task.wait(3)
     end
 end)
 
@@ -258,3 +261,4 @@ PlayerTab:CreateLabel("Godmode: Always ON")
 PlayerTab:CreateLabel("Auto SkillCheck: Always ON")
 PlayerTab:CreateLabel("Tester/Helper: GoodJOBS3")
 PlayerTab:CreateLabel("Created by Ali_hhjjj")
+PlayerTab:CreateLabel("Special Thanks: Thanks Olivia (creater of Riddance Hub) and Shelly (riddance manager) for giving idea to use Rayfield")
