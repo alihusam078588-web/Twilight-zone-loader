@@ -1,20 +1,47 @@
--- Twilight Zone GUI Main Script
+-- Twilight Zone GUI (Full Fixed Version)
 -- Credits: Ali_hhjjj
 -- Tester/Helper: GoodJOBS3
 -- Special thanks: Olivia (creator of Riddance Hub, WindUI)
 
--- Load WindUI
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/FootageSUS/WindUI/main/library.lua"))()
+----------------------------------------------------
+-- Load WindUI Library
+----------------------------------------------------
+local ok, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/FootageSUS/WindUI/main/library.lua"))()
+end)
 
+if not ok or not WindUI then
+    warn("⚠️ Failed to load WindUI library. Check your internet connection or the URL.")
+    return
+end
+
+-- Theme + transparency
+WindUI.Theme = "Dark"
+WindUI.Transparency = 0.15
+
+-- Localization
+WindUI.Locale = {
+    ["en"] = {
+        welcome = "Welcome to Twilight Zone!",
+    },
+    ["ar"] = {
+        welcome = "مرحباً بك في Twilight Zone!",
+    }
+}
+
+----------------------------------------------------
 -- Create Window
-local Window = Library:CreateWindow({
+----------------------------------------------------
+local Window = WindUI:CreateWindow({
     Name = "Twilight Zone",
     Themeable = {
         Info = "Made by Ali_hhjjj"
     }
 })
 
+----------------------------------------------------
 -- Tabs
+----------------------------------------------------
 local farmTab = Window:CreateTab("Auto Farm")
 local teleportTab = Window:CreateTab("Teleport")
 local espTab = Window:CreateTab("ESP")
@@ -30,7 +57,7 @@ farmTab:CreateToggle({
     Flag = "AutoFarmMachines",
     Callback = function(Value)
         print("Auto Farm Machines:", Value)
-        -- TODO: Add your autofarm logic here
+        -- TODO: Add autofarm logic here
     end,
 })
 
@@ -41,7 +68,7 @@ teleportTab:CreateButton({
     Name = "Teleport to Elevator",
     Callback = function()
         print("Teleporting to Elevator...")
-        -- TODO: Add teleport-to-elevator logic
+        -- TODO: Add teleport-to-elevator logic here
     end,
 })
 
@@ -49,7 +76,7 @@ teleportTab:CreateButton({
     Name = "Teleport to Random Machine",
     Callback = function()
         print("Teleporting to random machine...")
-        -- TODO: Add teleport-to-random-machine logic
+        -- TODO: Add teleport-to-random-machine logic here
     end,
 })
 
@@ -59,7 +86,7 @@ teleportTab:CreateToggle({
     Flag = "AutoTPMachines",
     Callback = function(Value)
         print("Auto Teleport to Machines:", Value)
-        -- TODO: Add auto teleport machine logic
+        -- TODO: Add auto-teleport machines logic here
     end,
 })
 
@@ -69,7 +96,7 @@ teleportTab:CreateToggle({
     Flag = "AutoTPElevator",
     Callback = function(Value)
         print("Auto Teleport to Elevator:", Value)
-        -- TODO: Add auto teleport elevator logic
+        -- TODO: Add auto-teleport elevator logic here
     end,
 })
 
@@ -82,7 +109,7 @@ espTab:CreateToggle({
     Flag = "ESPMachines",
     Callback = function(Value)
         print("ESP Machines:", Value)
-        -- TODO: Add ESP for machines
+        -- TODO: Add ESP for machines here
     end,
 })
 
@@ -92,7 +119,7 @@ espTab:CreateToggle({
     Flag = "ESPSpirits",
     Callback = function(Value)
         print("ESP Spirits:", Value)
-        -- TODO: Add ESP for spirits
+        -- TODO: Add ESP for spirits here
     end,
 })
 
@@ -105,7 +132,7 @@ miscTab:CreateToggle({
     Flag = "InfiniteStamina",
     Callback = function(Value)
         print("Infinite Stamina:", Value)
-        -- TODO: Add stamina logic here
+        -- TODO: Add infinite stamina logic here
     end,
 })
 
@@ -116,4 +143,20 @@ creditsTab:CreateLabel("Made by Ali_hhjjj")
 creditsTab:CreateLabel("Tester/Helper: GoodJOBS3")
 creditsTab:CreateLabel("Special thanks: Olivia (Riddance Hub, WindUI)")
 
-print("Twilight Zone main script loaded!")
+----------------------------------------------------
+-- Welcome Popup
+----------------------------------------------------
+WindUI:Popup({
+    Title = "Welcome",
+    Description = WindUI:GetLocale("welcome"),
+    Buttons = {
+        {
+            Name = "Close",
+            Callback = function()
+                print("Welcome popup closed.")
+            end
+        }
+    }
+})
+
+print("✅ Twilight Zone GUI Loaded Successfully!")
