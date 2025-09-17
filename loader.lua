@@ -1,28 +1,27 @@
--- Twilight Zone Loader
--- Loads WindUI and main.lua from your GitHub repo
+-- Loader.lua
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam07858-web/Twilight-zone-loader/main/windui.lua"))()
 
-local function safeLoad(url, description)
-    local success, result = pcall(function()
-        return game:HttpGet(url)
-    end)
-    if success then
-        local ok, err = pcall(function()
-            loadstring(result)()
-        end)
-        if not ok then
-            warn("[TZ Loader] ❌ Failed to run " .. description .. ": " .. err)
-        else
-            print("[TZ Loader] ✅ Successfully loaded " .. description .. "!")
-        end
-    else
-        warn("[TZ Loader] ❌ Failed to load " .. description .. "!")
-    end
-end
+-- Create main window
+local Window = WindUI:CreateWindow("Twilight Zone GUI")
 
--- Load WindUI library first
-safeLoad("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua", "WindUI library")
+-- Main tab
+local MainTab = Window:CreateTab("Main")
+MainTab:CreateButton("Test Button", function()
+    print("[TZ Loader] Test Button pressed!")
+end)
 
--- Load your main GUI
-safeLoad("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua", "Twilight Zone GUI")
+MainTab:CreateToggle("Test Toggle", false, function(state)
+    print("[TZ Loader] Test Toggle is now:", state)
+end)
 
-print("[TZ Loader] 🚀 Loader finished by Ali_hhjjj")
+-- Other tab
+local OtherTab = Window:CreateTab("Other")
+OtherTab:CreateButton("Extra Button", function()
+    print("[TZ Loader] Extra Button pressed!")
+end)
+
+OtherTab:CreateToggle("Extra Toggle", true, function(state)
+    print("[TZ Loader] Extra Toggle is now:", state)
+end)
+
+print("[TZ Loader] ✅ Twilight Zone GUI loaded successfully!")
