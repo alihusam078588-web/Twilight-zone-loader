@@ -1,36 +1,36 @@
--- Twilight Zone Loader
-local success, Library = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078/Twilight-zone-loader/main/windui.lua"))()
-end)
+-- loader.lua
+-- Twilight Zone Loader by alihusam078
 
-if not success or not Library then
-    warn("[TZ Loader] ❌ Failed to load WindUI library!")
-    return
+local function safeLoad(url, name)
+    local success, result = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success then
+        warn("[TZ Loader] ❌ Failed to load " .. name .. "!")
+        return nil
+    end
+
+    local fn, err = loadstring(result)
+    if not fn then
+        warn("[TZ Loader] ❌ Error compiling " .. name .. ": " .. tostring(err))
+        return nil
+    end
+
+    print("[TZ Loader] ✅ Successfully loaded " .. name .. "!")
+    return fn()
 end
 
-print("[TZ Loader] ✅ Successfully loaded Twilight Zone GUI!")
+-- Load WindUI library (your repo)
+local Library = safeLoad(
+    "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua",
+    "WindUI library"
+)
 
--- Create main window
-local Window = Library:CreateWindow({
-    Title = "Twilight Zone GUI",
-    Center = true,
-    AutoShow = true,
-})
+if not Library then return end
 
--- Main tab
-local MainTab = Window:AddTab("Main")
-
-MainTab:AddButton({
-    Title = "Test Button",
-    Callback = function()
-        print("[TZ Loader] Test Button clicked!")
-    end
-})
-
-MainTab:AddToggle({
-    Title = "Test Toggle",
-    Default = false,
-    Callback = function(state)
-        print("[TZ Loader] Test Toggle set to:", state)
-    end
-})
+-- Load main script (your repo)
+safeLoad(
+    "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua",
+    "Twilight Zone GUI"
+)
