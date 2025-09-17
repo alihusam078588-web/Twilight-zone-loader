@@ -3,7 +3,7 @@ local ok, res = pcall(function()
 end)
 
 if not ok or not res or res == "" then
-    warn("[TZ Loader] Failed to load main.lua: HTTP 404")
+    warn("[TZ Loader] Failed to load main.lua")
     return
 end
 
