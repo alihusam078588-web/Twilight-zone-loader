@@ -1,108 +1,25 @@
--- Twilight Zone GUI (main.lua)
--- Using WindUI
+-- main.lua
 
 -- Load WindUI
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-hhjjj/WindUI/main/library.lua"))()
 
--- Create the main window
-local Window = Library:CreateWindow({
-    Title = "Twilight Zone GUI",
-    Center = true,
-    AutoShow = true,
-})
+-- Create main window
+local Window = Library:CreateWindow("Twilight Zone GUI")
 
--------------------------------------------------
--- MAIN TAB
--------------------------------------------------
-local MainTab = Window:CreateTab({
-    Name = "Main",
-    Icon = "rbxassetid://10734950020"
-})
+-- Create "Main" tab
+local MainTab = Window:CreateTab("Main")
 
-local MainSection = MainTab:CreateSection("Player")
+-- Add a button directly inside Main tab
+MainTab:CreateButton("Test Button", function()
+    print("[TZ Loader] Test Button clicked!")
+end)
 
--- Fly button
-MainSection:CreateButton({
-    Name = "Enable Fly",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/fly.lua"))()
-    end
-})
+-- Create "Other" tab
+local OtherTab = Window:CreateTab("Other")
 
--- Noclip button
-MainSection:CreateButton({
-    Name = "Enable Noclip",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/noclip.lua"))()
-    end
-})
+-- Add a toggle directly inside Other tab
+OtherTab:CreateToggle("Test Toggle", false, function(state)
+    print("[TZ Loader] Test Toggle set to:", state)
+end)
 
--- WalkSpeed slider
-MainSection:CreateSlider({
-    Name = "WalkSpeed",
-    Min = 16,
-    Max = 100,
-    Default = 16,
-    Callback = function(value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-    end
-})
-
--------------------------------------------------
--- VISUAL TAB
--------------------------------------------------
-local VisualTab = Window:CreateTab({
-    Name = "Visual",
-    Icon = "rbxassetid://6034509993"
-})
-
-local VisualSection = VisualTab:CreateSection("ESP")
-
--- ESP Toggle
-VisualSection:CreateToggle({
-    Name = "ESP",
-    Default = false,
-    Callback = function(state)
-        if state then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/esp.lua"))()
-        else
-            print("ESP disabled (no disable script yet).")
-        end
-    end
-})
-
--------------------------------------------------
--- AUTO TAB
--------------------------------------------------
-local AutoTab = Window:CreateTab({
-    Name = "AutoFarm",
-    Icon = "rbxassetid://6034509990"
-})
-
-local AutoSection = AutoTab:CreateSection("Farming")
-
--- AutoFarm Toggle
-AutoSection:CreateToggle({
-    Name = "Auto Farm",
-    Default = false,
-    Callback = function(state)
-        if state then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/autofarm.lua"))()
-        else
-            print("AutoFarm stopped (needs disable code).")
-        end
-    end
-})
-
--------------------------------------------------
--- CREDITS TAB
--------------------------------------------------
-local CreditsTab = Window:CreateTab({
-    Name = "Credits",
-    Icon = "rbxassetid://6034509992"
-})
-
-local CreditsSection = CreditsTab:CreateSection("Made By")
-CreditsSection:CreateLabel("Ali_hhjjj & ChatGPT")
-
-print("[TZ Loader] 🚀 Twilight Zone GUI Loaded Successfully!")
+print("[TZ Loader] ✅ Twilight Zone GUI loaded successfully!")
