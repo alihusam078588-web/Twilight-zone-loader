@@ -1,29 +1,32 @@
--- Twilight Zone Main Script
--- Loads WindUI from your GitHub repo and builds the GUI
+-- Twilight Zone GUI using official WindUI
 
--- Load WindUI library from your repo
-local Library = nil
-local success, err = pcall(function()
-    Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua"))()
-end)
+-- Load WindUI from FootageSUS GitHub
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/Source.lua"))()
 
-if not success or not Library then
-    warn("⚠️ Failed to load WindUI library. Check your internet connection or the URL.", err)
-    return
-end
+-- Create a window
+local window = WindUI:CreateWindow({
+    Title = "Twilight Zone",
+    SubTitle = "by Ali_hhjjj",
+    Theme = "Dark",
+})
 
--- Create the main window
-local Window = Library:CreateWindow("Twilight Zone GUI")
+-- Tabs
+local mainTab = window:CreateTab("Main")
+local settingsTab = window:CreateTab("Settings")
 
--- Example tabs & buttons (you can add more)
-local Tab1 = Window:CreateTab("Main")
-Tab1:CreateButton("Test Button", function()
-    print("✅ Test Button clicked!")
-end)
+-- Button Example
+mainTab:CreateButton({
+    Name = "Test Button",
+    Callback = function()
+        print("✅ Test Button clicked!")
+    end,
+})
 
-local Tab2 = Window:CreateTab("Other")
-Tab2:CreateToggle("Test Toggle", false, function(state)
-    print("✅ Toggle state:", state)
-end)
-
-print("[TZ Loader] ✅ Twilight Zone GUI loaded successfully!")
+-- Toggle Example
+mainTab:CreateToggle({
+    Name = "Test Toggle",
+    Default = false,
+    Callback = function(state)
+        print("Toggle state:", state)
+    end,
+})
