@@ -1,6 +1,6 @@
--- Twilight Zone GUI (Rayfield Version)
+-- Twilight Zone GUI (Rayfield Version, Fixed ESP + Teleports)
 -- Creator: Ali_hhjjj | Tester/Helper: GOODJOBS3
--- Special Thanks: Olivia (Riddance creator) & Shelly (Riddance manager) for giving the idea to use Rayfield
+-- Special Thanks: Olivia & Shelly (Riddance) for idea to use Rayfield
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -13,11 +13,6 @@ local Window = Rayfield:CreateWindow({
         FolderName = nil,
         FileName = "TZ_Config"
     },
-    Discord = {
-        Enabled = false,
-        Invite = "",
-        RememberJoins = false
-    },
     KeySystem = false
 })
 
@@ -26,9 +21,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
-local staminaFlag = false
-local autoTeleportFlag = false
-local autoElevatorFlag = false
+local staminaFlag, autoTeleportFlag, autoElevatorFlag = false, false, false
 local espMachinesOn, espSpiritsOn = false, false
 local espMap = {}
 
@@ -36,30 +29,24 @@ local espMap = {}
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
-    local names = {"Front","Head","HumanoidRootPart","PrimaryPart"}
-    for _,n in ipairs(names) do
-        local f = model:FindFirstChild(n)
-        if f and f:IsA("BasePart") then return f end
-    end
     if model.PrimaryPart then return model.PrimaryPart end
     return model:FindFirstChildWhichIsA("BasePart", true)
 end
 
+-- Get machines
 local function gatherMachineParts()
     local parts = {}
-    local candidates = {
+    local containers = {
         Workspace:FindFirstChild("Machines"),
         Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Machines"),
-        Workspace
+        Workspace:FindFirstChild("CurrentRoom"),
     }
-    for _, folder in ipairs(candidates) do
+    for _, folder in ipairs(containers) do
         if folder then
-            for _, child in ipairs(folder:GetChildren()) do
-                if child:IsA("Model") then
-                    local rep = findRepresentativePart(child)
+            for _, obj in ipairs(folder:GetChildren()) do
+                if obj:IsA("Model") or obj:IsA("BasePart") then
+                    local rep = findRepresentativePart(obj)
                     if rep then table.insert(parts, rep) end
-                elseif child:IsA("BasePart") then
-                    table.insert(parts, child)
                 end
             end
         end
@@ -67,6 +54,7 @@ local function gatherMachineParts()
     return parts
 end
 
+-- Teleports
 local function teleportToPart(part, yOffset)
     yOffset = yOffset or 5
     if not part then return end
@@ -76,23 +64,21 @@ local function teleportToPart(part, yOffset)
 end
 
 local function teleportToRandomMachine()
-    local parts = gatherMachineParts()
-    if #parts > 0 then teleportToPart(parts[math.random(1,#parts)]) end
+    local machines = gatherMachineParts()
+    if #machines > 0 then teleportToPart(machines[math.random(1,#machines)]) end
 end
 
 local function teleportToElevator()
     local elevator = Workspace:FindFirstChild("Elevator")
-    if elevator then
-        local spawn = elevator:FindFirstChild("ElevatorSpawn") or findRepresentativePart(elevator)
-        if spawn then teleportToPart(spawn, 2) end
-    end
+    if not elevator then return end
+    local spawn = elevator:FindFirstChild("ElevatorSpawn") or findRepresentativePart(elevator)
+    if spawn then teleportToPart(spawn, 2) end
 end
 
 -- ===== ESP =====
 local function createHighlightFor(target, color)
-    if not target or not target.Parent or espMap[target] then return end
+    if not target or espMap[target] then return end
     local hl = Instance.new("Highlight")
-    hl.Name = "TZ_HL"
     hl.Adornee = target
     hl.FillColor, hl.OutlineColor = color, color
     hl.FillTransparency = 0.55
@@ -114,16 +100,22 @@ task.spawn(function()
                 end
             end
         end
-        if espSpiritsOn and Workspace:FindFirstChild("Spirits") then
-            for _, s in ipairs(Workspace.Spirits:GetChildren()) do
-                if s and not espMap[s] then
-                    createHighlightFor(s, Color3.fromRGB(200,0,200))
+        if espSpiritsOn then
+            local containers = {
+                Workspace:FindFirstChild("Spirits"),
+                Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits")
+            }
+            for _, c in ipairs(containers) do
+                if c then
+                    for _, s in ipairs(c:GetChildren()) do
+                        if not espMap[s] then
+                            createHighlightFor(s, Color3.fromRGB(200,0,200))
+                        end
+                    end
                 end
             end
         end
-        if not espMachinesOn and not espSpiritsOn then
-            clearAllHighlights()
-        end
+        if not espMachinesOn and not espSpiritsOn then clearAllHighlights() end
     end
 end)
 
@@ -138,19 +130,19 @@ end)
 
 -- ===== AUTO SKILLCHECK (always on) =====
 do
-    local function tryAttach(remote)
+    local function attach(remote)
         if remote:IsA("RemoteFunction") then
             remote.OnClientInvoke = function() return 2 end
         end
     end
     for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
         if v:IsA("RemoteFunction") and tostring(v.Name):lower():find("skill") then
-            tryAttach(v)
+            attach(v)
         end
     end
-    ReplicatedStorage.DescendantAdded:Connect(function(desc)
-        if desc:IsA("RemoteFunction") and tostring(desc.Name):lower():find("skill") then
-            tryAttach(desc)
+    ReplicatedStorage.DescendantAdded:Connect(function(d)
+        if d:IsA("RemoteFunction") and tostring(d.Name):lower():find("skill") then
+            attach(d)
         end
     end)
 end
@@ -173,7 +165,7 @@ task.spawn(function()
             if #parts > 0 then
                 local target = parts[math.random(1,#parts)]
                 teleportToPart(target)
-                -- Machine Aura (spam E) while auto teleport is ON
+                -- Machine Aura spam E
                 task.spawn(function()
                     for _,v in ipairs(LocalPlayer.PlayerGui:GetDescendants()) do
                         if v:IsA("TextButton") and v.Text == "E" then
@@ -202,7 +194,7 @@ task.spawn(function()
     end
 end)
 
--- ===== TABS =====
+-- ===== GUI TABS =====
 local TabESP = Window:CreateTab("ESP", 4483362458)
 TabESP:CreateToggle({Name="ESP Machines",CurrentValue=false,Callback=function(v) espMachinesOn=v; if not v then clearAllHighlights() end end})
 TabESP:CreateToggle({Name="ESP Spirits",CurrentValue=false,Callback=function(v) espSpiritsOn=v; if not v then clearAllHighlights() end end})
@@ -223,4 +215,4 @@ TabPlayer:CreateLabel("Auto SkillCheck: ACTIVE")
 local TabCredits = Window:CreateTab("Credits", 4483362458)
 TabCredits:CreateLabel("Creator: Ali_hhjjj")
 TabCredits:CreateLabel("Tester/Helper: GOODJOBS3")
-TabCredits:CreateLabel("Special Thanks: Olivia (creator of riddance hub) & Shelly (Riddance manager) for idea to use Rayfield")
+TabCredits:CreateLabel("Special Thanks: Olivia & Shelly (Riddance) for idea to use Rayfield")
