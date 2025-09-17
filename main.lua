@@ -22,7 +22,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- Example Tab
-local MainTab = Window:CreateTab("Main", 4483362458) -- icon is optional
+local MainTab = Window:CreateTab("Main", 4483362458)
 
 -- Example Button
 MainTab:CreateButton({
