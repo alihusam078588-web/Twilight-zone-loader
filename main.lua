@@ -1,7 +1,7 @@
 -- main.lua
 
--- Load the library
-local Library = loadstring(game:HttpGet("https://footagesus.github.io/WindUI-Docs/library.lua"))()
+-- Load the library (WindUI from your repo)
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/windui.lua"))()
 
 -- Create the main window
 local Window = Library:Window({
