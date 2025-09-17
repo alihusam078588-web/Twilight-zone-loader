@@ -1,67 +1,83 @@
 -- main.lua
--- Twilight Zone GUI (Rayfield Version)
+-- Twilight Zone Rayfield GUI
 
--- Load Rayfield
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Create Window
 local Window = Rayfield:CreateWindow({
-    Name = "Twilight Zone GUI",
-    LoadingTitle = "Twilight Zone Loader",
+    Name = "Twilight Zone",
+    LoadingTitle = "Twilight Zone GUI",
     LoadingSubtitle = "by Ali_hhjjj",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "TZLoader", -- folder name for configs
-        FileName = "tz_config"
+        FolderName = "TwilightZone",
+        FileName = "TwilightConfig"
     },
     Discord = {
         Enabled = false,
-        Invite = "", -- optional
-        RememberJoins = false
+        Invite = "", -- your Discord invite here (optional)
+        RememberJoins = true
     },
-    KeySystem = false, -- no key system for now
+    KeySystem = false, -- set true if you want a key system
+    KeySettings = {
+        Title = "Twilight Zone | Key System",
+        Subtitle = "Authentication",
+        Note = "Ask Ali_hhjjj for access",
+        FileName = "TwilightKey",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"MySecretKey"}
+    }
 })
 
--- Main Tab
-local MainTab = Window:CreateTab("Main", 4483362458)
+----------------------------------------------------
+-- Tabs
+----------------------------------------------------
+local MainTab = Window:CreateTab("Main", 4483362458) -- you can change the icon id
+local MiscTab = Window:CreateTab("Misc", 4483362458)
+local CreditsTab = Window:CreateTab("Credits", 4483362458)
 
--- Test Button
+----------------------------------------------------
+-- Main Tab Elements
+----------------------------------------------------
 MainTab:CreateButton({
     Name = "Test Button",
     Callback = function()
-        print("[TZ Loader] Test Button clicked!")
-    end,
+        Rayfield:Notify({
+            Title = "Button Clicked!",
+            Content = "You pressed the Test Button.",
+            Duration = 4,
+            Image = 4483362458,
+        })
+    end
 })
 
--- Test Toggle
 MainTab:CreateToggle({
     Name = "Test Toggle",
     CurrentValue = false,
     Flag = "TestToggle",
     Callback = function(Value)
-        print("[TZ Loader] Test Toggle set to:", Value)
+        print("Test Toggle:", Value)
     end,
 })
 
--- Other Tab
-local OtherTab = Window:CreateTab("Other", 4483362458)
-
--- Example Button in Other Tab
-OtherTab:CreateButton({
-    Name = "Other Button",
-    Callback = function()
-        print("[TZ Loader] Other Button clicked!")
-    end,
-})
-
--- Example Toggle in Other Tab
-OtherTab:CreateToggle({
-    Name = "Other Toggle",
-    CurrentValue = false,
-    Flag = "OtherToggle",
+----------------------------------------------------
+-- Misc Tab Elements
+----------------------------------------------------
+MiscTab:CreateSlider({
+    Name = "Walkspeed",
+    Range = {16, 100},
+    Increment = 1,
+    Suffix = "Speed",
+    CurrentValue = 16,
+    Flag = "WalkspeedSlider",
     Callback = function(Value)
-        print("[TZ Loader] Other Toggle set to:", Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
     end,
 })
 
-print("[TZ Loader] ✅ Twilight Zone Rayfield GUI loaded successfully!")
+----------------------------------------------------
+-- Credits Tab
+----------------------------------------------------
+CreditsTab:CreateParagraph({Title = "Credits", Content = "Made by Ali_hhjjj\nHelper: GoodJOBS3\nSpecial Thanks: Olivia"})
+
+print("[TZ] ✅ Rayfield GUI Loaded!")
