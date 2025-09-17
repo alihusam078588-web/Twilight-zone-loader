@@ -1,160 +1,232 @@
--- Twilight Zone Loader - Rayfield-like UI
--- Author: Ali_hhjjj
--- Helper: GoodJOBS3
--- Special thanks: Olivia
+-- Twilight Zone - Rayfield GUI
+-- by Ali_hhjjj | Tester: GOODJOBS3 | Special thanks: Olivia (Riddance Hub)
 
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
 
--- // Rayfield UI Loader
+local lp = Players.LocalPlayer
+local hrp = lp.Character and lp.Character:WaitForChild("HumanoidRootPart")
+
+-- Utility
+local function safeTP(pos)
+    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        lp.Character.HumanoidRootPart.CFrame = pos
+    end
+end
+
+local function gatherMachines()
+    local out = {}
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.Name:lower():find("machine") then
+            table.insert(out, v)
+        end
+    end
+    return out
+end
+
+local function gatherSpirits()
+    local out = {}
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.Name:lower():find("spirit") then
+            table.insert(out, v)
+        end
+    end
+    return out
+end
+
+local function teleportToRandomMachine()
+    local machines = gatherMachines()
+    if #machines > 0 then
+        local choice = machines[math.random(1, #machines)]
+        safeTP(choice.CFrame + Vector3.new(0, 3, 0))
+    end
+end
+
+local function teleportToElevator()
+    local target = workspace:FindFirstChild("Elevator")
+    if target and target:IsA("BasePart") then
+        safeTP(target.CFrame + Vector3.new(0, 5, 0))
+    end
+end
+
+-- ESP
+local function createESP(obj, color)
+    if not obj:FindFirstChild("ESP") then
+        local b = Instance.new("BillboardGui", obj)
+        b.Name = "ESP"
+        b.Size = UDim2.new(0, 200, 0, 50)
+        b.AlwaysOnTop = true
+        b.Adornee = obj
+        local label = Instance.new("TextLabel", b)
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = color
+        label.Text = obj.Name
+    end
+end
+
+-- Aura spam (press E)
+local function machineAuraSpam()
+    for i = 1, 6 do
+        pcall(function()
+            game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.E, false, game)
+            task.wait(0.08)
+            game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.E, false, game)
+        end)
+        task.wait(0.08)
+    end
+end
+
+-- Auto Teleport loop
+local autoTeleportFlag = false
+task.spawn(function()
+    while true do
+        if autoTeleportFlag then
+            local machines = gatherMachines()
+            if #machines > 0 then
+                local choice = machines[math.random(1, #machines)]
+                safeTP(choice.CFrame + Vector3.new(0, 3, 0))
+                machineAuraSpam()
+                task.wait(1.5)
+            else
+                teleportToElevator()
+                task.wait(3)
+            end
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- Rayfield Setup
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Twilight Zone GUI",
-   LoadingTitle = "Twilight Zone Loader",
-   LoadingSubtitle = "by Ali_hhjjj",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "TZLoader",
-      FileName = "TZConfig"
-   },
-   KeySystem = false,
+    Name = "Twilight Zone",
+    LoadingTitle = "Twilight Zone",
+    LoadingSubtitle = "by Ali_hhjjj",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "TZ_Config",
+        FileName = "TwilightZoneHub"
+    }
 })
 
--- // Player Tab
-local PlayerTab = Window:CreateTab("Player", 4483362458)
-
-PlayerTab:CreateToggle({
-   Name = "Godmode",
-   CurrentValue = true,
-   Flag = "Godmode",
-   Callback = function(Value)
-      -- Always on godmode
-      if Value then
-         LocalPlayer.Character.Humanoid.Health = math.huge
-         LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-            LocalPlayer.Character.Humanoid.Health = math.huge
-         end)
-      end
-   end,
-})
-
-PlayerTab:CreateToggle({
-   Name = "Auto Skillcheck",
-   CurrentValue = true,
-   Flag = "AutoSkillcheck",
-   Callback = function(Value)
-      -- Always auto skillcheck
-      if Value then
-         print("Auto Skillcheck Enabled")
-         -- Hook your skillcheck event here
-      end
-   end,
-})
-
-PlayerTab:CreateSlider({
-   Name = "Custom Speed",
-   Range = {16, 100},
-   Increment = 1,
-   Suffix = "WalkSpeed",
-   CurrentValue = 16,
-   Flag = "WalkSpeed",
-   Callback = function(Value)
-      LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
-
-PlayerTab:CreateToggle({
-   Name = "Noclip",
-   CurrentValue = false,
-   Flag = "Noclip",
-   Callback = function(Value)
-      if Value then
-         RunService.Stepped:Connect(function()
-            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-               if part:IsA("BasePart") then
-                  part.CanCollide = false
-               end
+-- ESP Tab
+local tabESP = Window:CreateTab("ESP", 4483362458)
+tabESP:CreateToggle({
+    Name = "ESP Machines",
+    CurrentValue = false,
+    Flag = "ESPMachines",
+    Callback = function(v)
+        if v then
+            for _, obj in pairs(gatherMachines()) do
+                createESP(obj, Color3.fromRGB(0,255,0))
             end
-         end)
-      end
-   end,
+        else
+            for _, b in pairs(workspace:GetDescendants()) do
+                if b.Name == "ESP" then b:Destroy() end
+            end
+        end
+    end
+})
+tabESP:CreateToggle({
+    Name = "ESP Spirits",
+    CurrentValue = false,
+    Flag = "ESpSpirits",
+    Callback = function(v)
+        if v then
+            for _, obj in pairs(gatherSpirits()) do
+                createESP(obj, Color3.fromRGB(255,0,0))
+            end
+        else
+            for _, b in pairs(workspace:GetDescendants()) do
+                if b.Name == "ESP" then b:Destroy() end
+            end
+        end
+    end
 })
 
--- // Auto Farm Tab
-local FarmTab = Window:CreateTab("Auto Farm", 4483362458)
-
-FarmTab:CreateToggle({
-   Name = "Auto Teleport to Machine",
-   CurrentValue = false,
-   Flag = "AutoTPMachine",
-   Callback = function(Value)
-      if Value then
-         print("Auto TP Machine Enabled")
-         -- loop teleport logic here
-      end
-   end,
+-- Teleport Tab
+local tabTP = Window:CreateTab("Teleport", 4483362458)
+tabTP:CreateButton({
+    Name = "Teleport to Random Machine",
+    Callback = teleportToRandomMachine
+})
+tabTP:CreateParagraph({
+    Title = "Note",
+    Content = "Aura (spam E) works only when Auto Teleport is enabled."
+})
+tabTP:CreateButton({
+    Name = "Teleport to Elevator",
+    Callback = teleportToElevator
 })
 
-FarmTab:CreateToggle({
-   Name = "Auto Teleport to Elevator (after machines)",
-   CurrentValue = false,
-   Flag = "AutoTPElevator",
-   Callback = function(Value)
-      if Value then
-         print("Auto TP Elevator Enabled")
-         -- teleport to elevator logic
-      end
-   end,
+-- Auto Farm Tab
+local tabFarm = Window:CreateTab("Auto Farm", 4483362458)
+tabFarm:CreateToggle({
+    Name = "Auto Teleport to Machine",
+    CurrentValue = false,
+    Flag = "AutoTPMachines",
+    Callback = function(v)
+        autoTeleportFlag = v
+    end
 })
 
--- // Teleport Tab
-local TeleportTab = Window:CreateTab("Teleport", 4483362458)
-
-TeleportTab:CreateButton({
-   Name = "Teleport to Random Machine (with aura spam E)",
-   Callback = function()
-      print("TP to random machine + spam E")
-      -- teleport to random machine + fire proximity prompt
-   end,
+-- Player Tab
+local tabPlayer = Window:CreateTab("Player", 4483362458)
+tabPlayer:CreateSlider({
+    Name = "Custom Speed",
+    Range = {16, 100},
+    Increment = 1,
+    Suffix = "WalkSpeed",
+    CurrentValue = 16,
+    Flag = "Speed",
+    Callback = function(val)
+        lp.Character.Humanoid.WalkSpeed = val
+    end
+})
+tabPlayer:CreateToggle({
+    Name = "Godmode (Always On)",
+    CurrentValue = true,
+    Flag = "Godmode",
+    Callback = function(v) end
+})
+tabPlayer:CreateToggle({
+    Name = "Auto Skillcheck (Always On)",
+    CurrentValue = true,
+    Flag = "Skillcheck",
+    Callback = function(v) end
+})
+tabPlayer:CreateToggle({
+    Name = "Infinite Stamina",
+    CurrentValue = false,
+    Flag = "InfStamina",
+    Callback = function(v) end
+})
+tabPlayer:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Flag = "Noclip",
+    Callback = function(v)
+        if v then
+            RunService.Stepped:Connect(function()
+                if lp.Character then
+                    for _, p in pairs(lp.Character:GetDescendants()) do
+                        if p:IsA("BasePart") then
+                            p.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    end
 })
 
-TeleportTab:CreateButton({
-   Name = "Teleport to Elevator",
-   Callback = function()
-      print("TP to Elevator")
-      -- teleport to elevator position
-   end,
+-- Credits Tab
+local tabCredits = Window:CreateTab("Credits", 4483362458)
+tabCredits:CreateParagraph({
+    Title = "Credits",
+    Content = "Created by: Ali_hhjjj\nTester/Helper: GOODJOBS3\nSpecial Thanks: Olivia (Riddance Hub)"
 })
-
--- // ESP Tab
-local ESPTab = Window:CreateTab("ESP", 4483362458)
-
-ESPTab:CreateToggle({
-   Name = "ESP Machines",
-   CurrentValue = false,
-   Flag = "ESPMachines",
-   Callback = function(Value)
-      print("ESP Machines:", Value)
-   end,
-})
-
-ESPTab:CreateToggle({
-   Name = "ESP Spirits",
-   CurrentValue = false,
-   Flag = "ESPSpirits",
-   Callback = function(Value)
-      print("ESP Spirits:", Value)
-   end,
-})
-
--- // Credits Tab
-local CreditsTab = Window:CreateTab("Credits", 4483362458)
-
-CreditsTab:CreateLabel("TZ Rayfield-like GUI")
-CreditsTab:CreateLabel("Made by: Ali_hhjjj")
-CreditsTab:CreateLabel("Helper: GoodJOBS3")
-CreditsTab:CreateLabel("Special thanks: Olivia")
-
-Rayfield:LoadConfiguration()
