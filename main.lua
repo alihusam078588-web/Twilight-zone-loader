@@ -1,31 +1,28 @@
--- Twilight Zone GUI (Rayfield Version, Fixed ESP + Teleports)
+-- Twilight Zone (Rayfield Edition)
 -- Creator: Ali_hhjjj | Tester/Helper: GOODJOBS3
--- Special Thanks: Olivia & Shelly (Riddance) for idea to use Rayfield
+-- Special Thanks: Thanks to Olivia (creator of Riddance Hub) and Shelly (Riddance manager) for giving Idea to use Rayfield
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- Load Rayfield UI
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone",
     LoadingTitle = "Twilight Zone Loader",
     LoadingSubtitle = "by Ali_hhjjj",
     ConfigurationSaving = {
-        Enabled = false,
-        FolderName = nil,
-        FileName = "TZ_Config"
+        Enabled = false
     },
-    KeySystem = false
+    Discord = {
+        Enabled = false
+    }
 })
 
--- ===== VARIABLES =====
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local staminaFlag, autoTeleportFlag, autoElevatorFlag = false, false, false
-local espMachinesOn, espSpiritsOn = false, false
-local espMap = {}
-
--- ===== UTIL =====
+-- // UTILITIES
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
@@ -33,20 +30,25 @@ local function findRepresentativePart(model)
     return model:FindFirstChildWhichIsA("BasePart", true)
 end
 
--- Get machines
+local function isFuseLike(name)
+    if not name then return false end
+    local s = tostring(name):lower()
+    return s:find("fuse") or s:find("fusebox")
+end
+
 local function gatherMachineParts()
     local parts = {}
-    local containers = {
-        Workspace:FindFirstChild("Machines"),
-        Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Machines"),
-        Workspace:FindFirstChild("CurrentRoom"),
-    }
+    local containers = {Workspace, Workspace:FindFirstChild("Machines"), Workspace:FindFirstChild("Floor")}
     for _, folder in ipairs(containers) do
-        if folder then
-            for _, obj in ipairs(folder:GetChildren()) do
-                if obj:IsA("Model") or obj:IsA("BasePart") then
-                    local rep = findRepresentativePart(obj)
-                    if rep then table.insert(parts, rep) end
+        if folder and folder.GetChildren then
+            for _, child in ipairs(folder:GetChildren()) do
+                if child:IsA("Model") then
+                    if not isFuseLike(child.Name) then
+                        local rep = findRepresentativePart(child)
+                        if rep then table.insert(parts, rep) end
+                    end
+                elseif child:IsA("BasePart") and not isFuseLike(child.Name) then
+                    table.insert(parts, child)
                 end
             end
         end
@@ -54,165 +56,145 @@ local function gatherMachineParts()
     return parts
 end
 
--- Teleports
 local function teleportToPart(part, yOffset)
-    yOffset = yOffset or 5
-    if not part then return end
+    if not part then return false end
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
-    if hrp then hrp.CFrame = part.CFrame + Vector3.new(0, yOffset, 0) end
+    if not hrp then return false end
+    hrp.CFrame = part.CFrame + Vector3.new(0, yOffset or 5, 0)
+    return true
 end
 
 local function teleportToRandomMachine()
-    local machines = gatherMachineParts()
-    if #machines > 0 then teleportToPart(machines[math.random(1,#machines)]) end
+    local parts = gatherMachineParts()
+    if #parts == 0 then return false end
+    return teleportToPart(parts[math.random(1,#parts)])
 end
 
 local function teleportToElevator()
     local elevator = Workspace:FindFirstChild("Elevator")
-    if not elevator then return end
-    local spawn = elevator:FindFirstChild("ElevatorSpawn") or findRepresentativePart(elevator)
-    if spawn then teleportToPart(spawn, 2) end
+    if not elevator then return false end
+    local spawn = elevator:FindFirstChild("ElevatorSpawn") or elevator:FindFirstChildWhichIsA("BasePart")
+    return spawn and teleportToPart(spawn, 2)
 end
 
--- ===== ESP =====
-local function createHighlightFor(target, color)
-    if not target or espMap[target] then return end
-    local hl = Instance.new("Highlight")
-    hl.Adornee = target
-    hl.FillColor, hl.OutlineColor = color, color
-    hl.FillTransparency = 0.55
-    hl.Parent = target
-    espMap[target] = hl
-end
-
+-- // ESP
+local espMachinesOn, espSpiritsOn = false, false
+local espMap = {}
 local function clearAllHighlights()
     for _, hl in pairs(espMap) do pcall(function() hl:Destroy() end) end
     espMap = {}
 end
 
 task.spawn(function()
-    while task.wait(1) do
+    while true do
         if espMachinesOn then
             for _, p in ipairs(gatherMachineParts()) do
                 if p and not espMap[p] then
-                    createHighlightFor(p, Color3.fromRGB(0,200,0))
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "TZ_HL"
+                    hl.Adornee = p:IsA("BasePart") and p or p.Parent
+                    hl.FillColor = Color3.fromRGB(0, 200, 0)
+                    hl.OutlineColor = Color3.fromRGB(0, 200, 0)
+                    hl.Parent = p
+                    espMap[p] = hl
                 end
             end
         end
-        if espSpiritsOn then
-            local containers = {
-                Workspace:FindFirstChild("Spirits"),
-                Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits")
-            }
-            for _, c in ipairs(containers) do
-                if c then
-                    for _, s in ipairs(c:GetChildren()) do
-                        if not espMap[s] then
-                            createHighlightFor(s, Color3.fromRGB(200,0,200))
-                        end
-                    end
+        if espSpiritsOn and Workspace:FindFirstChild("Spirits") then
+            for _, s in ipairs(Workspace.Spirits:GetChildren()) do
+                if s and not espMap[s] then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "TZ_HL"
+                    hl.Adornee = s
+                    hl.FillColor = Color3.fromRGB(200, 0, 200)
+                    hl.OutlineColor = Color3.fromRGB(200, 0, 200)
+                    hl.Parent = s
+                    espMap[s] = hl
                 end
             end
         end
-        if not espMachinesOn and not espSpiritsOn then clearAllHighlights() end
+        if not espMachinesOn and not espSpiritsOn then
+            clearAllHighlights()
+        end
+        task.wait(1)
     end
 end)
 
--- ===== GODMODE (always on) =====
+-- // ALWAYS-ON GODMODE
 task.spawn(function()
-    while task.wait(0.5) do
-        for _,v in ipairs(Workspace:GetDescendants()) do
-            if v and v.Name == "HitPlayer" then v:Destroy() end
+    while true do
+        for _, v in ipairs(Workspace:GetDescendants()) do
+            if v.Name == "HitPlayer" then v:Destroy() end
         end
+        task.wait(0.5)
     end
 end)
 
--- ===== AUTO SKILLCHECK (always on) =====
-do
-    local function attach(remote)
-        if remote:IsA("RemoteFunction") then
-            remote.OnClientInvoke = function() return 2 end
-        end
+-- // AUTO SKILLCHECK
+for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
+    if v:IsA("RemoteFunction") and v.Name:lower():find("skill") then
+        v.OnClientInvoke = function() return 2 end
     end
-    for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
-        if v:IsA("RemoteFunction") and tostring(v.Name):lower():find("skill") then
-            attach(v)
-        end
-    end
-    ReplicatedStorage.DescendantAdded:Connect(function(d)
-        if d:IsA("RemoteFunction") and tostring(d.Name):lower():find("skill") then
-            attach(d)
-        end
-    end)
 end
 
--- ===== INFINITE STAMINA =====
-local AddStamina = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("AddStamina")
+-- // AUTO FEATURES
+local autoTeleportFlag, autoElevatorFlag = false, false
+
 task.spawn(function()
-    while task.wait(0.2) do
-        if staminaFlag then
-            pcall(function() firesignal(AddStamina.OnClientEvent, 45) end)
-        end
+    while true do
+        if autoTeleportFlag then teleportToRandomMachine() end
+        task.wait(3)
     end
 end)
 
--- ===== AUTO TELEPORT =====
 task.spawn(function()
-    while task.wait(3) do
-        if autoTeleportFlag then
-            local parts = gatherMachineParts()
-            if #parts > 0 then
-                local target = parts[math.random(1,#parts)]
-                teleportToPart(target)
-                -- Machine Aura spam E
-                task.spawn(function()
-                    for _,v in ipairs(LocalPlayer.PlayerGui:GetDescendants()) do
-                        if v:IsA("TextButton") and v.Text == "E" then
-                            pcall(function() firesignal(v.MouseButton1Click) end)
-                        end
-                    end
-                end)
-            end
-        end
+    while true do
+        if autoElevatorFlag then teleportToElevator() end
+        task.wait(2)
     end
 end)
 
--- ===== AUTO ELEVATOR =====
-task.spawn(function()
-    while task.wait(1) do
-        if autoElevatorFlag then
-            local elevator = Workspace:FindFirstChild("Elevator")
-            if elevator then
-                local tele = elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
-                local msg = tele and tele:FindFirstChild("Message")
-                if msg and msg.Enabled then
-                    teleportToElevator()
-                end
-            end
-        end
-    end
-end)
+-- // TABS
+local EspTab = Window:CreateTab("ESP", 4483362458)
+EspTab:CreateToggle({
+    Name = "ESP Machines",
+    CurrentValue = false,
+    Callback = function(Value) espMachinesOn = Value end
+})
+EspTab:CreateToggle({
+    Name = "ESP Spirits",
+    CurrentValue = false,
+    Callback = function(Value) espSpiritsOn = Value end
+})
 
--- ===== GUI TABS =====
-local TabESP = Window:CreateTab("ESP", 4483362458)
-TabESP:CreateToggle({Name="ESP Machines",CurrentValue=false,Callback=function(v) espMachinesOn=v; if not v then clearAllHighlights() end end})
-TabESP:CreateToggle({Name="ESP Spirits",CurrentValue=false,Callback=function(v) espSpiritsOn=v; if not v then clearAllHighlights() end end})
+local TeleportTab = Window:CreateTab("Teleport", 4483362458)
+TeleportTab:CreateButton({
+    Name = "Teleport to Random Machine",
+    Callback = teleportToRandomMachine
+})
+TeleportTab:CreateButton({
+    Name = "Teleport to Elevator",
+    Callback = teleportToElevator
+})
 
-local TabTP = Window:CreateTab("Teleport", 4483362458)
-TabTP:CreateButton({Name="Teleport to Random Machine",Callback=teleportToRandomMachine})
-TabTP:CreateButton({Name="Teleport to Elevator",Callback=teleportToElevator})
+local AutoFarmTab = Window:CreateTab("Auto Farm", 4483362458)
+AutoFarmTab:CreateToggle({
+    Name = "Auto Teleport to Machine",
+    CurrentValue = false,
+    Callback = function(Value) autoTeleportFlag = Value end
+})
+AutoFarmTab:CreateToggle({
+    Name = "Auto Teleport to Elevator",
+    CurrentValue = false,
+    Callback = function(Value) autoElevatorFlag = Value end
+})
 
-local TabAuto = Window:CreateTab("Auto Farm", 4483362458)
-TabAuto:CreateToggle({Name="Auto Teleport to Machine (with Aura)",CurrentValue=false,Callback=function(v) autoTeleportFlag=v end})
-TabAuto:CreateToggle({Name="Auto Teleport to Elevator",CurrentValue=false,Callback=function(v) autoElevatorFlag=v end})
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+PlayerTab:CreateLabel("Godmode: ENABLED")
+PlayerTab:CreateLabel("Auto Skillcheck: ENABLED")
 
-local TabPlayer = Window:CreateTab("Player", 4483362458)
-TabPlayer:CreateToggle({Name="Infinite Stamina",CurrentValue=false,Callback=function(v) staminaFlag=v end})
-TabPlayer:CreateLabel("Godmode: ENABLED")
-TabPlayer:CreateLabel("Auto SkillCheck: ACTIVE")
-
-local TabCredits = Window:CreateTab("Credits", 4483362458)
-TabCredits:CreateLabel("Creator: Ali_hhjjj")
-TabCredits:CreateLabel("Tester/Helper: GOODJOBS3")
-TabCredits:CreateLabel("Special Thanks: Olivia & Shelly (Riddance) for idea to use Rayfield")
+local CreditsTab = Window:CreateTab("Credits", 4483362458)
+CreditsTab:CreateLabel("Creator: Ali_hhjjj")
+CreditsTab:CreateLabel("Tester/Helper: GOODJOBS3")
+CreditsTab:CreateLabel("Special Thanks: Olivia (creator of Riddance Hub) & Shelly (Riddance manager)")
