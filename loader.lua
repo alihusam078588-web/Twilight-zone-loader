@@ -1,6 +1,4 @@
 -- Twilight Zone Loader
--- Loads main.lua from GitHub repo
-
 local url = "https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/main.lua"
 
 local success, err = pcall(function()
