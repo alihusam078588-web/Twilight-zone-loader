@@ -1,42 +1,15 @@
--- main.lua
--- Twilight Zone Hub (Rayfield)
--- Creator: Ali_hhjjj | Tester/Helper: GoodJOBS3
--- Special Thanks: Olivia (Riddance Hub) & Shelly (Riddance Manager) for idea to use Rayfield
+-- Twilight Zone All-in-One (Rayfield Edition, Fixed)
+-- Features: ESP (Machines/Spirits), Teleport (Nearest/Random/Elevator), Auto Teleport, Auto Elevator,
+-- Auto SkillCheck, Infinite Stamina, Godmode
+-- Created by Ali_hhjjj | Special Thanks: Olivia & Shelly (Rayfield idea) | Tester: GoodJOBS3
 
--- Services
+-- // Services
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
+local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Load Rayfield (change URL if using a different host)
-local ok, Rayfield = pcall(function()
-    return loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-end)
-if not ok or not Rayfield then
-    warn("[TZ] Rayfield failed to load. Make sure executor allows HttpGet and the URL is reachable.")
-    return
-end
-
-local Window = Rayfield:CreateWindow({
-    Name = "Twilight Zone",
-    LoadingTitle = "Twilight Zone",
-    LoadingSubtitle = "by Ali_hhjjj",
-    ConfigurationSaving = { Enabled = true, FolderName = "TZ_Hub", FileName = "TZ_Config" }
-})
-
-local function tzLog(...) pcall(print, "[TZ]", ...) end
-
--- ---------- Utilities ----------
-local function isFuseLike(name)
-    if not name then return false end
-    local s = tostring(name):lower()
-    return s:find("fuse") or s:find("fusebox") or s:find("fuse_box")
-end
-
+-- // Util
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
@@ -49,32 +22,55 @@ local function findRepresentativePart(model)
     return model:FindFirstChildWhichIsA("BasePart", true)
 end
 
--- gather machine entries: model, representative part, proximity prompt (if any)
-local function gatherMachineEntries()
-    local entries = {}
-    local floor = Workspace:FindFirstChild("Floor")
-    local machinesFolder = (floor and floor:FindFirstChild("Machines")) or Workspace:FindFirstChild("Machines")
-    if not machinesFolder then
-        -- fallback: search workspace children models (filter fuse-like)
-        for _,c in ipairs(Workspace:GetChildren()) do
-            if c:IsA("Model") and not isFuseLike(c.Name) then
-                table.insert(entries, { model = c, part = findRepresentativePart(c), prompt = c:FindFirstChildWhichIsA("ProximityPrompt", true) })
-            end
-        end
-        return entries
-    end
-
-    for _, child in ipairs(machinesFolder:GetChildren()) do
-        if child and child:IsA("Model") and not isFuseLike(child.Name) then
-            local rep = findRepresentativePart(child)
-            local prompt = child:FindFirstChildWhichIsA("ProximityPrompt", true)
-            table.insert(entries, { model = child, part = rep, prompt = prompt })
-        end
-    end
-    return entries
+local function isFuseLike(name)
+    if not name then return false end
+    local s = tostring(name):lower()
+    return s:find("fuse") or s:find("fusebox") or s:find("fuse_box")
 end
 
--- ---------- Teleport helpers ----------
+-- // Godmode (remove HitPlayer)
+task.spawn(function()
+    while true do
+        pcall(function()
+            if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+                for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
+                    for _, v in ipairs(folder:GetChildren()) do
+                        if v.Name == "HitPlayer" then v:Destroy() end
+                    end
+                end
+            end
+        end)
+        task.wait(0.5)
+    end
+end)
+
+-- // Gather machines
+local function gatherMachineParts()
+    local parts = {}
+    local machinesFolder = Workspace:FindFirstChild("Machines") or (Workspace.Floor and Workspace.Floor:FindFirstChild("Machines"))
+    if machinesFolder then
+        for _, machine in ipairs(machinesFolder:GetChildren()) do
+            if machine:IsA("Model") and not isFuseLike(machine.Name) then
+                local rep = findRepresentativePart(machine)
+                if rep then table.insert(parts, rep) end
+            end
+        end
+    end
+    return parts
+end
+
+local function findNearestMachinePart()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    local parts = gatherMachineParts()
+    if #parts == 0 then return nil end
+    table.sort(parts, function(a,b) return (a.Position - hrp.Position).Magnitude < (b.Position - hrp.Position).Magnitude end)
+    return parts[1]
+end
+
+-- // Teleports
 local function teleportToPart(part, yOffset)
     yOffset = yOffset or 5
     if not part then return false end
@@ -85,217 +81,109 @@ local function teleportToPart(part, yOffset)
     return true
 end
 
--- manual teleport to random machine (NO aura)
-local function teleportToRandomMachineManual()
-    local entries = gatherMachineEntries()
-    if #entries == 0 then return false end
-    local pick = entries[math.random(1, #entries)]
-    if pick and (pick.part or pick.model) then
-        local part = pick.part or findRepresentativePart(pick.model)
-        return teleportToPart(part)
-    end
-    return false
+local function teleportToRandomMachine()
+    local parts = gatherMachineParts()
+    if #parts == 0 then return false end
+    return teleportToPart(parts[math.random(1,#parts)])
+end
+
+local function teleportToNearestMachine()
+    local p = findNearestMachinePart()
+    if not p then return false end
+    return teleportToPart(p)
 end
 
 local function teleportToElevator()
     local elevator = Workspace:FindFirstChild("Elevator")
     if not elevator then return false end
-    local spawn = elevator:FindFirstChild("ElevatorSpawn") or elevator:FindFirstChild("Elevator1") or elevator:FindFirstChildWhichIsA("BasePart", true)
+    local spawn = elevator:FindFirstChild("ElevatorSpawn") or elevator:FindFirstChild("Elevator1") or elevator:FindFirstChild("Elevator2") or findRepresentativePart(elevator)
     if not spawn then return false end
     return teleportToPart(spawn, 2)
 end
 
--- attempt to "use" a machine: try fire proximity prompt (preferred), else VirtualInputManager spam E
-local function interactWithPrompt(prompt)
-    if not prompt then return end
-    pcall(function()
-        -- prefer built-in function if available
-        if type(fireproximityprompt) == "function" then
-            fireproximityprompt(prompt)
-        else
-            local vim = game:GetService("VirtualInputManager")
-            vim:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-            task.wait(0.06)
-            vim:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-        end
-    end)
-end
-
--- ---------- ESP ----------
+-- // ESP
 local espMachinesOn, espSpiritsOn = false, false
 local espMap = {}
 
 local function createHighlightFor(target, color)
-    if not target or espMap[target] then return end
-    pcall(function()
-        local h = Instance.new("Highlight")
-        h.Name = "TZ_HL"
-        h.Adornee = target
-        h.FillColor = color
-        h.OutlineColor = color
-        h.FillTransparency = 0.55
-        -- parent to CoreGui if available, else PlayerGui (some executors restrict CoreGui parenting)
-        local parentOk = pcall(function() h.Parent = game:GetService("CoreGui") end)
-        if not parentOk then h.Parent = PlayerGui end
-        espMap[target] = h
-    end)
+    if not target or not target.Parent or espMap[target] then return end
+    local hl = Instance.new("Highlight")
+    hl.Name = "TZ_HL"
+    hl.Adornee = target
+    hl.FillColor, hl.OutlineColor = color, color
+    hl.FillTransparency = 0.55
+    hl.Parent = target
+    espMap[target] = hl
 end
 
 local function clearAllHighlights()
-    for k,v in pairs(espMap) do
-        pcall(function() v:Destroy() end)
-    end
+    for _, hl in pairs(espMap) do pcall(function() hl:Destroy() end) end
     espMap = {}
 end
 
 task.spawn(function()
     while true do
+        -- Machines ESP
         if espMachinesOn then
-            for _, e in ipairs(gatherMachineEntries()) do
-                local target = e.model or e.part
-                if target and not espMap[target] then createHighlightFor(target, Color3.fromRGB(0,200,0)) end
-            end
-        end
-        if espSpiritsOn then
-            local floor = Workspace:FindFirstChild("Floor")
-            local cont = (floor and floor:FindFirstChild("Spirits")) or Workspace:FindFirstChild("Spirits")
-            if cont then
-                for _, s in ipairs(cont:GetChildren()) do
-                    if s and not espMap[s] then createHighlightFor(s, Color3.fromRGB(200,0,200)) end
+            for _, machine in ipairs(gatherMachineParts()) do
+                if machine and machine.Parent and not espMap[machine.Parent] then
+                    createHighlightFor(machine.Parent, Color3.fromRGB(0,200,0))
                 end
             end
         end
+
+        -- Spirits ESP
+        if espSpiritsOn then
+            if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+                for _, spiritFolder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
+                    if spiritFolder:IsA("Model") and not espMap[spiritFolder] then
+                        createHighlightFor(spiritFolder, Color3.fromRGB(200,0,200))
+                    end
+                end
+            end
+        end
+
         if not espMachinesOn and not espSpiritsOn then clearAllHighlights() end
-        task.wait(0.9)
+        task.wait(1)
     end
 end)
 
--- ---------- Godmode (targeted client-only removal of HitPlayer) ----------
+-- // AutoSkill
 do
-    local function destroyIfHitPlayer(inst)
-        if not inst then return end
-        pcall(function()
-            if inst:IsA("BasePart") and inst.Name == "HitPlayer" then
-                inst:Destroy()
-            end
-        end)
-    end
-
-    local function scanAndDestroy(parent)
-        if not parent then return end
-        for _,desc in ipairs(parent:GetDescendants()) do
-            destroyIfHitPlayer(desc)
+    local function tryAttachSkillCheck(remote)
+        if not remote then return end
+        if remote:IsA("RemoteFunction") then
+            remote.OnClientInvoke = function(...) return 2 end
+        elseif remote:IsA("RemoteEvent") then
+            remote.OnClientEvent:Connect(function(...) end)
         end
     end
-
-    -- targeted: remove HitPlayer in Floor.Spirits numeric children (where you said they appear)
-    local floor = Workspace:FindFirstChild("Floor")
-    local spirits = floor and floor:FindFirstChild("Spirits")
-    if spirits then
-        for _, child in ipairs(spirits:GetChildren()) do
-            scanAndDestroy(child)
-            child.DescendantAdded:Connect(function(d) destroyIfHitPlayer(d) end)
-        end
-        spirits.ChildAdded:Connect(function(newChild)
-            scanAndDestroy(newChild)
-            newChild.DescendantAdded:Connect(function(d) destroyIfHitPlayer(d) end)
-        end)
-    end
-
-    -- also remove HitPlayer under the local character only (client-side)
-    local function removeHitInCharacter(char)
-        if not char then return end
-        scanAndDestroy(char)
-        char.DescendantAdded:Connect(function(d) destroyIfHitPlayer(d) end)
-    end
-    if LocalPlayer.Character then removeHitInCharacter(LocalPlayer.Character) end
-    LocalPlayer.CharacterAdded:Connect(removeHitInCharacter)
-
-    -- fallback: global workspace watcher to remove any HitPlayer parts created anywhere (client-side)
-    scanAndDestroy(Workspace)
-    Workspace.DescendantAdded:Connect(function(d) destroyIfHitPlayer(d) end)
-
-    tzLog("Godmode: HitPlayer removal listeners set (client-side).")
-end
-
--- ---------- AutoSkill (always-on, client-side) ----------
-do
-    local function attachSkill(remote)
-        pcall(function()
-            if remote:IsA("RemoteFunction") then
-                remote.OnClientInvoke = function() return 2 end
-            elseif remote:IsA("RemoteEvent") then
-                remote.OnClientEvent:Connect(function() end)
-            end
-        end)
-    end
-    for _,v in ipairs(ReplicatedStorage:GetDescendants()) do
+    for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
         if (v:IsA("RemoteFunction") or v:IsA("RemoteEvent")) and tostring(v.Name):lower():find("skill") then
-            attachSkill(v)
+            tryAttachSkillCheck(v)
         end
     end
-    ReplicatedStorage.DescendantAdded:Connect(function(d)
-        if (d:IsA("RemoteFunction") or d:IsA("RemoteEvent")) and tostring(d.Name):lower():find("skill") then
-            attachSkill(d)
+    ReplicatedStorage.DescendantAdded:Connect(function(desc)
+        if (desc:IsA("RemoteFunction") or desc:IsA("RemoteEvent")) and tostring(desc.Name):lower():find("skill") then
+            tryAttachSkillCheck(desc)
         end
     end)
-    tzLog("AutoSkill: attached to skill remotes (client-side).")
 end
 
--- ---------- Infinite Stamina (attempt, client-side) ----------
+-- // Infinite Stamina
 local staminaFlag = false
-local function findAddStaminaRemote()
-    local ok, rem = pcall(function()
-        local r = ReplicatedStorage:FindFirstChild("Remotes")
-        if r and r:FindFirstChild("Gameplay") and r.Gameplay:FindFirstChild("AddStamina") then
-            return r.Gameplay.AddStamina
-        end
-        return nil
-    end)
-    return ok and rem or nil
-end
-local AddStaminaRemote = findAddStaminaRemote()
-
--- try to keep local stamina numeric values high
-local function fillLocalStaminaValues()
-    pcall(function()
-        for _, obj in ipairs(LocalPlayer:GetDescendants()) do
-            if (obj:IsA("NumberValue") or obj:IsA("IntValue")) and tostring(obj.Name):lower():find("stamina") then
-                obj.Value = math.max(obj.Value, 100)
-            end
-        end
-        local char = LocalPlayer.Character
-        if char then
-            for _, obj in ipairs(char:GetDescendants()) do
-                if (obj:IsA("NumberValue") or obj:IsA("IntValue")) and tostring(obj.Name):lower():find("stamina") then
-                    obj.Value = math.max(obj.Value, 100)
-                end
-            end
-        end
-    end)
-end
+local AddStamina = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("AddStamina")
 
 task.spawn(function()
     while true do
         if staminaFlag then
-            -- 1) Fire discovered AddStamina remote if present
-            if AddStaminaRemote then
-                pcall(function()
-                    if AddStaminaRemote.FireClient then
-                        AddStaminaRemote:FireClient(LocalPlayer, 45)
-                    elseif AddStaminaRemote.FireServer then
-                        AddStaminaRemote:FireServer(45)
-                    end
-                end)
-            end
-            -- 2) patch local values
-            fillLocalStaminaValues()
+            pcall(function() firesignal(AddStamina.OnClientEvent, 45) end)
         end
-        task.wait(0.25)
+        task.wait(0.2)
     end
 end)
 
--- ---------- Auto Elevator (watch message) ----------
+-- // Auto Elevator
 local autoElevatorFlag = false
 task.spawn(function()
     while true do
@@ -305,8 +193,8 @@ task.spawn(function()
                 local tele = elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
                 local msg = tele and tele:FindFirstChild("Message")
                 if msg and msg.Enabled then
-                    pcall(teleportToElevator)
-                    repeat task.wait(1) until not (tele and tele:FindFirstChild("Message") and tele.Message.Enabled)
+                    teleportToElevator()
+                    repeat task.wait(1) until not msg.Enabled
                 end
             end
         end
@@ -314,72 +202,46 @@ task.spawn(function()
     end
 end)
 
--- ---------- Auto Teleport to machine (with aura spam) ----------
--- Behavior: when autoTeleportFlag is ON, script prefers machines that have a ProximityPrompt (machine aura).
--- If none have prompts, it will still pick random machine entries.
+-- // Auto Teleport
 local autoTeleportFlag = false
-local machineAuraEnabled = true -- controlled by toggle (auto teleport toggle turns aura on)
 task.spawn(function()
     while true do
         if autoTeleportFlag then
-            local entries = gatherMachineEntries()
-            if #entries > 0 then
-                -- prefer prompt-bearing machines
-                local promptList = {}
-                for _,e in ipairs(entries) do if e.prompt then table.insert(promptList, e) end end
-                local pickList = (#promptList > 0) and promptList or entries
-                local pick = pickList[math.random(1,#pickList)]
-                if pick and (pick.part or pick.model) then
-                    local part = pick.part or findRepresentativePart(pick.model)
-                    teleportToPart(part)
-                    if machineAuraEnabled and pick.prompt then
-                        -- spam the prompt a few times
-                        for i = 1, 4 do
-                            interactWithPrompt(pick.prompt)
-                            task.wait(0.08)
-                        end
-                    end
-                end
-            else
-                -- no machines found; wait a bit
-                task.wait(1)
-            end
-            task.wait(1.2)
+            local parts = gatherMachineParts()
+            if #parts > 0 then teleportToPart(parts[math.random(1,#parts)]) end
         end
-        task.wait(0.25)
+        task.wait(3)
     end
 end)
 
--- ---------- GUI (Rayfield) ----------
-local tabESP = Window:CreateTab("ESP")
-tabESP:CreateToggle({ Name = "ESP Machines", CurrentValue = false, Callback = function(v) espMachinesOn = v if not v then clearAllHighlights() end end })
-tabESP:CreateToggle({ Name = "ESP Spirits", CurrentValue = false, Callback = function(v) espSpiritsOn = v if not v then clearAllHighlights() end end })
+-- // Rayfield GUI
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local tabTP = Window:CreateTab("Teleport")
-tabTP:CreateButton({ Name = "Teleport to Random Machine (manual, NO aura)", Callback = function() teleportToRandomMachineManual() end })
-tabTP:CreateButton({ Name = "Teleport to Elevator", Callback = teleportToElevator })
+local Window = Rayfield:CreateWindow({
+   Name = "Twilight Zone Hub",
+   LoadingTitle = "Twilight Zone Loader",
+   LoadingSubtitle = "by Ali_hhjjj",
+   ConfigurationSaving = { Enabled = false },
+   Discord = { Enabled = false }
+})
 
-local tabAuto = Window:CreateTab("Auto Farm")
-tabAuto:CreateToggle({ Name = "Auto Teleport to Machines (with aura)", CurrentValue = false, Callback = function(v) autoTeleportFlag = v machineAuraEnabled = v end })
-tabAuto:CreateToggle({ Name = "Auto Elevator (when message appears)", CurrentValue = false, Callback = function(v) autoElevatorFlag = v end })
-tabAuto:CreateButton({ Name = "Teleport Now (random machine)", Callback = function() teleportToRandomMachineManual() end })
+local TabMain = Window:CreateTab("Main")
+local TabESP = Window:CreateTab("ESP")
+local TabCredits = Window:CreateTab("Credits")
 
-local tabPlayer = Window:CreateTab("Player")
-tabPlayer:CreateSlider({ Name = "WalkSpeed", Range = {8, 250}, Increment = 1, CurrentValue = 16, Callback = function(v)
-    local char = LocalPlayer.Character
-    if char then
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then pcall(function() hum.WalkSpeed = v end) end
-    end
-end})
-tabPlayer:CreateToggle({ Name = "Infinite Stamina (attempt)", CurrentValue = false, Callback = function(v) staminaFlag = v end })
-tabPlayer:CreateLabel("Godmode: ACTIVE (client-side HitPlayer removal)")
-tabPlayer:CreateLabel("Auto SkillCheck: ACTIVE (client-side)")
+-- ESP Tab
+TabESP:CreateToggle({Name = "ESP Machines", CurrentValue = false, Callback = function(v) espMachinesOn = v; if not v then clearAllHighlights() end end})
+TabESP:CreateToggle({Name = "ESP Spirits", CurrentValue = false, Callback = function(v) espSpiritsOn = v; if not v then clearAllHighlights() end end})
 
-local tabCredits = Window:CreateTab("Credits")
-tabCredits:CreateLabel("Creator: Ali_hhjjj")
-tabCredits:CreateLabel("Tester/Helper: GoodJOBS3")
-tabCredits:CreateLabel("Special Thanks: Olivia (Riddance Hub) & Shelly (Riddance Manager)")
+-- Main Tab
+TabMain:CreateButton({Name = "Teleport: Nearest Machine", Callback = teleportToNearestMachine})
+TabMain:CreateButton({Name = "Teleport: Random Machine", Callback = teleportToRandomMachine})
+TabMain:CreateButton({Name = "Teleport: Elevator", Callback = teleportToElevator})
+TabMain:CreateToggle({Name = "Auto Teleport Machines", CurrentValue = false, Callback = function(v) autoTeleportFlag = v end})
+TabMain:CreateToggle({Name = "Auto Elevator", CurrentValue = false, Callback = function(v) autoElevatorFlag = v end})
+TabMain:CreateToggle({Name = "Infinite Stamina", CurrentValue = false, Callback = function(v) staminaFlag = v end})
 
-Rayfield:LoadConfiguration()
-tzLog("Twilight Zone (Rayfield) loaded.")
+-- Credits Tab
+TabCredits:CreateLabel("Created by Ali_hhjjj")
+TabCredits:CreateLabel("Tester: GoodJOBS3")
+TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
