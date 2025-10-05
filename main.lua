@@ -245,3 +245,11 @@ TabMain:CreateToggle({Name = "Infinite Stamina", CurrentValue = false, Callback 
 TabCredits:CreateLabel("Created by Ali_hhjjj")
 TabCredits:CreateLabel("Tester: GoodJOBS3")
 TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
+-- [[ TZ Script Notification ]]
+-- Made by Ali_hh
+
+game.StarterGui:SetCore("SendNotification", {
+    Title = "TZ Script 💫",
+    Text = "Godmode and Auto Skillcheck is ACTIVE!",
+    Duration = 8
+})
