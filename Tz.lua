@@ -408,6 +408,7 @@ end
 
 -- ===== Fallback GUI creation (if WindUI failed) =====
 local fallback = false
+local mainFrame, visualsFrame, playerFrame, infoFrame
 if not Window then
     fallback = true
     -- build a minimal UI similar to earlier fallback (simple ScreenGui)
@@ -485,10 +486,10 @@ if not Window then
         return f
     end
 
-    local mainFrame = makeContentFrame()
-    local visualsFrame = makeContentFrame(); visualsFrame.Visible = false
-    local playerFrame = makeContentFrame(); playerFrame.Visible = false
-    local infoFrame = makeContentFrame(); infoFrame.Visible = false
+    mainFrame = makeContentFrame()
+    visualsFrame = makeContentFrame(); visualsFrame.Visible = false
+    playerFrame = makeContentFrame(); playerFrame.Visible = false
+    infoFrame = makeContentFrame(); infoFrame.Visible = false
 
     local function showTab(frame)
         mainFrame.Visible = false
@@ -575,4 +576,4 @@ if not Window then
         container.Parent = parent
 
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.55, 
+       
