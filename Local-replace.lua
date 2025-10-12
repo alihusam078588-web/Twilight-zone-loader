@@ -1,50 +1,50 @@
--- Local-only visual "replace player" GUI (KRNL-friendly)
--- Paste into your executor and run in-game (private server recommended)
-
+-- Local Replace (simple GUI) - visual only
+-- Put this file as raw on GitHub and load with loadstring(game:HttpGet("RAW_URL"))()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
--- config
-local GUI_NAME = "LocalReplaceGUI_v1"
+-- Basic config
+local GUI_NAME = "LocalReplaceSimple_v1"
 local THUMB_TYPE = Enum.ThumbnailType.HeadShot
 local THUMB_SIZE = Enum.ThumbnailSize.Size48x48
 
--- state
-local aliasMap = {}      -- [player] = { aliasName=string, thumb=url }
-local billboardMap = {}  -- [player] = ScreenGui (holds BillboardGui)
-local UI = {}
+-- State
+local aliasMap = {}      -- [player] = {aliasName=string, thumb=url}
+local billboardMap = {}  -- [player] = ScreenGui
+local UI = {}            -- hold main UI refs
 
+-- Safe parent helper
 local function safeParent(inst, parent)
     if inst and parent then
         pcall(function() inst.Parent = parent end)
     end
 end
 
+-- Fetch userId and thumbnail (returns id, url or nil,nil)
 local function fetchUserIdAndThumb(username)
-    local ok, userId = pcall(Players.GetUserIdFromNameAsync, Players, username)
-    if not ok or not userId then return nil, nil end
+    local ok, id = pcall(Players.GetUserIdFromNameAsync, Players, username)
+    if not ok or not id then return nil, nil end
     local ok2, thumb = pcall(function()
-        return Players:GetUserThumbnailAsync(userId, THUMB_TYPE, THUMB_SIZE)
+        return Players:GetUserThumbnailAsync(id, THUMB_TYPE, THUMB_SIZE)
     end)
     if not ok2 then thumb = nil end
-    return userId, thumb
+    return id, thumb
 end
 
--- create billboard UI for a player (stored in billboardMap)
+-- Create a billboard gui above a player's head (ScreenGui parented to PlayerGui)
 local function makeBillboardForPlayer(plr)
     if not plr or not plr.Character then return nil end
     if billboardMap[plr] then
         pcall(function() billboardMap[plr]:Destroy() end)
         billboardMap[plr] = nil
     end
-
     local head = plr.Character:FindFirstChild("Head") or plr.Character:FindFirstChildWhichIsA("BasePart")
     if not head then return nil end
 
     local screen = Instance.new("ScreenGui")
-    screen.Name = GUI_NAME .. "_Billboard_" .. plr.Name
+    screen.Name = GUI_NAME .. "_BB_" .. plr.Name
     screen.ResetOnSpawn = false
     safeParent(screen, LocalPlayer:WaitForChild("PlayerGui"))
 
@@ -120,7 +120,7 @@ local function updateBillboard(plr)
     end
 end
 
--- local leaderboard (visual only)
+-- Local leaderboard
 local function createLocalLeaderboard()
     if UI.Leaderboard then UI.Leaderboard:Destroy() end
     local screen = Instance.new("ScreenGui")
@@ -131,7 +131,7 @@ local function createLocalLeaderboard()
     local frame = Instance.new("Frame", screen)
     frame.AnchorPoint = Vector2.new(1,0)
     frame.Position = UDim2.new(0.98,0,0.02,0)
-    frame.Size = UDim2.new(0,260,0,300)
+    frame.Size = UDim2.new(0,250,0,260)
     frame.BackgroundTransparency = 0.45
     frame.BackgroundColor3 = Color3.fromRGB(18,18,20)
     frame.BorderSizePixel = 0
@@ -146,7 +146,7 @@ local function createLocalLeaderboard()
 
     local sc = Instance.new("ScrollingFrame", frame)
     sc.Position = UDim2.new(0,0,0,28)
-    sc.Size = UDim2.new(1,0,0,272)
+    sc.Size = UDim2.new(1,0,0,232)
     sc.BackgroundTransparency = 1
     sc.ScrollBarThickness = 6
 
@@ -170,7 +170,7 @@ local function refreshLocalLeaderboard()
         row.BackgroundTransparency = 1
 
         local name = Instance.new("TextLabel", row)
-        name.Size = UDim2.new(0.65, 0, 1, 0)
+        name.Size = UDim2.new(0.7, 0, 1, 0)
         name.Position = UDim2.new(0, 6, 0, 0)
         name.BackgroundTransparency = 1
         local alias = aliasMap[plr]
@@ -186,7 +186,7 @@ local function refreshLocalLeaderboard()
 
         local thumb = Instance.new("ImageLabel", row)
         thumb.Size = UDim2.new(0,28,0,28)
-        thumb.Position = UDim2.new(0.75, 0, 0.08, 0)
+        thumb.Position = UDim2.new(0.74, 0, 0.08, 0)
         thumb.BackgroundTransparency = 1
         if alias and alias.thumb then thumb.Image = alias.thumb else thumb.Image = "" end
 
@@ -195,7 +195,7 @@ local function refreshLocalLeaderboard()
     sc.CanvasSize = UDim2.new(0,0,0, math.max(1, (#Players:GetPlayers() * 36)))
 end
 
--- Main manager GUI
+-- Main GUI (select player, input alias, apply)
 local function createMainGui()
     if UI.Main then UI.Main:Destroy() end
     local screen = Instance.new("ScreenGui")
@@ -204,8 +204,8 @@ local function createMainGui()
     safeParent(screen, LocalPlayer:WaitForChild("PlayerGui"))
 
     local frame = Instance.new("Frame", screen)
-    frame.Size = UDim2.new(0, 360, 0, 420)
-    frame.Position = UDim2.new(0.02, 0, 0.06, 0)
+    frame.Size = UDim2.new(0, 340, 0, 360)
+    frame.Position = UDim2.new(0.02, 0, 0.08, 0)
     frame.BackgroundColor3 = Color3.fromRGB(20,20,24)
     frame.BorderSizePixel = 0
     frame.Active = true
@@ -243,7 +243,7 @@ local function createMainGui()
 
     local listFrame = Instance.new("ScrollingFrame", frame)
     listFrame.Position = UDim2.new(0, 8, 0, 68)
-    listFrame.Size = UDim2.new(1, -16, 0, 300)
+    listFrame.Size = UDim2.new(1, -16, 0, 200)
     listFrame.CanvasSize = UDim2.new(0,0)
     listFrame.BackgroundTransparency = 1
     listFrame.ScrollBarThickness = 6
@@ -264,12 +264,12 @@ local function createMainGui()
                 end
 
                 local row = Instance.new("Frame", listFrame)
-                row.Size = UDim2.new(1, 0, 0, 40)
+                row.Size = UDim2.new(1, 0, 0, 36)
                 row.BackgroundTransparency = 1
                 row.LayoutOrder = order
 
                 local nameLbl = Instance.new("TextLabel", row)
-                nameLbl.Size = UDim2.new(0.6, 0, 1, 0)
+                nameLbl.Size = UDim2.new(0.64, 0, 1, 0)
                 nameLbl.Position = UDim2.new(0, 6, 0, 0)
                 nameLbl.BackgroundTransparency = 1
                 local alias = aliasMap[plr]
@@ -284,8 +284,8 @@ local function createMainGui()
                 nameLbl.TextXAlignment = Enum.TextXAlignment.Left
 
                 local btn = Instance.new("TextButton", row)
-                btn.Size = UDim2.new(0.28, -8, 0.75, 0)
-                btn.Position = UDim2.new(0.66, 0, 0.12, 0)
+                btn.Size = UDim2.new(0.32, -8, 0.78, 0)
+                btn.Position = UDim2.new(0.66, 0, 0.11, 0)
                 btn.Text = "Manage"
                 btn.Font = Enum.Font.GothamSemibold
                 btn.TextSize = 13
@@ -305,23 +305,29 @@ local function createMainGui()
             end
             ::cont::
         end
-        listFrame.CanvasSize = UDim2.new(0,0,0, math.max(1, (order*46)))
+        listFrame.CanvasSize = UDim2.new(0,0,0, math.max(1, (order*40)))
     end
 
-    refreshBtn.MouseButton1Click:Connect(function() populateList(search.Text); refreshLocalLeaderboard() end)
-    closeBtn.MouseButton1Click:Connect(function() screen.Enabled = false end)
+    refreshBtn.MouseButton1Click:Connect(function()
+        populateList(search.Text)
+        refreshLocalLeaderboard()
+    end)
+    closeBtn.MouseButton1Click:Connect(function()
+        screen.Enabled = false
+    end)
     search:GetPropertyChangedSignal("Text"):Connect(function() populateList(search.Text) end)
 
+    -- edit subpanel
     local edit = Instance.new("Frame", frame)
-    edit.Size = UDim2.new(0, 340, 0, 90)
-    edit.Position = UDim2.new(0, 10, 0, 372)
+    edit.Size = UDim2.new(0, 320, 0, 76)
+    edit.Position = UDim2.new(0, 10, 0, 276)
     edit.BackgroundColor3 = Color3.fromRGB(16,16,18)
     edit.BorderSizePixel = 0
     edit.Name = "EditFrame"
 
     local editFor = Instance.new("TextLabel", edit)
     editFor.Name = "EditFor"
-    editFor.Size = UDim2.new(1, -12, 0, 24)
+    editFor.Size = UDim2.new(1, -12, 0, 20)
     editFor.Position = UDim2.new(0, 6, 0, 6)
     editFor.BackgroundTransparency = 1
     editFor.Font = Enum.Font.GothamBold
@@ -331,22 +337,22 @@ local function createMainGui()
 
     local input = Instance.new("TextBox", edit)
     input.Name = "EditInput"
-    input.Size = UDim2.new(1, -12, 0, 28)
-    input.Position = UDim2.new(0, 6, 0, 32)
-    input.PlaceholderText = "Enter target username (e.g. Ali_hhjjj)"
+    input.Size = UDim2.new(1, -12, 0, 26)
+    input.Position = UDim2.new(0, 6, 0, 28)
+    input.PlaceholderText = "Enter target username (exact)"
     input.ClearTextOnFocus = true
 
     local applyBtn = Instance.new("TextButton", edit)
-    applyBtn.Size = UDim2.new(0.32, 0, 0, 26)
-    applyBtn.Position = UDim2.new(0.02, 0, 0.75, -6)
+    applyBtn.Size = UDim2.new(0.48, -6, 0, 28)
+    applyBtn.Position = UDim2.new(0.02, 0, 0.82, -6)
     applyBtn.Text = "Apply"
     applyBtn.Font = Enum.Font.GothamSemibold
     applyBtn.BackgroundColor3 = Color3.fromRGB(40,140,40)
     applyBtn.TextColor3 = Color3.new(1,1,1)
 
     local removeBtn = Instance.new("TextButton", edit)
-    removeBtn.Size = UDim2.new(0.32, 0, 0, 26)
-    removeBtn.Position = UDim2.new(0.36, 0, 0.75, -6)
+    removeBtn.Size = UDim2.new(0.48, -6, 0, 28)
+    removeBtn.Position = UDim2.new(0.5, 0, 0.82, -6)
     removeBtn.Text = "Remove"
     removeBtn.Font = Enum.Font.GothamSemibold
     removeBtn.BackgroundColor3 = Color3.fromRGB(140,40,40)
@@ -361,7 +367,7 @@ local function createMainGui()
     refreshLocalLeaderboard()
 end
 
--- lifecycle bindings
+-- Wiring lifecycle
 for _, p in ipairs(Players:GetPlayers()) do
     if p ~= LocalPlayer then
         p.CharacterAdded:Connect(function() task.wait(0.25); updateBillboard(p) end)
@@ -369,19 +375,11 @@ for _, p in ipairs(Players:GetPlayers()) do
     end
 end
 Players.PlayerAdded:Connect(function(p) task.wait(0.25); updateBillboard(p); refreshLocalLeaderboard() end)
-Players.PlayerRemoving:Connect(function(p) aliasMap[p]=nil if billboardMap[p] then pcall(function() billboardMap[p]:Destroy() end) billboardMap[p]=nil end refreshLocalLeaderboard() end)
+Players.PlayerRemoving:Connect(function(p) aliasMap[p] = nil if billboardMap[p] then pcall(function() billboardMap[p]:Destroy() end) billboardMap[p]=nil end refreshLocalLeaderboard() end)
 
--- create UIs
-createMainGui()
-createLocalLeaderboard()
-
--- apply/remove handlers
-UI.EditInput = UI.EditInput or UI.Main:FindFirstChildWhichIsA("Frame") and UI.Main:FindFirstChildWhichIsA("Frame"):FindFirstChild("EditInput")
--- wire apply/remove
-do
-    local applyBtn = UI.EditFrame and UI.EditFrame:FindFirstChildWhichIsA("TextButton")
-    -- We already created applyBtn as local earlier when building; find proper buttons:
-    -- safer approach: iterate children of EditFrame to find "Apply" and "Remove" by Text
+-- connect apply/remove buttons (safe lookup)
+local function wireEditButtons()
+    if not UI.EditFrame then return end
     local apply, remove
     for _, c in ipairs(UI.EditFrame:GetChildren()) do
         if c:IsA("TextButton") and c.Text == "Apply" then apply = c end
@@ -389,11 +387,9 @@ do
     end
     if apply then
         apply.MouseButton1Click:Connect(function()
-            local selected = nil
-            -- find selected player from UI.EditFor text (format "Editing: PlayerName")
             local txt = UI.EditFor and UI.EditFor.Text or ""
             local name = txt:match("^Editing:%s*(.+)$")
-            if name then selected = Players:FindFirstChild(name) end
+            local selected = name and Players:FindFirstChild(name)
             if not selected then StarterGui:SetCore("SendNotification",{Title="Replace",Text="No player selected",Duration=2}) return end
             local target = UI.EditInput and UI.EditInput.Text or ""
             if not target or target == "" then StarterGui:SetCore("SendNotification",{Title="Replace",Text="Enter a username",Duration=2}); return end
@@ -402,7 +398,7 @@ do
             aliasMap[selected] = { aliasName = target, thumb = thumb }
             updateBillboard(selected)
             refreshLocalLeaderboard()
-            StarterGui:SetCore("SendNotification",{Title="Replace",Text=("Applied local alias %s → %s"):format(selected.Name, target),Duration=3})
+            StarterGui:SetCore("SendNotification",{Title="Replace",Text=("Applied alias %s → %s"):format(selected.Name, target),Duration=3})
             UI.EditInput.Text = ""
         end)
     end
@@ -420,14 +416,19 @@ do
     end
 end
 
--- update loop keeps billboards fresh
+-- create UI
+createMainGui()
+createLocalLeaderboard()
+wireEditButtons()
+
+-- Heartbeat: keep billboards updated for character changes
 RunService.Heartbeat:Connect(function()
     for plr,_ in pairs(billboardMap) do
-        updateBillboard(plr)
+        if plr and plr.Character then updateBillboard(plr) end
     end
 end)
 
--- expose simple console helpers
+-- Expose console helpers
 _G.LocalReplace = _G.LocalReplace or {}
 _G.LocalReplace.assign = function(playerNameOrObj, targetUsername)
     local plr = nil
@@ -453,4 +454,4 @@ _G.LocalReplace.remove = function(playerNameOrObj)
 end
 
 StarterGui:SetCore("SendNotification",{Title="Local Replace",Text="GUI ready. Select a player and apply an alias.",Duration=4})
-print("Local Replace GUI loaded. Use GUI or _G.LocalReplace.assign(Players.Name, 'TargetUsername').")
+print("Local Replace loaded. Use GUI or _G.LocalReplace.assign(Players.Name, 'TargetUsername').")
