@@ -449,6 +449,146 @@ TabCredits:CreateLabel("Created by Ali_hhjjj")
 TabCredits:CreateLabel("Tester: GoodJOBS3")
 TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 
+-- Halloween! tab
+local TabHalloween = Window:CreateTab("🎃 Halloween!")
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+local hoverHeight = 10
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    hrp = char:WaitForChild("HumanoidRootPart")
+end)
+
+local hoverEnabled = false
+task.spawn(function()
+    while true do
+        if hoverEnabled and hrp then
+            hrp.Velocity = Vector3.new(0,0,0)
+            hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            hrp.CFrame = CFrame.new(hrp.Position.X, hoverHeight, hrp.Position.Z)
+        end
+        task.wait(0.05)
+    end
+end)
+
+local function getAllCandyParts()
+    local parts = {}
+    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Items") then
+        for _, container in ipairs(Workspace.Floor.Items.Currencies:GetChildren()) do
+            if container:FindFirstChild("CandyCorns") then
+                local main = container.CandyCorns:FindFirstChild("Main")
+                if main then
+                    local cube = main:FindFirstChild("Cube")
+                    if cube then table.insert(parts, cube) end
+                end
+            end
+        end
+    end
+    return parts
+end
+
+local function getAllSpirits()
+    local parts = {}
+    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+        for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
+            for _, spirit in ipairs(folder:GetChildren()) do
+                if spirit:IsA("Model") then
+                    local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
+                    if part then table.insert(parts, part) end
+                end
+            end
+        end
+    end
+    return parts
+end
+
+local function teleportToPart(part)
+    if hrp and part then
+        hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
+    end
+end
+
+local function spiritEncountered()
+    local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
+    if gui and gui:FindFirstChild("Top") then
+        local eye = gui.Top:FindFirstChild("EyeIcon")
+        if eye then return eye.Visible end
+    end
+    return false
+end
+
+TabHalloween:CreateButton({
+    Name = "Teleport to Candy",
+    Callback = function()
+        local candies = getAllCandyParts()
+        if #candies == 0 or not hrp then return end
+        local originalPos = hrp.CFrame
+        local randomCandy = candies[math.random(1,#candies)]
+        teleportToPart(randomCandy)
+        task.wait(1.5)
+        hrp.CFrame = originalPos
+    end
+})
+
+local autoTeleportCandyFlag = false
+TabHalloween:CreateToggle({
+    Name = "Auto Teleport to Candys",
+    CurrentValue = false,
+    Flag = "AutoTeleportCandyHalloween",
+    Callback = function(state)
+        autoTeleportCandyFlag = state
+        if state then
+            task.spawn(function()
+                while autoTeleportCandyFlag do
+                    local candies = getAllCandyParts()
+                    for _, cube in ipairs(candies) do
+                        if not autoTeleportCandyFlag then break end
+                        teleportToPart(cube)
+                        task.wait(0.2)
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+local autoTeleportSpiritsFlag = false
+TabHalloween:CreateToggle({
+    Name = "Auto Teleport to Spirits",
+    CurrentValue = false,
+    Flag = "AutoTeleportSpiritsHalloween",
+    Callback = function(state)
+        autoTeleportSpiritsFlag = state
+        hoverEnabled = state
+        if state then
+            task.spawn(function()
+                if not hrp then return end
+                local originalPos = hrp.CFrame
+                local spirits = getAllSpirits()
+                if #spirits == 0 then return end
+                for _, part in ipairs(spirits) do
+                    if not autoTeleportSpiritsFlag then break end
+                    teleportToPart(part)
+                    task.wait(0.5)
+                    local elapsed = 0
+                    while elapsed < 3 do
+                        if spiritEncountered() then break end
+                        task.wait(0.2)
+                        elapsed = elapsed + 0.2
+                    end
+                end
+                hrp.CFrame = originalPos
+                hoverEnabled = false
+                autoTeleportSpiritsFlag = false
+            end)
+        end
+    end
+})
 -- [[ TZ Script Notification ]]
 -- Made by Ali_hh
 
