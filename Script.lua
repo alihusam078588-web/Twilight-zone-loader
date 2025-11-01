@@ -1,4 +1,3 @@
-
 -- // Util
 local function findRepresentativePart(model)
     if not model then return nil end
