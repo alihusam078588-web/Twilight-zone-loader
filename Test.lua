@@ -471,9 +471,10 @@ end)
 local AutoCandy = false
 local AutoStars = false
 local AutoResearchBook = false
+local autoTeleportSpiritsFlag = false
 
 -- Auto CandyCorn toggle
-Tab:CreateToggle({
+TabHalloween:CreateToggle({
 Name = "Auto CandyCorn",
 CurrentValue = false,
 Callback = function(value)
@@ -493,7 +494,7 @@ end
 })
 
 -- Auto Stars toggle
-Tab:CreateToggle({
+TabHalloween:CreateToggle({
 Name = "Auto Stars",
 CurrentValue = false,
 Callback = function(value)
@@ -606,7 +607,7 @@ end
 end
 end
 
-local autoTeleportSpiritsFlag = false
+
 TabHalloween:CreateToggle({
     Name = "Auto Teleport to Spirits",
     CurrentValue = false,
