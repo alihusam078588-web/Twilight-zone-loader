@@ -1,4 +1,4 @@
--- // Util
+
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
