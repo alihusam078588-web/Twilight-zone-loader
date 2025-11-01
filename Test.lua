@@ -1,16 +1,12 @@
--- Twilight Zone All-in-One (Rayfield Edition, Fixed)
--- Features: ESP (Machines/Spirits), Teleport (Nearest/Random/Elevator), Auto Teleport, Auto Elevator,
--- Auto SkillCheck, Infinite Stamina, Godmode
--- Created by Ali_hhjjj | Special Thanks: Olivia & Shelly (Rayfield idea) | Tester: GoodJOBS3
 
--- // Services
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- // Util
+
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
