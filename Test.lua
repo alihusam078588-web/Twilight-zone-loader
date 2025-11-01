@@ -464,7 +464,6 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 
--- Toggle
 
 
 -- Toggle variables
@@ -473,7 +472,7 @@ local AutoStars = false
 local AutoResearchBook = false
 local autoTeleportSpiritsFlag = false
 
--- Auto CandyCorn toggle
+
 TabHalloween:CreateToggle({
 Name = "Auto CandyCorn",
 CurrentValue = false,
