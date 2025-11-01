@@ -1,7 +1,3 @@
--- Twilight Zone All-in-One (Rayfield Edition, Fixed)
--- Features: ESP (Machines/Spirits), Teleport (Nearest/Random/Elevator), Auto Teleport, Auto Elevator,
--- Auto SkillCheck, Infinite Stamina, Godmode
--- Created by Ali_hhjjj | Special Thanks: Olivia & Shelly (Rayfield idea) | Tester: GoodJOBS3
 
 -- // Services
 local Players = game:GetService("Players")
