@@ -463,99 +463,148 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     hrp = char:WaitForChild("HumanoidRootPart")
 end)
 
-local hoverEnabled = false
+
+-- Toggle
+
+
+-- Toggle variables
+local AutoCandy = false
+local AutoStars = false
+local AutoResearchBook = false
+
+-- Auto CandyCorn toggle
+Tab:CreateToggle({
+Name = "Auto CandyCorn",
+CurrentValue = false,
+Callback = function(value)
+AutoCandy = value
+if value then
 task.spawn(function()
-    while true do
-        if hoverEnabled and hrp then
-            hrp.Velocity = Vector3.new(0,0,0)
-            hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-            hrp.CFrame = CFrame.new(hrp.Position.X, hoverHeight, hrp.Position.Z)
-        end
-        task.wait(0.05)
-    end
+while AutoCandy do
+local candyFolder = workspace.Floor.Items.Currencies:FindFirstChild("CandyCorns")
+if candyFolder then
+teleportAndCollect(candyFolder)
+end
+task.wait(0.2)
+end
+end)
+end
+end
+})
+
+-- Auto Stars toggle
+Tab:CreateToggle({
+Name = "Auto Stars",
+CurrentValue = false,
+Callback = function(value)
+AutoStars = value
+if value then
+task.spawn(function()
+while AutoStars do
+local starFolder = workspace.Floor.Items.Currencies:FindFirstChild("StarsCurrency")
+if starFolder then
+teleportAndCollect(starFolder)
+end
+task.wait(0.2)
+end
+end)
+end
+end
+})
+
+
+TabHallween:CreateToggle({
+Name = "Auto ResearchBook",
+CurrentValue = false,
+Callback = function(v)
+AutoResearchBook = v
+end
+})
+
+-- Mobile Safe Auto "E" ProximityPrompt
+local function fireE(p)
+pcall(function()
+if fireproximityprompt then
+fireproximityprompt(p)
+else
+p:InputHoldBegin()
+task.wait(0.08)
+p:InputHoldEnd()
+end
+end)
+end
+
+-- Find Research Book ProximityPrompt
+local function getResearchBookPrompt()
+local capsules = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Capsules"):GetChildren()
+for _, folder in ipairs(capsules) do
+local prompt = folder:FindFirstChildWhichIsA("ProximityPrompt", true)
+if prompt then
+return prompt
+end
+end
+return nil
+end
+
+-- Safe teleport and collect
+local function CollectResearchBook(prompt)
+if not HRP or not prompt or not prompt.Parent then return end
+
+local parentPart  
+if prompt.Parent:IsA("BasePart") then  
+    parentPart = prompt.Parent  
+elseif prompt.Parent:IsA("Model") and prompt.Parent.PrimaryPart then  
+    parentPart = prompt.Parent.PrimaryPart  
+end  
+
+if parentPart then  
+    HRP.CFrame = parentPart.CFrame + Vector3.new(0,3,0)  
+    task.wait(0.1)  
+    fireE(prompt)  
+end
+
+end
+
+-- Main loop
+task.spawn(function()
+while true do
+if AutoResearchBook and HRP then
+local prompt = getResearchBookPrompt()
+if prompt then
+CollectResearchBook(prompt)
+end
+end
+task.wait(0.3)
+end
 end)
 
-local function getAllCandyParts()
-    local parts = {}
-    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Items") then
-        for _, container in ipairs(Workspace.Floor.Items.Currencies:GetChildren()) do
-            if container:FindFirstChild("CandyCorns") then
-                local main = container.CandyCorns:FindFirstChild("Main")
-                if main then
-                    local cube = main:FindFirstChild("Cube")
-                    if cube then table.insert(parts, cube) end
-                end
-            end
-        end
-    end
-    return parts
+
+-- Mobile-compatible fire E
+local function fireE(prompt)
+pcall(function()
+if fireproximityprompt then
+fireproximityprompt(prompt)
+else
+prompt:InputHoldBegin()
+task.wait(0.08)
+prompt:InputHoldEnd()
+end
+end)
 end
 
-local function getAllSpirits()
-    local parts = {}
-    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
-        for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
-            for _, spirit in ipairs(folder:GetChildren()) do
-                if spirit:IsA("Model") then
-                    local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
-                    if part then table.insert(parts, part) end
-                end
-            end
-        end
-    end
-    return parts
+local function teleportAndCollect(folder)
+if not folder or not HRP then return end
+local part = folder:IsA("BasePart") and folder or folder:FindFirstChildWhichIsA("BasePart")
+if part then
+HRP.CFrame = part.CFrame + Vector3.new(0,3,0)
+for _, obj in pairs(folder:GetDescendants()) do
+if obj:IsA("ProximityPrompt") then
+fireE(obj)
+task.wait(0.05)
 end
-
-local function teleportToPart(part)
-    if hrp and part then
-        hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
-    end
 end
-
-local function spiritEncountered()
-    local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
-    if gui and gui:FindFirstChild("Top") then
-        local eye = gui.Top:FindFirstChild("EyeIcon")
-        if eye then return eye.Visible end
-    end
-    return false
 end
-
-TabHalloween:CreateButton({
-    Name = "Teleport to Candy",
-    Callback = function()
-        local candies = getAllCandyParts()
-        if #candies == 0 or not hrp then return end
-        local originalPos = hrp.CFrame
-        local randomCandy = candies[math.random(1,#candies)]
-        teleportToPart(randomCandy)
-        task.wait(1.5)
-        hrp.CFrame = originalPos
-    end
-})
-
-local autoTeleportCandyFlag = false
-TabHalloween:CreateToggle({
-    Name = "Auto Teleport to Candys",
-    CurrentValue = false,
-    Flag = "AutoTeleportCandyHalloween",
-    Callback = function(state)
-        autoTeleportCandyFlag = state
-        if state then
-            task.spawn(function()
-                while autoTeleportCandyFlag do
-                    local candies = getAllCandyParts()
-                    for _, cube in ipairs(candies) do
-                        if not autoTeleportCandyFlag then break end
-                        teleportToPart(cube)
-                        task.wait(0.2)
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
-    end
-})
+end
 
 local autoTeleportSpiritsFlag = false
 TabHalloween:CreateToggle({
@@ -589,6 +638,73 @@ TabHalloween:CreateToggle({
         end
     end
 })
+local function getAllSpirits()
+    local parts = {}
+    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+        for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
+            for _, spirit in ipairs(folder:GetChildren()) do
+                if spirit:IsA("Model") then
+                    local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
+                    if part then table.insert(parts, part) end
+                end
+            end
+        end
+    end
+    return parts
+end
+
+local function teleportToPart(part)
+    if hrp and part then
+        hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
+    end
+end
+
+local function spiritEncountered()
+    local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
+    if gui and gui:FindFirstChild("Top") then
+        local eye = gui.Top:FindFirstChild("EyeIcon")
+        if eye then return eye.Visible end
+    end
+    return false
+end
 -- Anti Lag Toggle in Main Tab
 local antiLagFlag = false
-T
+TabMain:CreateToggle({
+    Name = "Anti Lag",
+    CurrentValue = false,
+    Flag = "AntiLagToggle",
+    Callback = function(state)
+        antiLagFlag = state
+        if antiLagFlag then
+            -- Disable unnecessary effects/parts
+            task.spawn(function()
+                while antiLagFlag do
+                    -- Remove all decals
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj:IsA("Decal") or obj:IsA("Texture") then
+                            pcall(function() obj:Destroy() end)
+                        end
+                        -- Optionally remove particle emitters
+                        if obj:IsA("ParticleEmitter") then
+                            pcall(function() obj.Enabled = false end)
+                        end
+                        -- Optionally remove sounds
+                        if obj:IsA("Sound") then
+                            pcall(function() obj:Stop() end)
+                        end
+                    end
+                    task.wait(2)
+                end
+            end)
+        end
+    end
+})
+-- [[ TZ Script Notification ]]
+-- Made by Ali_hh
+
+game.StarterGui:SetCore("SendNotification", {
+    Title = "TZ Script 💫",
+    Text = "Godmode and Auto Skillcheck is ACTIVE!",
+    Duration = 8
+})
+
