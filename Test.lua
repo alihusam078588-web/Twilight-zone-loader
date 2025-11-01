@@ -1,12 +1,8 @@
-
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-
-
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
