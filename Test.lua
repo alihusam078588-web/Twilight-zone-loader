@@ -513,13 +513,7 @@ end
 })
 
 
-TabHallween:CreateToggle({
-Name = "Auto ResearchBook",
-CurrentValue = false,
-Callback = function(v)
-AutoResearchBook = value
-end
-})
+
 
 local function fireE(p)
 pcall(function()
@@ -545,7 +539,16 @@ return nil
 end
 
 local function CollectResearchBook(prompt)
-if not HRP or not prompt or not prompt.Parent then return end
+if not HRP or not prompt or not prompt.
+
+TabHallween:CreateToggle({
+Name = "Auto ResearchBook",
+CurrentValue = false,
+Callback = function(v)
+AutoResearchBook = value
+end
+})
+Parent then return end
 
 local parentPart  
 if prompt.Parent:IsA("BasePart") then  
