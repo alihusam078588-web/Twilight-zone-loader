@@ -496,17 +496,7 @@ local function getAllSpirits()
     if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
         for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
             for _, spirit in ipairs(folder:GetChildren()) do
--- 🎃 Halloween Auto Collect Test
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({Name = "Halloween Auto Pickup", LoadingTitle = "Loading...", LoadingSubtitle = "By Ali"})
-local Tab = Window:CreateTab("Auto Collect", 4483362458)
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local HRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-player.CharacterAdded:Connect(function(char)
-    HRP = char:WaitForChild("HumanoidRootPart")
-end)
 
 -- Mobile-compatible fire E
 local function fireE(prompt)
