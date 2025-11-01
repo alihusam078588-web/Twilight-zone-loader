@@ -502,11 +502,7 @@ local function getAllSpirits()
     return parts
 end
 
-local function teleportToPart(part)
-    if hrp and part then
-        hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
-    end
-end
+
 
 local function spiritEncountered()
     local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
@@ -517,41 +513,7 @@ local function spiritEncountered()
     return false
 end
 
-TabHalloween:CreateButton({
-    Name = "Teleport to Candy",
-    Callback = function()
-        local candies = getAllCandyParts()
-        if #candies == 0 or not hrp then return end
-        local originalPos = hrp.CFrame
-        local randomCandy = candies[math.random(1,#candies)]
-        teleportToPart(randomCandy)
-        task.wait(1.5)
-        hrp.CFrame = originalPos
-    end
-})
 
-local autoTeleportCandyFlag = false
-TabHalloween:CreateToggle({
-    Name = "Auto Teleport to Candys",
-    CurrentValue = false,
-    Flag = "AutoTeleportCandyHalloween",
-    Callback = function(state)
-        autoTeleportCandyFlag = state
-        if state then
-            task.spawn(function()
-                while autoTeleportCandyFlag do
-                    local candies = getAllCandyParts()
-                    for _, cube in ipairs(candies) do
-                        if not autoTeleportCandyFlag then break end
-                        teleportToPart(cube)
-                        task.wait(0.2)
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
-    end
-})
 
 local autoTeleportSpiritsFlag = false
 TabHalloween:CreateToggle({
@@ -630,7 +592,6 @@ game.StarterGui:SetCore("SendNotification", {
 local AutoCandy = false
 local AutoStars = false
 local AutoResearchBook = false
-local autoTeleportSpiritsFlag = false
 local hoverHeight = 10
 
 -- =========================
@@ -730,15 +691,8 @@ TabHalloween:CreateToggle({
     Callback = function(v) AutoResearchBook = v end
 })
 
-TabHalloween:CreateToggle({
-    Name = "Auto Teleport to Spirits",
-    CurrentValue = false,
-    Callback = function(v) autoTeleportSpiritsFlag = v end
-})
 
--- =========================
 -- Halloween Loops
--- =========================
 task.spawn(function()
     while true do
         local hrp = waitForHRP()
@@ -754,14 +708,5 @@ task.spawn(function()
             local prompt = getResearchBookPrompt()
             if prompt then CollectResearchBook(prompt, hrp) end
         end
-        if autoTeleportSpiritsFlag then
-            local spirits = getAllSpirits()
-            for _, part in ipairs(spirits) do
-                if not autoTeleportSpiritsFlag then break end
-                teleportToSpiritPart(hrp, part)
-                task.wait(0.5)
-            end
-        end
-        task.wait(0.3)
-    end
-end)
+        
+        
