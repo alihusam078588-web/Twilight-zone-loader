@@ -517,11 +517,10 @@ TabHallween:CreateToggle({
 Name = "Auto ResearchBook",
 CurrentValue = false,
 Callback = function(v)
-AutoResearchBook = v
+AutoResearchBook = value
 end
 })
 
--- Mobile Safe Auto "E" ProximityPrompt
 local function fireE(p)
 pcall(function()
 if fireproximityprompt then
@@ -534,7 +533,6 @@ end
 end)
 end
 
--- Find Research Book ProximityPrompt
 local function getResearchBookPrompt()
 local capsules = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Capsules"):GetChildren()
 for _, folder in ipairs(capsules) do
@@ -546,7 +544,6 @@ end
 return nil
 end
 
--- Safe teleport and collect
 local function CollectResearchBook(prompt)
 if not HRP or not prompt or not prompt.Parent then return end
 
@@ -565,7 +562,6 @@ end
 
 end
 
--- Main loop
 task.spawn(function()
 while true do
 if AutoResearchBook and HRP then
@@ -579,7 +575,6 @@ end
 end)
 
 
--- Mobile-compatible fire E
 local function fireE(prompt)
 pcall(function()
 if fireproximityprompt then
