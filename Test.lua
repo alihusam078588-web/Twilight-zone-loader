@@ -1,15 +1,3 @@
-local function findRepresentativePart(model)
-    if not model then return nil end
-    if model:IsA("BasePart") then return model end
-    local names = {"Front","front","Head","head","HumanoidRootPart","PrimaryPart"}
-    for _,n in ipairs(names) do
-        local f = model:FindFirstChild(n)
-        if f and f:IsA("BasePart") then return f end
-    end
-    if model.PrimaryPart and model.PrimaryPart:IsA("BasePart") then return model.PrimaryPart end
-    return model:FindFirstChildWhichIsA("BasePart", true)
-end
-
 local function isFuseLike(name)
     if not name then return false end
     local s = tostring(name):lower()
