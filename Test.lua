@@ -596,4 +596,30 @@ TabMain:CreateToggle({
         if antiLagFlag then
             -- Disable unnecessary effects/parts
             task.spawn(function()
-                while antiLa
+                while antiLagFlag do
+                    -- Remove all decals
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj:IsA("Decal") or obj:IsA("Texture") then
+                            pcall(function() obj:Destroy() end)
+                        end
+                        -- Optionally remove particle emitters
+                        if obj:IsA("ParticleEmitter") then
+                            pcall(function() obj.Enabled = false end)
+                        end
+                        -- Optionally remove sounds
+                        if obj:IsA("Sound") then
+                            pcall(function() obj:Stop() end)
+                        end
+                    end
+                    task.wait(2)
+                end
+            end)
+        end
+    end
+})
+
+game.StarterGui:SetCore("SendNotification", {
+    Title = "TZ Script 💫",
+    Text = "Godmode and Auto Skillcheck is ACTIVE!",
+    Duration = 8
+})
