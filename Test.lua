@@ -445,65 +445,6 @@ TabCredits:CreateLabel("Tester: GoodJOBS3")
 TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 
 -- Halloween! tab
-local TabHalloween = Window:CreateTab("🎃 Halloween!")
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-local hoverHeight = 10
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    hrp = char:WaitForChild("HumanoidRootPart")
-end)
-
-local hoverEnabled = false
-task.spawn(function()
-    while true do
-        if hoverEnabled and hrp then
-            hrp.Velocity = Vector3.new(0,0,0)
-            hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-            hrp.CFrame = CFrame.new(hrp.Position.X, hoverHeight, hrp.Position.Z)
-        end
-        task.wait(0.05)
-    end
-end)
-
-- =========================
--- Halloween Feature Variables
--- =========================
-local AutoCandy = false
-local AutoStars = false
-local AutoResearchBook = false
-local autoTeleportSpiritsFlag = false
-local hoverHeight = 10
-
--- =========================
--- Utility Functions
--- =========================
-local function waitForHRP()
-    local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
-    return char:WaitForChild("HumanoidRootPart")
-end
-
-local function fireE(prompt)
-    pcall(function()
-        if fireproximityprompt then
-            fireproximityprompt(prompt)
-        else
-            prompt:InputHoldBegin()
-            task.wait(0.08)
-            prompt:InputHoldEnd()
-        end
-    end)
-end
-
-local function teleportAndCollect(folder, hrp)
-    if not folder or not hrp then return end
-    local part = folder:IsA("BasePart") and folder or folder:FindFirstChildWhichIsA("BasePart")
-    if part then
-        hrp.CFrame = part.CFrame + Vector3.new(0,3,0)
 local Tab = Window:CreateTab("Auto Collect", 4483362458)
 
 local Players = game:GetService("Players")
@@ -589,19 +530,19 @@ local AutoCandy = false
 local AutoStars = false
 local AutoResearchBook = false
 
-Tab:CreateToggle({
+TabAutocollect:CreateToggle({
     Name = "Auto CandyCorn",
     CurrentValue = false,
     Callback = function(v) AutoCandy = v end
 })
 
-Tab:CreateToggle({
+TabAutocollect:CreateToggle({
     Name = "Auto Stars",
     CurrentValue = false,
     Callback = function(v) AutoStars = v end
 })
 
-Tab:CreateToggle({
+TabAutocollect:CreateToggle({
     Name = "Auto ResearchBook",
     CurrentValue = false,
     Callback = function(v) AutoResearchBook = v end
