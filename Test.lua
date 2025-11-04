@@ -1,3 +1,24 @@
+-- ✅ Super Safe Player Initialization (fixes "nil value" and "no Character" issues)
+local Players = game:GetService("Players")
+
+-- Wait until LocalPlayer exists
+local lp = Players.LocalPlayer
+while not lp do
+	task.wait()
+	lp = Players.LocalPlayer
+end
+
+-- Wait until Character and HumanoidRootPart exist
+if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then
+	lp.CharacterAdded:Wait()
+	repeat task.wait() until lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+end
+
+local HRP = lp.Character:FindFirstChild("HumanoidRootPart")
+
+lp.CharacterAdded:Connect(function(char)
+	HRP = char:WaitForChild("HumanoidRootPart")
+end)
 
 -- // Godmode (remove HitPlayer)
 task.spawn(function()
