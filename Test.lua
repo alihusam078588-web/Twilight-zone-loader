@@ -623,3 +623,141 @@ game.StarterGui:SetCore("SendNotification", {
     Text = "Godmode and Auto Skillcheck is ACTIVE!",
     Duration = 8
 })
+
+-- 🎃 Halloween Auto Collect (Fixed & Combined)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+    Name = "Halloween Auto Collect",
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "By Ali"
+})
+local Tab = Window:CreateTab("Auto Collect", 4483362458)
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local HRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(char)
+    HRP = char:WaitForChild("HumanoidRootPart")
+end)
+
+-- Fire proximity prompt (Mobile safe)
+local function fireE(p)
+    pcall(function()
+        if fireproximityprompt then
+            fireproximityprompt(p)
+        else
+            p:InputHoldBegin()
+            task.wait(0.08)
+            p:InputHoldEnd()
+        end
+    end)
+end
+
+-- Safe teleport + collect
+local function CollectPrompt(prompt)
+    if not HRP or not prompt or not prompt.Parent then return end
+
+    local parentPart
+    if prompt.Parent:IsA("BasePart") then
+        parentPart = prompt.Parent
+    elseif prompt.Parent:IsA("Model") and prompt.Parent.PrimaryPart then
+        parentPart = prompt.Parent.PrimaryPart
+    end
+
+    if parentPart then
+        HRP.CFrame = parentPart.CFrame + Vector3.new(0, 3, 0)
+        task.wait(0.1)
+        fireE(prompt)
+    end
+end
+
+-- Finder functions
+local function findCandyPrompts()
+    local results = {}
+    local candies = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Currencies"):FindFirstChild("CandyCorns")
+    if candies then
+        for _, v in ipairs(candies:GetDescendants()) do
+            if v:IsA("ProximityPrompt") then
+                table.insert(results, v)
+            end
+        end
+    end
+    return results
+end
+
+local function findStarPrompts()
+    local results = {}
+    local stars = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Currencies"):FindFirstChild("StarsCurrency")
+    if stars then
+        for _, v in ipairs(stars:GetDescendants()) do
+            if v:IsA("ProximityPrompt") then
+                table.insert(results, v)
+            end
+        end
+    end
+    return results
+end
+
+local function findResearchBookPrompts()
+    local results = {}
+    local capsules = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Capsules"):GetChildren()
+    for _, folder in ipairs(capsules) do
+        local prompt = folder:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if prompt then
+            table.insert(results, prompt)
+        end
+    end
+    return results
+end
+
+-- Toggles
+local AutoCandy = false
+local AutoStars = false
+local AutoResearchBook = false
+
+TabAuto Collect:CreateToggle({
+    Name = "Auto CandyCorn",
+    CurrentValue = false,
+    Callback = function(v) AutoCandy = v end
+})
+
+TabAuto Collect:CreateToggle({
+    Name = "Auto Stars",
+    CurrentValue = false,
+    Callback = function(v) AutoStars = v end
+})
+
+TabAuto Collect:CreateToggle({
+    Name = "Auto ResearchBook",
+    CurrentValue = false,
+    Callback = function(v) AutoResearchBook = v end
+})
+
+-- Main Loop
+task.spawn(function()
+    while task.wait(0.3) do
+        if not HRP then continue end
+
+        if AutoCandy then
+            for _, prompt in ipairs(findCandyPrompts()) do
+                CollectPrompt(prompt)
+                task.wait(0.1)
+            end
+        end
+
+        if AutoStars then
+            for _, prompt in ipairs(findStarPrompts()) do
+                CollectPrompt(prompt)
+                task.wait(0.1)
+            end
+        end
+
+        if AutoResearchBook then
+            for _, prompt in ipairs(findResearchBookPrompts()) do
+                CollectPrompt(prompt)
+                task.wait(0.2)
+            end
+        end
+    end
+end)
