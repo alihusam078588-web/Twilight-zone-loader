@@ -1,8 +1,3 @@
-local function isFuseLike(name)
-    if not name then return false end
-    local s = tostring(name):lower()
-    return s:find("fuse") or s:find("fusebox") or s:find("fuse_box")
-end
 
 -- // Godmode (remove HitPlayer)
 task.spawn(function()
