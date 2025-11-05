@@ -1,14 +1,20 @@
--- // Services
+-- Wait for LocalPlayer and HumanoidRootPart safely
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-while not lp do task.wait(); lp = Players.LocalPlayer end
-local HRP
+while not lp do
+    task.wait()
+    lp = Players.LocalPlayer
+end
+
+local HRP = nil
 if lp.Character then
     HRP = lp.Character:FindFirstChild("HumanoidRootPart")
 end
 lp.CharacterAdded:Connect(function(char)
     HRP = char:WaitForChild("HumanoidRootPart")
 end)
+
+-- Now you can safely use lp and HRP without errors
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
