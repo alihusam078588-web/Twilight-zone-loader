@@ -624,13 +624,6 @@ game.StarterGui:SetCore("SendNotification", {
     Duration = 8
 })
 
--- 🎃 Halloween Auto Collect (Fixed & Combined)
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-    Name = "Halloween Auto Collect",
-    LoadingTitle = "Loading...",
-    LoadingSubtitle = "By Ali"
-})
 local Tab = Window:CreateTab("Auto Collect", 4483362458)
 
 local Players = game:GetService("Players")
