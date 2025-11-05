@@ -1,5 +1,15 @@
 -- // Services
 local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+while not lp do task.wait(); lp = Players.LocalPlayer end
+local HRP
+if lp.Character then
+    HRP = lp.Character:FindFirstChild("HumanoidRootPart")
+end
+lp.CharacterAdded:Connect(function(char)
+    HRP = char:WaitForChild("HumanoidRootPart")
+end)
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
