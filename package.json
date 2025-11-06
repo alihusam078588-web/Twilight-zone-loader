@@ -1,0 +1,13 @@
+{
+  "name": "twilight-zone-server",
+  "version": "1.0.0",
+  "description": "Simple service to verify Linkvertise anti-bypass hash then show loadstring",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}
