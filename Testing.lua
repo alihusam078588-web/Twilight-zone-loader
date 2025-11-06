@@ -629,6 +629,135 @@ TabMain:CreateToggle({
     end
 })
 
+
+local Tab = Window:CreateTab("Auto Collect", 4483362458)
+
+-- // Services
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local HRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(char)
+	HRP = char:WaitForChild("HumanoidRootPart")
+end)
+
+-- // Fire "E" prompt (mobile safe)
+local function fireE(prompt)
+	pcall(function()
+		if fireproximityprompt then
+			fireproximityprompt(prompt)
+		else
+			prompt:InputHoldBegin()
+			task.wait(0.1)
+			prompt:InputHoldEnd()
+		end
+	end)
+end
+
+-- // Find first BasePart inside folder
+local function GetFirstBasePart(folder)
+	for _, obj in pairs(folder:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			return obj
+		end
+	end
+	return nil
+end
+
+-- // Collect all ProximityPrompts inside folder
+local function CollectFolder(folder)
+	if not folder or not HRP then return end
+	local part = GetFirstBasePart(folder)
+	if part then
+		HRP.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+		for _, obj in pairs(folder:GetDescendants()) do
+			if obj:IsA("ProximityPrompt") then
+				fireE(obj)
+				task.wait(0.05)
+			end
+		end
+	end
+end
+
+-- // Find Candy & Stars folders
+local function findItemFolderByType(itemType)
+	local success, folder = pcall(function()
+		local currencies = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Currencies")
+		return currencies:FindFirstChild(itemType)
+	end)
+	return success and folder
+end
+
+-- // Find ResearchBook folders
+local function findResearchBookFolders()
+	local result = {}
+	local capsulesParent = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Capsules")
+	for _, folder in ipairs(capsulesParent:GetChildren()) do
+		local inner = folder:FindFirstChild("Capsules")
+		if inner then
+			table.insert(result, inner)
+		end
+	end
+	return result
+end
+
+-- // Toggles
+local AutoCandy = false
+local AutoStars = false
+local AutoResearchBook = false
+
+Tab:CreateToggle({Name="🍬 Auto CandyCorn", CurrentValue=false, Callback=function(v) AutoCandy=v end})
+Tab:CreateToggle({Name="⭐ Auto Stars", CurrentValue=false, Callback=function(v) AutoStars=v end})
+Tab:CreateToggle({Name="📖 Auto ResearchBook", CurrentValue=false, Callback=function(v) AutoResearchBook=v end})
+
+-- // Main Loop
+task.spawn(function()
+	while true do
+		if HRP then
+			local startPos = HRP.CFrame
+
+			-- Candy
+			if AutoCandy then
+				local candyFolder = findItemFolderByType("CandyCorns")
+				if candyFolder then
+					repeat
+						CollectFolder(candyFolder)
+						task.wait(0.2)
+					until #candyFolder:GetDescendants() == 0
+					HRP.CFrame = startPos
+				end
+			end
+
+			-- Stars
+			if AutoStars then
+				local starFolder = findItemFolderByType("StarsCurrency")
+				if starFolder then
+					repeat
+						CollectFolder(starFolder)
+						task.wait(0.2)
+					until #starFolder:GetDescendants() == 0
+					HRP.CFrame = startPos
+				end
+			end
+
+			-- Research Book (uses friend’s improved pickup)
+			if AutoResearchBook then
+				local folders = findResearchBookFolders()
+				for _, folder in ipairs(folders) do
+					local part = GetFirstBasePart(folder)
+					if part then
+						HRP.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+						loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/ImprovedAutoPickup.lua"))()
+						task.wait(0.3)
+					end
+				end
+				HRP.CFrame = startPos
+			end
+		end
+		task.wait(0.5)
+	end
+end)
+
 game.StarterGui:SetCore("SendNotification", {
     Title = "TZ Script 💫",
     Text = "Godmode and Auto Skillcheck is ACTIVE!",
