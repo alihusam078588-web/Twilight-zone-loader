@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- 🛑 IMPROVED Rayfield Loading Block 🛑
 local Rayfield
 local success, result = pcall(function()
     -- Attempt 1: Standard loading method
@@ -28,7 +29,10 @@ if not success or not result then
 else
     Rayfield = result
 end
+-- 🛑 END of Rayfield Loading Block 🛑
 
+-- Wait for the Player's Character (Toon) to exist AND have a primary part (HumanoidRootPart or otherwise).
+local HRP
 repeat 
     player.CharacterAdded:Wait()
     HRP = player.Character and (player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChildOfClass("Part"))
@@ -36,6 +40,7 @@ repeat
 until HRP
 
 print("[✅ Toon Character loaded safely!]", player.Name)
+
 
 -- // Util
 local function findRepresentativePart(model)
@@ -348,8 +353,6 @@ task.spawn(function()
 end)
 
 -- // Rayfield GUI
--- NOTE: Rayfield loadstring moved to the top for safety.
-
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
     LoadingTitle = "Twilight Zone Loader",
@@ -567,7 +570,7 @@ TabMain:CreateToggle({
 local TabAutoCollect = Window:CreateTab("🎃 Auto Collect", 4483362458)
 
 -- // Services
-local HRP_Collect = player.Character and player.Character:FindFirstChild("HumanoidRootPart") -- Renamed to avoid confusion
+local HRP_Collect = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 
 player.CharacterAdded:Connect(function(char)
 	HRP_Collect = char:WaitForChild("HumanoidRootPart")
@@ -599,9 +602,13 @@ end
 -- // Collect all ProximityPrompts inside folder
 local function CollectFolder(folder)
 	if not folder or not HRP_Collect then return end
+    
+    -- Teleport to the item (which is usually the model/folder itself)
 	local part = GetFirstBasePart(folder)
 	if part then
 		HRP_Collect.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+        
+        -- Fire all prompts
 		for _, obj in pairs(folder:GetDescendants()) do
 			if obj:IsA("ProximityPrompt") then
 				fireE(obj)
@@ -611,26 +618,13 @@ local function CollectFolder(folder)
 	end
 end
 
--- // Find Candy & Stars folders
-local function findItemFolderByType(itemType)
+-- 🛑 NEW FIX: Find the parent container for items 🛑
+local function findItemParent(parentName) -- parentName is "Currencies" or "Capsules"
 	local success, folder = pcall(function()
-		local currencie = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Currencies")
-		return currencies:FindFirstChild(itemType)
+		local items = Workspace:WaitForChild("Floor"):WaitForChild("Items")
+		return items:FindFirstChild(parentName)
 	end)
 	return success and folder
-end
-
--- // Find ResearchBook folders
-local function findResearchBookFolders()
-	local result = {}
-	local capsulesParent = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Capsules")
-	for _, folder in ipairs(capsulesParent:GetChildren()) do
-		local inner = folder:FindFirstChild("Capsules")
-		if inner then
-			table.insert(result, inner)
-		end
-	end
-	return result
 end
 
 -- // Toggles
@@ -675,49 +669,68 @@ TabAutoCollect:CreateToggle({Name="🍬 Auto CandyCorn", CurrentValue=false, Cal
 TabAutoCollect:CreateToggle({Name="⭐ Auto Stars", CurrentValue=false, Callback=function(v) AutoStars=v end})
 TabAutoCollect:CreateToggle({Name="📖 Auto ResearchBook", CurrentValue=false, Callback=function(v) AutoResearchBook=v end})
 
--- Main Loop
+-- Main Loop (FIXED)
 task.spawn(function()
 	while true do
 		if HRP_Collect then
 			local startPos = HRP_Collect.CFrame
+            local itemsToCollect = {}
+            local itemFound = false
 
-			-- Candy
-			if AutoCandy then
-				local candyFolder = findItemFolderByType("CandyCorns")
-				if candyFolder then
-					repeat
-						CollectFolder(candyFolder)
-						task.wait(0.2)
-					until #candyFolder:GetDescendants() == 0
-					HRP_Collect.CFrame = startPos
-				end
-			end
+            -- CandyCorns
+            if AutoCandy then
+                local currencyParent = findItemParent("Currencies")
+                if currencyParent then
+                    local candyFolder = currencyParent:FindFirstChild("CandyCorns")
+                    if candyFolder then
+                        -- Collect each individual Candy item
+                        for _, itemFolder in ipairs(candyFolder:GetChildren()) do
+                            table.insert(itemsToCollect, itemFolder)
+                            itemFound = true
+                        end
+                    end
+                end
+            end
 
-			-- Stars
-			if AutoStars then
-				local starFolder = findItemFolderByType("StarsCurrency")
-				if starFolder then
-					repeat
-						CollectFolder(starFolder)
-						task.wait(0.2)
-					until #starFolder:GetDescendants() == 0
-					HRP_Collect.CFrame = startPos
-				end
-			end
+            -- Stars
+            if AutoStars then
+                local currencyParent = findItemParent("Currencies")
+                if currencyParent then
+                    local starFolder = currencyParent:FindFirstChild("StarsCurrency")
+                    if starFolder then
+                        -- Collect each individual Star item
+                        for _, itemFolder in ipairs(starFolder:GetChildren()) do
+                            table.insert(itemsToCollect, itemFolder)
+                            itemFound = true
+                        end
+                    end
+                end
+            end
+            
+            -- Research Book (Capsules)
+            if AutoResearchBook then
+                local capsulesParent = findItemParent("Capsules")
+                if capsulesParent then
+                    -- Collect each individual Research Book item
+                    for _, itemFolder in ipairs(capsulesParent:GetChildren()) do
+                        table.insert(itemsToCollect, itemFolder)
+                        itemFound = true
+                    end
+                end
+            end
 
-			-- Research Book (uses friend’s improved pickup)
-			if AutoResearchBook then
-				local folders = findResearchBookFolders()
-				for _, folder in ipairs(folders) do
-					local part = GetFirstBasePart(folder)
-					if part then
-						HRP_Collect.CFrame = part.CFrame + Vector3.new(0, 3, 0)
-						loadstring(game:HttpGet("https://raw.githubusercontent.com/alihusam078588-web/Twilight-zone-loader/main/ImprovedAutoPickup.lua"))()
-						task.wait(0.3)
-					end
-				end
-				HRP_Collect.CFrame = startPos
-			end
+            -- Process Collection Queue
+            if itemFound then
+                for _, itemFolder in ipairs(itemsToCollect) do
+                    -- Check if the item still exists (wasn't picked up by another player)
+                    if itemFolder and itemFolder.Parent then
+                        CollectFolder(itemFolder)
+                        task.wait(0.1)
+                    end
+                end
+                -- Teleport back to original position
+                HRP_Collect.CFrame = startPos
+            end
 		end
 		task.wait(0.5)
 	end
