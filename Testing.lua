@@ -1,7 +1,20 @@
+-- 🧩 LocalPlayer Safe Loader Fix (for all executors)
+repeat task.wait() until game:IsLoaded()
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-repeat task.wait() until player and player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+-- Wait for LocalPlayer to exist
+local player = Players.LocalPlayer
+while not player do
+    task.wait()
+    player = Players.LocalPlayer
+end
+
+-- Wait for Character & HumanoidRootPart
+repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 local HRP = player.Character:FindFirstChild("HumanoidRootPart")
+
+print("[✅ Player loaded safely!]", player.Name)
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
