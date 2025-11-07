@@ -514,38 +514,7 @@ local function spiritEncountered()
 end
 
 
-local autoTeleportSpiritsFlag = false
-TabAutoCollect:CreateToggle({
-    Name = "Auto Teleport to Spirits",
-    CurrentValue = false,
-    Flag = "AutoTeleportSpiritsHalloween",
-    Callback = function(state)
-        autoTeleportSpiritsFlag = state
-        hoverEnabled = state
-        if state then
-            task.spawn(function()
-                if not hrp then return end
-                local originalPos = hrp.CFrame
-                local spirits = getAllSpirits()
-                if #spirits == 0 then return end
-                for _, part in ipairs(spirits) do
-                    if not autoTeleportSpiritsFlag then break end
-                    teleportToPart(part)
-                    task.wait(0.5)
-                    local elapsed = 0
-                    while elapsed < 3 do
-                        if spiritEncountered() then break end
-                        task.wait(0.2)
-                        elapsed = elapsed + 0.2
-                    end
-                end
-                hrp.CFrame = originalPos
-                hoverEnabled = false
-                autoTeleportSpiritsFlag = false
-            end)
-        end
-    end
-})
+
 -- Anti Lag Toggle in Main Tab
 local antiLagFlag = false
 TabMain:CreateToggle({
@@ -655,6 +624,38 @@ end
 local AutoCandy = false
 local AutoStars = false
 local AutoResearchBook = false
+local autoTeleportSpiritsFlag = false
+TabAuto Collect:CreateToggle({
+    Name = "Auto Teleport to Spirits",
+    CurrentValue = false,
+    Flag = "AutoTeleportSpiritsHalloween",
+    Callback = function(state)
+        autoTeleportSpiritsFlag = state
+        hoverEnabled = state
+        if state then
+            task.spawn(function()
+                if not hrp then return end
+                local originalPos = hrp.CFrame
+                local spirits = getAllSpirits()
+                if #spirits == 0 then return end
+                for _, part in ipairs(spirits) do
+                    if not autoTeleportSpiritsFlag then break end
+                    teleportToPart(part)
+                    task.wait(0.5)
+                    local elapsed = 0
+                    while elapsed < 3 do
+                        if spiritEncountered() then break end
+                        task.wait(0.2)
+                        elapsed = elapsed + 0.2
+                    end
+                end
+                hrp.CFrame = originalPos
+                hoverEnabled = false
+                autoTeleportSpiritsFlag = false
+            end)
+        end
+    end
+})
 
 Tab:CreateToggle({Name="🍬 Auto CandyCorn", CurrentValue=false, Callback=function(v) AutoCandy=v end})
 Tab:CreateToggle({Name="⭐ Auto Stars", CurrentValue=false, Callback=function(v) AutoStars=v end})
