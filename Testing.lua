@@ -1,4 +1,7 @@
 local Players = game:GetService("Players")
+local player = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+repeat task.wait() until player and player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+local HRP = player.Character:FindFirstChild("HumanoidRootPart")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -701,3 +704,89 @@ game.StarterGui:SetCore("SendNotification", {
     Text = "Godmode and Auto Skillcheck is ACTIVE!",
     Duration = 8
 })
+-- 🎃 Auto Collect Tab (Candy, Stars, ResearchBook)
+local Tab = Window:CreateTab("🎃 Auto Collect", 4483362458)
+
+-- Improved Auto "E" ProximityPrompt
+local function fireE(p)
+    pcall(function()
+        if fireproximityprompt then
+            fireproximityprompt(p)
+        else
+            p:InputHoldBegin()
+            task.wait(0.08)
+            p:InputHoldEnd()
+        end
+    end)
+end
+
+-- Find any BasePart inside
+local function getBasePart(folder)
+    for _,v in pairs(folder:GetDescendants()) do
+        if v:IsA("BasePart") then return v end
+    end
+end
+
+-- Teleport & auto collect nearby prompts
+local function collectFolder(folder)
+    local part = getBasePart(folder)
+    if not (part and HRP) then return end
+    HRP.CFrame = part.CFrame + Vector3.new(0,3,0)
+    for _,obj in pairs(folder:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then fireE(obj) end
+    end
+end
+
+-- Folder finders
+local function findItemFolder(name)
+    local items = workspace:WaitForChild("Floor"):WaitForChild("Items")
+    if items:FindFirstChild("Currencies") then
+        for _,v in ipairs(items.Currencies:GetChildren()) do
+            if v.Name == name then return v end
+        end
+    end
+end
+
+local function findResearchBooks()
+    local result = {}
+    local capsules = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Capsules")
+    for _,f in ipairs(capsules:GetChildren()) do
+        if f:FindFirstChild("ProximityPrompt") then
+            table.insert(result, f)
+        end
+    end
+    return result
+end
+
+-- Toggles
+local autoCandy, autoStars, autoBook = false, false, false
+Tab:CreateToggle({Name="Auto Candy", CurrentValue=false, Callback=function(v) autoCandy=v end})
+Tab:CreateToggle({Name="Auto Stars", CurrentValue=false, Callback=function(v) autoStars=v end})
+Tab:CreateToggle({Name="Auto ResearchBook", CurrentValue=false, Callback=function(v) autoBook=v end})
+
+-- Main loop
+task.spawn(function()
+    while task.wait(0.5) do
+        if HRP then
+            local oldPos = HRP.CFrame
+
+            if autoCandy then
+                local folder = findItemFolder("CandyCorns")
+                if folder then collectFolder(folder) end
+            end
+
+            if autoStars then
+                local folder = findItemFolder("StarsCurrency")
+                if folder then collectFolder(folder) end
+            end
+
+            if autoBook then
+                for _,f in ipairs(findResearchBooks()) do
+                    collectFolder(f)
+                end
+            end
+
+            HRP.CFrame = oldPos
+        end
+    end
+end)
