@@ -1,3 +1,8 @@
+-- =======================================================
+--  *** ULTRA-SAFE LOADING (For 'Toon' and Exploits) ***
+-- =======================================================
+
+-- Line 1: Wait for essential services and the LocalPlayer to be accessible.
 repeat task.wait() until game and game:IsLoaded() and game:GetService("Players") and game:GetService("Players").LocalPlayer
 
 local Players = game:GetService("Players")
@@ -6,11 +11,24 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Load Rayfield GUI now, as it needs to be available early.
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield
+local success, result = pcall(function()
+    -- Attempt 1: Standard loading method
+    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+end)
 
--- Wait for the Player's Character (Toon) to exist AND have a primary part (HumanoidRootPart or otherwise).
-local HRP
+if not success or not result then
+    -- Attempt 2: Fallback (sometimes required by certain executors)
+    warn("Rayfield load failed (standard method). Trying fallback...")
+    Rayfield = require(game:GetService("ReplicatedStorage").Rayfield) -- This assumes a different exploit setup
+    if not Rayfield then
+        -- If all else fails, the script will continue but no GUI will appear.
+        error("Failed to load Rayfield GUI library. No GUI will display.")
+    end
+else
+    Rayfield = result
+end
+
 repeat 
     player.CharacterAdded:Wait()
     HRP = player.Character and (player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChildOfClass("Part"))
@@ -18,7 +36,6 @@ repeat
 until HRP
 
 print("[✅ Toon Character loaded safely!]", player.Name)
-
 
 -- // Util
 local function findRepresentativePart(model)
