@@ -1,19 +1,37 @@
--repeat task.wait() until game:IsLoaded() and game:GetService("Players") and game:GetService("Players").LocalPlayer
+-- =======================================================
+--  *** ULTRA-SAFE LOADING (For 'Toon' and Exploits) ***
+-- =======================================================
+
+-- Line 1: Wait for essential services and the LocalPlayer to be accessible.
+repeat task.wait() until game and game:IsLoaded() and game:GetService("Players") and game:GetService("Players").LocalPlayer
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local HRP = player.Character:FindFirstChild("HumanoidRootPart")
-print("[✅ Player loaded safely!]", player.Name)
+-- Load Rayfield GUI now, as it needs to be available early.
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Wait for the Player's Character (Toon) to exist AND have a primary part (HumanoidRootPart or otherwise).
+local HRP
+repeat 
+    player.CharacterAdded:Wait()
+    HRP = player.Character and (player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChildOfClass("Part"))
+    task.wait(0.1)
+until HRP
+
+print("[✅ Toon Character loaded safely!]", player.Name)
+
+
 -- // Util
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
     local names = {"Front","front","Head","head","HumanoidRootPart","PrimaryPart"}
     for _,n in ipairs(names) do
-  
-       local f = model:FindFirstChild(n)
+        local f = model:FindFirstChild(n)
         if f and f:IsA("BasePart") then return f end
     end
     if model.PrimaryPart and model.PrimaryPart:IsA("BasePart") then return model.PrimaryPart end
@@ -30,13 +48,11 @@ end
 task.spawn(function()
     while true do
         pcall(function()
-         
-    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+            if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
                 for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
                     for _, v in ipairs(folder:GetChildren()) do
                         if v.Name == "HitPlayer" then v:Destroy() end
-                 
-    end
+                    end
                 end
             end
         end)
@@ -54,8 +70,7 @@ local function findMachinesFolders()
     end
 
     -- under Floor (common)
-   
-  if Workspace:FindFirstChild("Floor") then
+    if Workspace:FindFirstChild("Floor") then
         for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
             if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "machines" then
                 table.insert(folders, obj)
@@ -65,7 +80,6 @@ local function findMachinesFolders()
 
     -- search entire workspace for any folder/model literally named "Machines"
     for _, obj in ipairs(Workspace:GetDescendants()) do
- 
         if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "machines" then
             table.insert(folders, obj)
         end
@@ -77,13 +91,13 @@ local function findMachinesFolders()
     for _, f in ipairs(folders) do
         if f and not seen[f] then
             seen[f] = true
-     
-        table.insert(unique, f)
+            table.insert(unique, f)
         end
     end
     return unique
 end
 
+local LocalPlayer = Players.LocalPlayer
 local function gatherMachineParts()
     local parts = {}
 
@@ -92,8 +106,7 @@ local function gatherMachineParts()
     for _, machinesFolder in ipairs(folders) do
         for _, machine in ipairs(machinesFolder:GetChildren()) do
             if machine:IsA("Model") and not isFuseLike(machine.Name) then
-         
-        local rep = findRepresentativePart(machine) or machine
+                local rep = findRepresentativePart(machine) or machine
                 if rep then table.insert(parts, rep) end
             end
         end
@@ -102,14 +115,12 @@ local function gatherMachineParts()
     -- fallback: find models named like "*machine*" anywhere (helpful for unusual maps)
     if #parts == 0 then
         for _, obj in ipairs(Workspace:GetDescendants()) do
-       
-      if obj:IsA("Model") and not isFuseLike(obj.Name) then
+            if obj:IsA("Model") and not isFuseLike(obj.Name) then
                 if tostring(obj.Name):lower():find("machine") then
                     local rep = findRepresentativePart(obj) or obj
                     table.insert(parts, rep)
                 end
-          
-    end
+            end
         end
     end
 
@@ -118,8 +129,7 @@ local function gatherMachineParts()
         for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
             if obj:IsA("Model") and not isFuseLike(obj.Name) then
                 local rep = findRepresentativePart(obj)
-           
-          if rep and (tostring(obj.Name):lower():find("machine") or rep.Name:lower():find("machine") ) then
+                if rep and (tostring(obj.Name):lower():find("machine") or rep.Name:lower():find("machine") ) then
                     table.insert(parts, rep)
                 end
             end
@@ -132,8 +142,7 @@ end
 local function findNearestMachinePart()
     local char = LocalPlayer.Character
     if not char then return nil end
-   
-  local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
     local parts = gatherMachineParts()
     if #parts == 0 then return nil end
@@ -147,8 +156,7 @@ local function teleportToPart(part, yOffset)
     if not part then return false end
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
-    if not hrp 
- then return false end
+    if not hrp then return false end
     pcall(function() hrp.CFrame = part.CFrame + Vector3.new(0, yOffset, 0) end)
     return true
 end
@@ -168,8 +176,7 @@ end
 local function teleportToElevator()
     local elevator = Workspace:FindFirstChild("Elevator")
     if not elevator then return false end
-    local spawn = elevator:FindFirstChild("ElevatorSpawn") or elevator:FindFirstChild("Elevator1") or elevator:FindFirstChild("Elevator2") 
- or findRepresentativePart(elevator)
+    local spawn = elevator:FindFirstChild("ElevatorSpawn") or elevator:FindFirstChild("Elevator1") or elevator:FindFirstChild("Elevator2") or findRepresentativePart(elevator)
     if not spawn then return false end
     return teleportToPart(spawn, 2)
 end
@@ -186,7 +193,6 @@ local function createHighlightForModel(model, color)
     hl.FillColor, hl.OutlineColor = color, color
     hl.FillTransparency = 0.55
     hl.Parent = workspace -- placing highlight in workspace is fine
- 
     espMap[model] = hl
 end
 
@@ -202,8 +208,7 @@ local function cleanupDeadHighlights()
     for model, hl in pairs(espMap) do
         if not model or not model.Parent then
             pcall(function()
-             
-    if hl then hl:Destroy() end
+                if hl then hl:Destroy() end
             end)
             espMap[model] = nil
         end
@@ -217,14 +222,12 @@ task.spawn(function()
 
         -- Machines ESP
         if espMachinesOn then
-         
-    local parts = gatherMachineParts()
+            local parts = gatherMachineParts()
             for _, rep in ipairs(parts) do
                 local model = rep and rep:IsA("BasePart") and rep.Parent or rep
                 if model and model:IsA("Model") and not espMap[model] then
                     createHighlightForModel(model, Color3.fromRGB(0,200,0))
-        
-         end
+                end
             end
         end
 
@@ -233,31 +236,26 @@ task.spawn(function()
             -- search for any "Spirits" folder anywhere under Floor or workspace
             local foundSpiritFolders = {}
             if Workspace:FindFirstChild("Floor") then
- 
                 for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
                     if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "spirits" then
                         table.insert(foundSpiritFolders, obj)
                     end
-       
-          end
+                end
             end
             for _, obj in ipairs(Workspace:GetDescendants()) do
                 if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "spirits" then
                     table.insert(foundSpiritFolders, obj)
                 end
- 
             end
             -- iterate unique folders
             local seen = {}
             for _, folder in ipairs(foundSpiritFolders) do
                 if folder and not seen[folder] then
-                    seen[folder] 
- = true
+                    seen[folder] = true
                     for _, spirit in ipairs(folder:GetChildren()) do
                         if spirit:IsA("Model") and not espMap[spirit] then
                             createHighlightForModel(spirit, Color3.fromRGB(200,0,200))
-                
-         end
+                        end
                     end
                 end
             end
@@ -270,8 +268,7 @@ end)
 
 -- // AutoSkill
 do
-    local function 
- tryAttachSkillCheck(remote)
+    local function tryAttachSkillCheck(remote)
         if not remote then return end
         if remote:IsA("RemoteFunction") then
             remote.OnClientInvoke = function(...) return 2 end
@@ -281,8 +278,7 @@ do
     end
     for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
         if (v:IsA("RemoteFunction") or v:IsA("RemoteEvent")) and tostring(v.Name):lower():find("skill") then
-  
-           tryAttachSkillCheck(v)
+            tryAttachSkillCheck(v)
         end
     end
     ReplicatedStorage.DescendantAdded:Connect(function(desc)
@@ -302,8 +298,7 @@ end)
 task.spawn(function()
     while true do
         if staminaFlag and AddStamina then
-     
-        pcall(function() firesignal(AddStamina.OnClientEvent, 45) end)
+            pcall(function() AddStamina:FireServer(45) end) 
         end
         task.wait(0.2)
     end
@@ -316,14 +311,12 @@ task.spawn(function()
         if autoElevatorFlag then
             local elevator = Workspace:FindFirstChild("Elevator")
             if elevator then
-                local tele = 
- elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
+                local tele = elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
                 local msg = tele and tele:FindFirstChild("Message")
                 if msg and msg.Enabled then
                     teleportToElevator()
                     repeat task.wait(1) until not msg.Enabled
-             
-    end
+                end
             end
         end
         task.wait(1)
@@ -338,20 +331,19 @@ task.spawn(function()
             local parts = gatherMachineParts()
             if #parts > 0 then teleportToPart(parts[math.random(1,#parts)]) end
         end
-  
-       task.wait(3)
+        task.wait(3)
     end
 end)
 
 -- // Rayfield GUI
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- NOTE: Rayfield loadstring moved to the top for safety.
 
 local Window = Rayfield:CreateWindow({
-   Name = "Twilight Zone Hub",
-   LoadingTitle = "Twilight Zone Loader",
-   LoadingSubtitle = "by Ali_hhjjj",
-   ConfigurationSaving = { Enabled = false },
-   Discord = { Enabled = false }
+    Name = "Twilight Zone Hub",
+    LoadingTitle = "Twilight Zone Loader",
+    LoadingSubtitle = "by Ali_hhjjj",
+    ConfigurationSaving = { Enabled = false },
+    Discord = { Enabled = false }
 })
 
 local TabMain = Window:CreateTab("Main")
@@ -377,9 +369,7 @@ TabMain:CreateToggle({Name = "Infinite Stamina", CurrentValue = false, Callback 
 local PlayerTab = Window:CreateTab("👤 Player", 4483362458)
 
 -- Custom Speed
-local 
- Player = game.Players.LocalPlayer
-local Humanoid = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+local Humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
 local walkspeed = 16
 
 PlayerTab:CreateSlider({
@@ -394,12 +384,11 @@ PlayerTab:CreateSlider({
         if Humanoid then
             Humanoid.WalkSpeed = Value
         end
-    
- end,
+    end,
 })
 
 -- Update when respawn
-Player.CharacterAdded:Connect(function(char)
+player.CharacterAdded:Connect(function(char)
     Humanoid = char:WaitForChild("Humanoid")
     Humanoid.WalkSpeed = walkspeed
 end)
@@ -412,11 +401,10 @@ local function enableNoclip()
     if noclipConnection then return end
     noclipConnection = RunService.Stepped:Connect(function()
         if not noclip then return end
-        local character = Player.Character
+        local character = player.Character
         if character then
             for _, part in ipairs(character:GetDescendants()) do
-        
-         if part:IsA("BasePart") then
+                if part:IsA("BasePart") then
                     part.CanCollide = false
                 end
             end
@@ -428,10 +416,9 @@ local function disableNoclip()
     if noclipConnection then
         noclipConnection:Disconnect()
         noclipConnection = nil
-  
     end
     -- restore collisions
-    local character = Player.Character
+    local character = player.Character
     if character then
         for _, part in ipairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -443,8 +430,7 @@ end
 
 PlayerTab:CreateToggle({
     Name = "Noclip",
-    
- CurrentValue = false,
+    CurrentValue = false,
     Flag = "NoclipToggle",
     Callback = function(Value)
         noclip = Value
@@ -457,9 +443,8 @@ PlayerTab:CreateToggle({
 })
 
 -- ensure noclip is disabled and collisions restored on character respawn/death
-Player.CharacterAdded:Connect(function(char)
+player.CharacterAdded:Connect(function(char)
     -- small delay to let parts load
-  
     task.wait(0.2)
     if noclip then
         -- if noclip active, re-enable (ensures connection is active for new character)
@@ -480,17 +465,11 @@ TabCredits:CreateLabel("Created by Ali_hhjjj")
 TabCredits:CreateLabel("Tester: GoodJOBS3")
 TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 
-
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local hrp = LocalPlayer.Character 
- and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+-- Re-declared variables (using the already declared ones)
+local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 local hoverHeight = 10
 
-LocalPlayer.CharacterAdded:Connect(function(char)
+Players.LocalPlayer.CharacterAdded:Connect(function(char)
     hrp = char:WaitForChild("HumanoidRootPart")
 end)
 
@@ -507,17 +486,14 @@ task.spawn(function()
 end)
 
 
-
 local function getAllSpirits()
-   
-  local parts = {}
+    local parts = {}
     if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
         for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
             for _, spirit in ipairs(folder:GetChildren()) do
                 if spirit:IsA("Model") then
                     local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
-              
-       if part then table.insert(parts, part) end
+                    if part then table.insert(parts, part) end
                 end
             end
         end
@@ -532,15 +508,13 @@ local function teleportToPartSpirit(part) -- Renamed to avoid conflict
 end
 
 local function spiritEncountered()
-    local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
+    local gui = Players.LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
     if gui and gui:FindFirstChild("Top") then
- 
         local eye = gui.Top:FindFirstChild("EyeIcon")
         if eye then return eye.Visible end
     end
     return false
 end
-
 
 
 -- Anti Lag Toggle in Main Tab
@@ -552,28 +526,23 @@ TabMain:CreateToggle({
     Callback = function(state)
         antiLagFlag = state
         if antiLagFlag then
-            -- Disable 
- unnecessary effects/parts
+            -- Disable unnecessary effects/parts
             task.spawn(function()
                 while antiLagFlag do
                     -- Remove all decals
                     for _, obj in ipairs(workspace:GetDescendants()) do
-                     
-    if obj:IsA("Decal") or obj:IsA("Texture") then
+                        if obj:IsA("Decal") or obj:IsA("Texture") then
                             pcall(function() obj:Destroy() end)
                         end
                         -- Optionally remove particle emitters
-           
-              if obj:IsA("ParticleEmitter") then
+                        if obj:IsA("ParticleEmitter") then
                             pcall(function() obj.Enabled = false end)
                         end
                         -- Optionally remove sounds
-  
                         if obj:IsA("Sound") then
                             pcall(function() obj:Stop() end)
                         end
                     end
-  
                     task.wait(2)
                 end
             end)
@@ -586,8 +555,6 @@ TabMain:CreateToggle({
 local TabAutoCollect = Window:CreateTab("🎃 Auto Collect", 4483362458)
 
 -- // Services
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
 local HRP_Collect = player.Character and player.Character:FindFirstChild("HumanoidRootPart") -- Renamed to avoid confusion
 
 player.CharacterAdded:Connect(function(char)
@@ -609,8 +576,7 @@ end
 
 -- // Find first BasePart inside folder
 local function GetFirstBasePart(folder)
-	for _, obj in 
- pairs(folder:GetDescendants()) do
+	for _, obj in pairs(folder:GetDescendants()) do
 		if obj:IsA("BasePart") then
 			return obj
 		end
@@ -636,7 +602,7 @@ end
 -- // Find Candy & Stars folders
 local function findItemFolderByType(itemType)
 	local success, folder = pcall(function()
-		local currencies = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Currencies")
+		local currencie = workspace:WaitForChild("Floor"):WaitForChild("Items"):WaitForChild("Currencies")
 		return currencies:FindFirstChild(itemType)
 	end)
 	return success and folder
@@ -661,10 +627,8 @@ local AutoStars = false
 local AutoResearchBook = false
 local autoTeleportSpiritsFlag = false
 
--- FIX: Changed 'Tab Auto Collect' to 'TabAutoCollect'
 TabAutoCollect:CreateToggle({
-  
-   Name = "Auto Teleport to Spirits",
+    Name = "Auto Teleport to Spirits",
     CurrentValue = false,
     Flag = "AutoTeleportSpiritsHalloween",
     Callback = function(state)
@@ -673,25 +637,21 @@ TabAutoCollect:CreateToggle({
         if state then
             task.spawn(function()
                 if not hrp then return end
-            
-     local originalPos = hrp.CFrame
+                local originalPos = hrp.CFrame
                 local spirits = getAllSpirits()
                 if #spirits == 0 then return end
                 for _, part in ipairs(spirits) do
                     if not autoTeleportSpiritsFlag then break end
-      
-               teleportToPartSpirit(part)
+                    teleportToPartSpirit(part)
                     task.wait(0.5)
                     local elapsed = 0
                     while elapsed < 3 do
-                   
-      if spiritEncountered() then break end
+                        if spiritEncountered() then break end
                         task.wait(0.2)
                         elapsed = elapsed + 0.2
                     end
                 end
-   
-              hrp.CFrame = originalPos
+                hrp.CFrame = originalPos
                 hoverEnabled = false
                 autoTeleportSpiritsFlag = false
             end)
@@ -703,8 +663,7 @@ TabAutoCollect:CreateToggle({Name="🍬 Auto CandyCorn", CurrentValue=false, Cal
 TabAutoCollect:CreateToggle({Name="⭐ Auto Stars", CurrentValue=false, Callback=function(v) AutoStars=v end})
 TabAutoCollect:CreateToggle({Name="📖 Auto ResearchBook", CurrentValue=false, Callback=function(v) AutoResearchBook=v end})
 
--- 
- -- Main Loop
+-- Main Loop
 task.spawn(function()
 	while true do
 		if HRP_Collect then
