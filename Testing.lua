@@ -456,8 +456,7 @@ TabCredits:CreateLabel("Created by Ali_hhjjj")
 TabCredits:CreateLabel("Tester: GoodJOBS3")
 TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 
--- Halloween! tab
-local TabHalloween = Window:CrgffheateTab("🎃 Halloween!")
+
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -482,21 +481,7 @@ task.spawn(function()
     end
 end)
 
-local function getAllCandyParts()
-    local parts = {}
-    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Items") then
-        for _, container in ipairs(Workspace.Floor.Items.Currencies:GetChildren()) do
-            if container:FindFirstChild("CandyCorns") then
-                local main = container.CandyCorns:FindFirstChild("Main")
-                if main then
-                    local cube = main:FindFirstChild("Cube")
-                    if cube then table.insert(parts, cube) end
-                end
-            end
-        end
-    end
-    return parts
-end
+
 
 local function getAllSpirits()
     local parts = {}
@@ -528,41 +513,6 @@ local function spiritEncountered()
     return false
 end
 
-TabHalloween:CreateButton({
-    Name = "Teleport to Candy",
-    Callback = function()
-        local candies = getAllCandyParts()
-        if #candies == 0 or not hrp then return end
-        local originalPos = hrp.CFrame
-        local randomCandy = candies[math.random(1,#candies)]
-        teleportToPart(randomCandy)
-        task.wait(1.5)
-        hrp.CFrame = originalPos
-    end
-})
-
-local autoTeleportCandyFlag = false
-TabHalloween:CreateToggle({
-    Name = "Auto Teleport to Candys",
-    CurrentValue = false,
-    Flag = "AutoTeleportCandyHalloween",
-    Callback = function(state)
-        autoTeleportCandyFlag = state
-        if state then
-            task.spawn(function()
-                while autoTeleportCandyFlag do
-                    local candies = getAllCandyParts()
-                    for _, cube in ipairs(candies) do
-                        if not autoTeleportCandyFlag then break end
-                        teleportToPart(cube)
-                        task.wait(0.2)
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
-    end
-})
 
 local autoTeleportSpiritsFlag = false
 TabAutoCollect:CreateToggle({
