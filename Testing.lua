@@ -1,23 +1,11 @@
--- 🧩 Roblox Safe Loader Fix (Prevents "nil value" at line 1)
-if not game or not game.GetService then
-    repeat task.wait() until game and game.GetService
-end
-
-repeat task.wait() until game:IsLoaded()
+-repeat task.wait() until game:IsLoaded() and game:GetService("Players") and game:GetService("Players").LocalPlayer
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-
-while not player do
-    task.wait()
-    player = Players.LocalPlayer
-end
-
 repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 
 local HRP = player.Character:FindFirstChild("HumanoidRootPart")
 print("[✅ Player loaded safely!]", player.Name)
-
 -- // Util
 local function findRepresentativePart(model)
     if not model then return nil end
