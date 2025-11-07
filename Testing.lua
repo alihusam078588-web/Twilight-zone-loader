@@ -625,7 +625,7 @@ local AutoCandy = false
 local AutoStars = false
 local AutoResearchBook = false
 local autoTeleportSpiritsFlag = false
-TabAuto Collect:CreateToggle({
+TabAutoCollect:CreateToggle({
     Name = "Auto Teleport to Spirits",
     CurrentValue = false,
     Flag = "AutoTeleportSpiritsHalloween",
@@ -657,9 +657,9 @@ TabAuto Collect:CreateToggle({
     end
 })
 
-Tab:CreateToggle({Name="🍬 Auto CandyCorn", CurrentValue=false, Callback=function(v) AutoCandy=v end})
-Tab:CreateToggle({Name="⭐ Auto Stars", CurrentValue=false, Callback=function(v) AutoStars=v end})
-Tab:CreateToggle({Name="📖 Auto ResearchBook", CurrentValue=false, Callback=function(v) AutoResearchBook=v end})
+TabAutoCollect:CreateToggle({Name="🍬 Auto CandyCorn", CurrentValue=false, Callback=function(v) AutoCandy=v end})
+TabAutoCollect:CreateToggle({Name="⭐ Auto Stars", CurrentValue=false, Callback=function(v) AutoStars=v end})
+TabAutoCollect:CreateToggle({Name="📖 Auto ResearchBook", CurrentValue=false, Callback=function(v) AutoResearchBook=v end})
 
 -- // Main Loop
 task.spawn(function()
