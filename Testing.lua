@@ -457,7 +457,7 @@ TabCredits:CreateLabel("Tester: GoodJOBS3")
 TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 
 -- Halloween! tab
-local TabHalloween = Window:CreateTab("🎃 Halloween!")
+local TabHalloween = Window:CrgffheateTab("🎃 Halloween!")
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -565,7 +565,7 @@ TabHalloween:CreateToggle({
 })
 
 local autoTeleportSpiritsFlag = false
-TabHalloween:CreateToggle({
+TabAutoCollect:CreateToggle({
     Name = "Auto Teleport to Spirits",
     CurrentValue = false,
     Flag = "AutoTeleportSpiritsHalloween",
