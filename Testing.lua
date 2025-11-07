@@ -1,24 +1,22 @@
--- 🧩 LocalPlayer Safe Loader Fix (for all executors)
-repeat task.wait() until game:IsLoaded()
-local Players = game:GetService("Players")
+-- 🧩 Roblox Safe Loader Fix (Prevents "nil value" at line 1)
+if not game or not game.GetService then
+    repeat task.wait() until game and game.GetService
+end
 
--- Wait for LocalPlayer to exist
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+
 while not player do
     task.wait()
     player = Players.LocalPlayer
 end
 
--- Wait for Character & HumanoidRootPart
 repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
 local HRP = player.Character:FindFirstChild("HumanoidRootPart")
-
 print("[✅ Player loaded safely!]", player.Name)
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
 
 -- // Util
 local function findRepresentativePart(model)
