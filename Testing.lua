@@ -1,7 +1,6 @@
 -- =======================================================
 --  *** ULTRA-SAFE LOADING (For 'Toon' and Exploits) ***
 -- =======================================================
-
 -- Line 1: Wait for essential services and the LocalPlayer to be accessible.
 repeat task.wait() until game and game:IsLoaded() and game:GetService("Players") and game:GetService("Players").LocalPlayer
 
