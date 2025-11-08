@@ -1,6 +1,12 @@
 -- =======================================================
 --  *** ULTRA-SAFE LOADING (For 'Toon' and Exploits) ***
 -- =======================================================
+
+-- NEW FIX FOR LINE 1: Wait for the executor to stabilize before running the main logic.
+wait(0.1) -- Wait for the executor to settle
+
+pcall(function() -- Wrap entire script in a pcall for initial safety
+
 -- Line 1: Wait for essential services and the LocalPlayer to be accessible.
 repeat task.wait() until game and game:IsLoaded() and game:GetService("Players") and game:GetService("Players").LocalPlayer
 
@@ -22,8 +28,7 @@ if not success or not result then
     warn("Rayfield load failed (standard method). Trying fallback...")
     Rayfield = require(game:GetService("ReplicatedStorage").Rayfield) -- This assumes a different exploit setup
     if not Rayfield then
-   
-     -- If all else fails, the script will continue but no GUI will appear.
+        -- If all else fails, the script will continue but no GUI will appear.
 error("Failed to load Rayfield GUI library. No GUI will display.")
     end
 else
@@ -403,7 +408,7 @@ local TabCredits = Window:CreateTab("Credits")
 -- ESP Tab
 TabESP:CreateToggle({Name = "ESP Machines", CurrentValue = false, Callback = function(v) espMachinesOn = v;
  if not v then clearAllHighlights() end end})
-TabESP:CreateToggle({Name = "ESP Spirits", CurrentValue = false, Callback = function(v) espSpiritsOn = v; if not v then clearAllHighlights() end end})
+TabESP:CreateToggle({Name = "ESP Spirits", CurrentValue = false, Callback = function(v) espSpiritsOn = v; if not v then clearAllHighlights() end})
 
 -- Main Tab
 TabMain:CreateButton({Name = "Teleport: Nearest Machine", Callback = teleportToNearestMachine})
@@ -629,7 +634,7 @@ end)
 -- // Fire "E" prompt (mobile safe)
 local function fireE(prompt)
 	pcall(function()
-			if fireproximityprompt then
+		if fireproximityprompt then
 			fireproximityprompt(prompt)
 		else
 			prompt:InputHoldBegin()
@@ -806,3 +811,5 @@ game.StarterGui:SetCore("SendNotification", {
     Text = "Godmode and Auto Skillcheck is ACTIVE!",
     Duration = 8
 })
+
+end) -- Closing the pcall function
