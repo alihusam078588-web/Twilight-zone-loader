@@ -3,6 +3,11 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+
+-- FIX: Wait for LocalPlayer to exist before assigning it.
+local LocalPlayer
+repeat task.wait() until Players.LocalPlayer
+LocalPlayer = Players.LocalPlayer
 local LocalPlayer = Players.LocalPlayer
 
 -- // Util
