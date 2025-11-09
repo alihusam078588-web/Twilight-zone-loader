@@ -1,9 +1,17 @@
+-- // FIX for Line 1 Error & Character Loading (Explicit Waits)
+wait(0.5) -- Small delay to allow the executor to initialize fully
+
 -- // Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+
+-- Ensure player and character are fully loaded before proceeding
 local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local hrp = Character:WaitForChild("HumanoidRootPart")
+-- (hrp is now guaranteed to exist at this point)
 
 -- // Util
 local function findRepresentativePart(model)
@@ -123,11 +131,11 @@ end
 local function findNearestMachinePart()
     local char = LocalPlayer.Character
     if not char then return nil end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
+    local hrp_check = char:FindFirstChild("HumanoidRootPart")
+    if not hrp_check then return nil end
     local parts = gatherMachineParts()
     if #parts == 0 then return nil end
-    table.sort(parts, function(a,b) return (a.Position - hrp.Position).Magnitude < (b.Position - hrp.Position).Magnitude end)
+    table.sort(parts, function(a,b) return (a.Position - hrp_check.Position).Magnitude < (b.Position - hrp_check.Position).Magnitude end)
     return parts[1]
 end
 
@@ -136,9 +144,9 @@ local function teleportToPart(part, yOffset)
     yOffset = yOffset or 5
     if not part then return false end
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
-    if not hrp then return false end
-    pcall(function() hrp.CFrame = part.CFrame + Vector3.new(0, yOffset, 0) end)
+    local hrp_tele = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
+    if not hrp_tele then return false end
+    pcall(function() hrp_tele.CFrame = part.CFrame + Vector3.new(0, yOffset, 0) end)
     return true
 end
 
@@ -344,6 +352,7 @@ local function fireCollectRemote(remoteName)
 end
 
 -- Using common remote names for item collection. Replace these if they don't work.
+-- If these don't work, you must find the exact names.
 local RESEARCH_REMOTE_NAME = "CollectBook" 
 local STAR_REMOTE_NAME = "CollectStar" 
 
@@ -352,7 +361,6 @@ local autoResearchFlag = false
 task.spawn(function()
     while true do
         if autoResearchFlag then
-            -- Attempt to fire the remote, assuming the server handles proximity/existence
             fireCollectRemote(RESEARCH_REMOTE_NAME) 
         end
         task.wait(5) 
@@ -364,7 +372,6 @@ local autoStarsFlag = false
 task.spawn(function()
     while true do
         if autoStarsFlag then
-            -- Attempt to fire the remote, assuming the server handles proximity/existence
             fireCollectRemote(STAR_REMOTE_NAME)
         end
         task.wait(3) 
@@ -389,7 +396,7 @@ local Window = Rayfield:CreateWindow({
 
 local TabMain = Window:CreateTab("Main")
 local TabESP = Window:CreateTab("ESP")
-local TabAutoCollect = Window:CreateTab("✨ Auto Collect") -- <<-- NEW TAB CREATED HERE
+local TabAutoCollect = Window:CreateTab("✨ Auto Collect")
 local TabCredits = Window:CreateTab("Credits")
 
 -- ESP Tab
@@ -437,7 +444,7 @@ TabMain:CreateToggle({
     end
 })
 
--- <<-- NEW AUTO COLLECT TAB CONTENT START (All Auto Collect Features) -->>
+-- <<-- AUTO COLLECT TAB CONTENT START (All Auto Collect Features) -->>
 TabAutoCollect:CreateToggle({
     Name = "Auto Teleport to Candys (Auto Candycorn)",
     CurrentValue = false,
@@ -459,16 +466,16 @@ TabAutoCollect:CreateToggle({
     Name = "Auto Research Book",
     CurrentValue = false,
     Flag = "AutoResearchBookToggle",
-    Callback = function(v) autoResearchFlag = v end -- Links to new logic above
+    Callback = function(v) autoResearchFlag = v end
 })
 
 TabAutoCollect:CreateToggle({
     Name = "Auto Stars",
     CurrentValue = false,
     Flag = "AutoStarsToggle",
-    Callback = function(v) autoStarsFlag = v end -- Links to new logic above
+    Callback = function(v) autoStarsFlag = v end
 })
--- <<-- NEW AUTO COLLECT TAB CONTENT END -->>
+-- <<-- AUTO COLLECT TAB CONTENT END -->>
 
 
 -- [[ PLAYER TAB ]] --
@@ -476,8 +483,7 @@ TabAutoCollect:CreateToggle({
 local PlayerTab = Window:CreateTab("👤 Player", 4483362458)
 
 -- Custom Speed
-local Player = game.Players.LocalPlayer
-local Humanoid = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 local walkspeed = 16
 
 PlayerTab:CreateSlider({
@@ -496,7 +502,7 @@ PlayerTab:CreateSlider({
 })
 
 -- Update when respawn
-Player.CharacterAdded:Connect(function(char)
+LocalPlayer.CharacterAdded:Connect(function(char)
     Humanoid = char:WaitForChild("Humanoid")
     Humanoid.WalkSpeed = walkspeed
 end)
@@ -509,7 +515,7 @@ local function enableNoclip()
     if noclipConnection then return end
     noclipConnection = RunService.Stepped:Connect(function()
         if not noclip then return end
-        local character = Player.Character
+        local character = LocalPlayer.Character
         if character then
             for _, part in ipairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
@@ -526,7 +532,7 @@ local function disableNoclip()
         noclipConnection = nil
     end
     -- restore collisions
-    local character = Player.Character
+    local character = LocalPlayer.Character
     if character then
         for _, part in ipairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -551,7 +557,7 @@ PlayerTab:CreateToggle({
 })
 
 -- ensure noclip is disabled and collisions restored on character respawn/death
-Player.CharacterAdded:Connect(function(char)
+LocalPlayer.CharacterAdded:Connect(function(char)
     -- small delay to let parts load
     task.wait(0.2)
     if noclip then
@@ -564,7 +570,7 @@ Player.CharacterAdded:Connect(function(char)
 end)
 
 -- if player leaves/reset, attempt restore
-Players.LocalPlayer.CharacterRemoving:Connect(function()
+LocalPlayer.CharacterRemoving:Connect(function()
     disableNoclip()
 end)
 
@@ -576,11 +582,6 @@ TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 -- Halloween! tab
 local TabHalloween = Window:CreateTab("🎃 Halloween!")
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 local hoverHeight = 10
 
 LocalPlayer.CharacterAdded:Connect(function(char)
@@ -630,7 +631,7 @@ local function getAllSpirits()
     return parts
 end
 
-local function teleportToPart(part)
+local function teleportToPartHover(part)
     if hrp and part then
         hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
     end
@@ -653,7 +654,7 @@ TabHalloween:CreateButton({
         if #candies == 0 or not hrp then return end
         local originalPos = hrp.CFrame
         local randomCandy = candies[math.random(1,#candies)]
-        teleportToPart(randomCandy)
+        teleportToPartHover(randomCandy)
         task.wait(1.5)
         hrp.CFrame = originalPos
     end
@@ -667,7 +668,7 @@ task.spawn(function()
             local candies = getAllCandyParts()
             for _, cube in ipairs(candies) do
                 if not autoTeleportCandyFlag then break end
-                teleportToPart(cube)
+                teleportToPartHover(cube)
                 task.wait(0.2)
             end
         end
@@ -690,7 +691,7 @@ task.spawn(function()
             if #spirits > 0 then
                 for _, part in ipairs(spirits) do
                     if not autoTeleportSpiritsFlag then break end
-                    teleportToPart(part)
+                    teleportToPartHover(part)
                     task.wait(0.5)
                     local elapsed = 0
                     while elapsed < 3 do
@@ -717,6 +718,6 @@ end)
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "TZ Script 💫",
-    Text = "Godmode and Auto Skillcheck is ACTIVE! New 'Auto Collect' Tab created.",
+    Text = "Godmode, Auto Skillcheck, and 'Auto Collect' features are ACTIVE!",
     Duration = 8
 })
