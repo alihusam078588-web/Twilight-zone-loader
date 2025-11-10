@@ -27,8 +27,7 @@ task.spawn(function()
         pcall(function()
             if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
                 for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
-                    for _, v 
-in ipairs(folder:GetChildren()) do
+                    for _, v in ipairs(folder:GetChildren()) do
                         if v.Name == "HitPlayer" then v:Destroy() end
                     end
                 end
@@ -131,8 +130,7 @@ end
 
 local function teleportToRandomMachine()
     local parts = gatherMachineParts()
-    if #parts 
-== 0 then return false end
+    if #parts == 0 then return false end
     return teleportToPart(parts[math.random(1,#parts)])
 end
 
@@ -155,8 +153,7 @@ local espMachinesOn, espSpiritsOn = false, false
 local espMap = {} 
 
 local function createHighlightForModel(model, color)
-    if not 
-model or not model.Parent or espMap[model] then return end
+    if not model or not model.Parent or espMap[model] then return end
     local hl = Instance.new("Highlight")
     hl.Name = "TZ_HL"
     hl.Adornee = model
@@ -174,8 +171,7 @@ local function clearAllHighlights()
 end
 
 local function cleanupDeadHighlights()
-    for model, hl in pairs(espMap) 
-do
+    for model, hl in pairs(espMap) do
         if not model or not model.Parent then
             pcall(function()
                 if hl then hl:Destroy() end
@@ -293,8 +289,7 @@ task.spawn(function()
     end
 end)
 
-local autoTeleportFlag = 
-false
+local autoTeleportFlag = false
 task.spawn(function()
     while true do
         if autoTeleportFlag then
@@ -315,8 +310,8 @@ local autoCollectBooksFlag = false
 local autoCollectStarsFlag = false
 
 local function getCharacterAndHRP()
-    local char 
-= LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    -- FIX: Ensure 'char' and 'hrp_local' assignment expressions are single-line to avoid syntax errors
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp_local = char and char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
     return char, hrp_local
 end
@@ -460,8 +455,7 @@ local function startAutoCollectStars()
         while autoCollectStarsFlag do
             local items = getAllStars()
             for _, itemModel in ipairs(items) do
-                if 
-not autoCollectStarsFlag then break end
+                if not autoCollectStarsFlag then break end
                 local partToTeleport = findRepresentativePart(itemModel) or itemModel 
                 if partToTeleport then
                     teleportToPart(partToTeleport, 2) -- Use a small, safe offset for collection
@@ -521,8 +515,7 @@ local function autoBypassSpirits()
         
         for _, part in ipairs(spirits) do
             if not autoTeleportSpiritsFlag then break end
-            hrp_local.CFrame 
-= CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
+            hrp_local.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
             task.wait(0.5)
             
             local elapsed = 0
@@ -764,7 +757,7 @@ end)
 
 TabCredits:CreateLabel("Created by Ali_hhjjj")
 TabCredits:CreateLabel("Tester: GoodJOBS3")
-TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub) and shelly (riddance manager) for Rayfield idea")
+TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
 
 
 game.StarterGui:SetCore("SendNotification", {
