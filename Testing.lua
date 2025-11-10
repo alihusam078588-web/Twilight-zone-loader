@@ -1,5 +1,5 @@
--- // Services (The executor is likely misreporting the line number here)
-task.wait(1) -- Added wait to ensure the Roblox environment is fully initialized
+-- // Services (Initial wait added for environment stability)
+task.wait(1) 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
