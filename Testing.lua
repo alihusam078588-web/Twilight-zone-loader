@@ -517,17 +517,38 @@ local function autoBypassSpirits()
 end
 
 -- ******************************************************
--- // RAYFIELD GUI (Updated)
+-- // RAYFIELD GUI (Updated with Safety Check)
 -- ******************************************************
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield
+local httpCode = game:HttpGet('https://sirius.menu/rayfield')
+
+if httpCode and httpCode ~= "" then
+    local loader = loadstring(httpCode)
+    if loader then
+        local success, result = pcall(loader)
+        if success and result then
+            Rayfield = result
+        end
+    end
+end
+
+if not Rayfield then
+    -- If Rayfield failed to load, notify user and stop GUI creation
+    warn("Failed to load Rayfield UI library.")
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Script Error ❌",
+        Text = "Failed to load the UI library. Check your executor or connection.",
+        Duration = 8
+    })
+    return -- Stop execution if GUI library fails, as the rest of the script is GUI-dependent.
+end
 
 local Window = Rayfield:CreateWindow({
    Name = "Twilight Zone Hub",
    LoadingTitle = "Twilight Zone Loader",
    LoadingSubtitle = "by Ali_hhjjj",
-   ConfigurationSaving 
-= { Enabled = false },
+   ConfigurationSaving = { Enabled = false },
    Discord = { Enabled = false }
 })
 
