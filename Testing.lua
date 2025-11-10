@@ -1,4 +1,6 @@
--- // Services
+-- // Services (The executor is likely misreporting the line number here)
+task.wait(1) -- Added wait to ensure the Roblox environment is fully initialized
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -527,7 +529,6 @@ end)
 
 if not Rayfield or not success then
     -- If Rayfield failed to load (for any reason), notify user and stop GUI creation.
-    -- This prevents the "attempt to call a nil value" error.
     warn("Failed to load Rayfield UI library: " .. (errorMessage or "Unknown error"))
     game.StarterGui:SetCore("SendNotification", {
         Title = "Script Error ❌",
