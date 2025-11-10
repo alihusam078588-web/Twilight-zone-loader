@@ -342,9 +342,8 @@ task.spawn(function()
 end)
 
 
--- ******************************************************
--- // FIXED: AUTO COLLECT TAB LOGIC (Candy & Spirits)
--- ******************************************************
+---
+## ⭐ Auto Collect Logic
 
 local hrp -- Re-declare HRP for this section's use
 local hoverHeight = 10
@@ -516,32 +515,26 @@ local function autoBypassSpirits()
     end)
 end
 
--- ******************************************************
--- // RAYFIELD GUI (Updated with Safety Check)
--- ******************************************************
+---
+## Rayfield GUI Setup (Safeguarded)
 
 local Rayfield
-local httpCode = game:HttpGet('https://sirius.menu/rayfield')
 
-if httpCode and httpCode ~= "" then
-    local loader = loadstring(httpCode)
-    if loader then
-        local success, result = pcall(loader)
-        if success and result then
-            Rayfield = result
-        end
-    end
-end
+-- Attempt to load Rayfield UI library with pcall safety
+local success, errorMessage = pcall(function()
+    Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+end)
 
-if not Rayfield then
-    -- If Rayfield failed to load, notify user and stop GUI creation
-    warn("Failed to load Rayfield UI library.")
+if not Rayfield or not success then
+    -- If Rayfield failed to load (for any reason), notify user and stop GUI creation.
+    -- This prevents the "attempt to call a nil value" error.
+    warn("Failed to load Rayfield UI library: " .. (errorMessage or "Unknown error"))
     game.StarterGui:SetCore("SendNotification", {
         Title = "Script Error ❌",
         Text = "Failed to load the UI library. Check your executor or connection.",
         Duration = 8
     })
-    return -- Stop execution if GUI library fails, as the rest of the script is GUI-dependent.
+    return -- Stop execution if GUI library fails.
 end
 
 local Window = Rayfield:CreateWindow({
@@ -630,7 +623,8 @@ TabCollect:CreateToggle({
 })
 
 
--- [[ PLAYER TAB ]] --
+---
+## 👤 Player Tab
 
 local PlayerTab = Window:CreateTab("👤 Player", 4483362458)
 
