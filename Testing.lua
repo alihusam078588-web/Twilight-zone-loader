@@ -3,11 +3,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-
--- FIX: Wait for LocalPlayer to exist before assigning it.
-local LocalPlayer
-repeat task.wait() until Players.LocalPlayer
-LocalPlayer = Players.LocalPlayer
 local LocalPlayer = Players.LocalPlayer
 
 -- // Util
@@ -37,7 +32,7 @@ task.spawn(function()
             if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
                 for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
                
-     for _, v in ipairs(folder:GetChildren()) do
+      for _, v in ipairs(folder:GetChildren()) do
                         if v.Name == "HitPlayer" then v:Destroy() end
                     end
                 end
@@ -62,7 +57,7 @@ local function findMachinesFolders()
         for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
             if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "machines" then
        
-         table.insert(folders, obj)
+          table.insert(folders, obj)
             end
         end
     end
@@ -75,7 +70,7 @@ local function findMachinesFolders()
     end
 
    
- -- dedupe
+    -- dedupe
     local seen = {}
     local unique = {}
     for _, f in ipairs(folders) do
@@ -99,7 +94,7 @@ found "Machines" folders
                 local rep = findRepresentativePart(machine) or machine
                 if rep then table.insert(parts, rep) end
           
-  end
+    end
         end
     end
 
@@ -109,7 +104,7 @@ found "Machines" folders
             if obj:IsA("Model") and not isFuseLike(obj.Name) then
                 if tostring(obj.Name):lower():find("machine") then
                
-     local rep = findRepresentativePart(obj) or obj
+      local rep = findRepresentativePart(obj) or obj
                     table.insert(parts, rep)
                 end
             end
@@ -119,13 +114,13 @@ found "Machines" folders
     -- final fallback: any models under Floor that look like machines (robust attempt)
     if #parts == 0 and Workspace:FindFirstChild("Floor") then
    
-     for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
+      for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
             if obj:IsA("Model") and not isFuseLike(obj.Name) then
                 local rep = findRepresentativePart(obj)
                 if rep and (tostring(obj.Name):lower():find("machine") or rep.Name:lower():find("machine") ) then
                     table.insert(parts, rep)
           
-      end
+       end
             end
         end
     end
@@ -160,7 +155,7 @@ local function teleportToRandomMachine()
     local parts = gatherMachineParts()
     if #parts == 0 then return false end
    
- return teleportToPart(parts[math.random(1,#parts)])
+    return teleportToPart(parts[math.random(1,#parts)])
 end
 
 local function teleportToNearestMachine()
@@ -183,7 +178,7 @@ local espMap = {} -- key = target model, value = Highlight instance
 
 local function createHighlightForModel(model, color)
     
-if not model or not model.Parent or espMap[model] then return end
+    if not model or not model.Parent or espMap[model] then return end
     local hl = Instance.new("Highlight")
     hl.Name = "TZ_HL"
     hl.Adornee = model
@@ -211,7 +206,7 @@ local function cleanupDeadHighlights()
             espMap[model] = nil
         end
   
-  end
+    end
 end
 
 task.spawn(function()
@@ -233,7 +228,7 @@ and rep:IsA("BasePart") and rep.Parent or rep
 
         -- Spirits ESP
      
-   if espSpiritsOn then
+    if espSpiritsOn then
             -- search for any "Spirits" folder anywhere under Floor or workspace
             local foundSpiritFolders = {}
             if Workspace:FindFirstChild("Floor") then
@@ -246,24 +241,24 @@ obj:IsA("Model")) and tostring(obj.Name):lower() == "spirits" then
             end
             for _, obj in ipairs(Workspace:GetDescendants()) do
      
-           if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "spirits" then
+            if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "spirits" then
                     table.insert(foundSpiritFolders, obj)
                 end
             end
             -- iterate unique folders
             local seen = {}
   
-          for _, folder in ipairs(foundSpiritFolders) do
+           for _, folder in ipairs(foundSpiritFolders) do
                 if folder and not seen[folder] then
                     seen[folder] = true
                     for _, spirit in ipairs(folder:GetChildren()) do
                  
-       if spirit:IsA("Model") and not espMap[spirit] then
+        if spirit:IsA("Model") and not espMap[spirit] then
                             createHighlightForModel(spirit, Color3.fromRGB(200,0,200))
                         end
                     end
                
- end
+    end
             end
         end
 
@@ -279,7 +274,7 @@ do
         if remote:IsA("RemoteFunction") then
             remote.OnClientInvoke = function(...) return 2 end
    
-     elseif remote:IsA("RemoteEvent") then
+        elseif remote:IsA("RemoteEvent") then
             remote.OnClientEvent:Connect(function(...) end)
         end
     end
@@ -291,7 +286,7 @@ do
     ReplicatedStorage.DescendantAdded:Connect(function(desc)
         if (desc:IsA("RemoteFunction") or desc:IsA("RemoteEvent")) and tostring(desc.Name):lower():find("skill") then
    
-         tryAttachSkillCheck(desc)
+          tryAttachSkillCheck(desc)
         end
     end)
 end
@@ -317,7 +312,7 @@ local autoElevatorFlag = false
 task.spawn(function()
     while true do
  
-       if autoElevatorFlag then
+        if autoElevatorFlag then
             local elevator = Workspace:FindFirstChild("Elevator")
             if elevator then
                 local tele = elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
@@ -337,7 +332,7 @@ end)
 local autoTeleportFlag = false
 task.spawn(function()
   
-  while true do
+    while true do
         if autoTeleportFlag then
             local parts = gatherMachineParts()
             if #parts > 0 then teleportToPart(parts[math.random(1,#parts)]) end
@@ -347,25 +342,49 @@ task.spawn(function()
 end)
 
 
--- // Halloween / Auto Collect Logic (Moved from the end of the script)
+-- ******************************************************
+-- // FIXED: AUTO COLLECT TAB LOGIC (Candy & Spirits)
+-- ******************************************************
+
+local hrp -- Re-declare HRP for this section's use
+local hoverHeight = 10
+local hoverEnabled = false
+local autoCollectCandyFlag = false
+local autoTeleportSpiritsFlag = false
 
 local function getCharacterAndHRP()
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hrp = char and char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
-    return char, hrp
+    local hrp_local = char and char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
+    return char, hrp_local
 end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    hrp = char:WaitForChild("HumanoidRootPart")
+end)
+
+-- Hover/Antigravity loop (used for Auto Bypass Spirits)
+task.spawn(function()
+    while true do
+        if hoverEnabled and hrp then
+            hrp.Velocity = Vector3.new(0,0,0)
+            hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            hrp.CFrame = CFrame.new(hrp.Position.X, hoverHeight, hrp.Position.Z)
+        end
+        task.wait(0.05)
+    end
+end)
+
 
 local function getAllCandyParts()
     local parts = {}
     if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Items") then
-        -- This logic is already robust for the given game structure
         for _, container in ipairs(Workspace.Floor.Items.Currencies:GetChildren()) do
             if container:FindFirstChild("CandyCorns") then
                 local main = container.CandyCorns:FindFirstChild("Main")
                 if main then
     
-                local cube = main:FindFirstChild("Cube")
-                    if cube then table.insert(parts, cube) end
+                    local cube = main:FindFirstChild("Cube")
+                    if cube and cube.Parent then table.insert(parts, cube) end -- Check for existence
                 end
             end
         end
@@ -376,13 +395,13 @@ end
 local function getAllSpirits()
     local parts = {}
   
-  if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
         for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
             for _, spirit in ipairs(folder:GetChildren()) do
                 if spirit:IsA("Model") then
                     local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
                     
-if part then table.insert(parts, part) end
+                    if part then table.insert(parts, part) end
                 end
             end
         end
@@ -390,49 +409,63 @@ if part then table.insert(parts, part) end
     return parts
 end
 
--- Teleport function for collecting - moves HRP to the item's Y level
-local hoverHeight = 10
-local function teleportToPartForCollect(part)
-    local _, hrp = getCharacterAndHRP()
-    if hrp and part then
-        -- Teleport directly onto the part's X/Z but use a fixed, slightly raised Y to ensure contact
-        hrp.CFrame = CFrame.new(part.Position.X, part.Position.Y + 1.5, part.Position.Z)
-        task.wait(0.1) -- Small wait to ensure Touched event fires
+-- Teleport function for collecting - FIX: moves HRP to the item's Y level and forces a touch
+local function teleportAndForceCollect(part)
+    local _, hrp_local = getCharacterAndHRP()
+    if hrp_local and part and hrp_local.Parent then
+        local originalCFrame = hrp_local.CFrame
+        
+        -- 1. Teleport above the item
+        hrp_local.CFrame = CFrame.new(part.Position.X, part.Position.Y + 5, part.Position.Z)
+        
+        -- 2. Force a strong downward velocity to guarantee a 'Touched' event on the part below
+        task.wait(0.05)
+        hrp_local.AssemblyLinearVelocity = Vector3.new(0, -300, 0) -- This is the key fix
+        
+        -- 3. Wait for the contact to happen and the item to be collected
+        task.wait(0.2) 
+        
+        -- 4. Stop movement
+        hrp_local.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        
+        return originalCFrame -- Return the CFrame so the caller can move back
     end
+    return nil
 end
 
 local function spiritEncountered()
     local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
     if gui and gui:FindFirstChild("Top") then
        
- local eye = gui.Top:FindFirstChild("EyeIcon")
+        local eye = gui.Top:FindFirstChild("EyeIcon")
         if eye then return eye.Visible end
     end
     return false
 end
 
--- Auto Collect Candy logic (The fixed feature)
-local autoCollectCandyFlag = false
+-- Auto Collect Candy loop
 local function autoCollectCandys()
     task.spawn(function()
-        local _, hrp = getCharacterAndHRP()
-        if not hrp then autoCollectCandyFlag = false return end
+        local _, hrp_local = getCharacterAndHRP()
+        if not hrp_local then autoCollectCandyFlag = false return end
 
         while autoCollectCandyFlag do
             local candies = getAllCandyParts()
-            local originalCFrame = hrp.CFrame -- Store original position
+            local originalCFrame = hrp_local.CFrame -- Store original position
 
             for _, cube in ipairs(candies) do
                 if not autoCollectCandyFlag then break end
-               
-         teleportToPartForCollect(cube)
-                task.wait(0.2) -- Wait for item to be collected
-                -- Item should be destroyed now if collected
+                
+                -- Collect the candy
+                teleportAndForceCollect(cube)
+                
+                -- Wait a moment for item to be collected and server to destroy it
+                task.wait(0.1) 
             end
             
-            -- Teleport back to original position to avoid being stuck
-            if autoCollectCandyFlag and hrp.Parent then
-                hrp.CFrame = originalCFrame
+            -- Teleport back to original position
+            if autoCollectCandyFlag and hrp_local.Parent and originalCFrame then
+                hrp_local.CFrame = originalCFrame
             end
             
             task.wait(1) -- Wait before scanning for new candy
@@ -440,79 +473,42 @@ local function autoCollectCandys()
     end)
 end
 
--- Teleport to Random Candy (Button)
-local function teleportToRandomCandy()
-    local candies = getAllCandyParts()
-    local _, hrp = getCharacterAndHRP()
-    if #candies == 0 or not hrp then return end
-    
-    local originalCFrame = hrp.CFrame
-    local randomCandy = candies[math.random(1,#candies)]
-    teleportToPartForCollect(randomCandy)
-  
-  task.wait(1.5) -- Wait a bit to ensure collection
-    hrp.CFrame = originalCFrame
-end
-
-
--- Auto Bypass Spirits logic (The original 'Auto Teleport to Spirits')
-local autoTeleportSpiritsFlag = false
-local hoverEnabled = false -- Re-using the original hover logic for this part
-
--- Original hover loop (moved to here to stay with its corresponding logic)
-local hrp
-LocalPlayer.CharacterAdded:Connect(function(char)
-    hrp = char:WaitForChild("HumanoidRootPart")
-end)
-task.spawn(function()
-    while true do
-        if hoverEnabled and hrp then
-            hrp.Velocity = Vector3.new(0,0,0)
-            hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-            hrp.CFrame = CFrame.new(hrp.Position.X, hoverHeight, hrp.Position.Z)
-     
-   end
-        task.wait(0.05)
-    end
-end)
-
+-- Auto Bypass Spirits (Uses original logic)
 local function autoBypassSpirits()
     task.spawn(function()
         local _, hrp_local = getCharacterAndHRP()
-        if not hrp_local then autoTeleportSpiritsFlag = false return end
+        if not hrp_local then 
+            autoTeleportSpiritsFlag = false 
+            hoverEnabled = false
+            return 
+        end
         
-        hoverEnabled = true -- Enable hover for easy movement
-        local originalCFrame = hrp_local.CFrame
+        local originalPos = hrp_local.CFrame
         local spirits = getAllSpirits()
         
         if #spirits == 0 then 
-            hoverEnabled = false 
-            autoTeleportSpiritsFlag = false
+            autoTeleportSpiritsFlag = false 
+            hoverEnabled = false
             return 
         end
         
         for _, part in ipairs(spirits) do
-            if 
-not autoTeleportSpiritsFlag then break end
+            if not autoTeleportSpiritsFlag then break end
             
-            -- Teleport slightly above the spirit to trigger encounter
+            -- teleportToPart is replaced by hover CFrame setting here for spirit logic consistency
             hrp_local.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
             task.wait(0.5)
             
             local elapsed = 0
             while elapsed < 3 do
- 
-          if spiritEncountered() then break end
+                if spiritEncountered() then break end
                 task.wait(0.2)
                 elapsed = elapsed + 0.2
             end
-            
-            if not autoTeleportSpiritsFlag then break end
- 
-       end
+        end
         
         if hrp_local.Parent then
-            hrp_local.CFrame = originalCFrame
+            hrp_local.CFrame = originalPos
         end
         
         hoverEnabled = false
@@ -520,7 +516,10 @@ not autoTeleportSpiritsFlag then break end
     end)
 end
 
--- // Rayfield GUI
+-- ******************************************************
+-- // RAYFIELD GUI (Updated)
+-- ******************************************************
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -549,9 +548,11 @@ TabMain:CreateButton({Name = "Teleport: Elevator", Callback = teleportToElevator
 TabMain:CreateToggle({Name = "Auto Teleport Machines", CurrentValue = false, Callback = function(v) autoTeleportFlag = v end})
 TabMain:CreateToggle({Name = "Auto Elevator", CurrentValue = false, Callback = function(v) autoElevatorFlag = v end})
 TabMain:CreateToggle({Name = "Infinite Stamina", CurrentValue = false, Callback = function(v) staminaFlag = v end})
+
+-- Anti Lag Toggle (Moved from end to Main Tab section)
+local antiLagFlag = false
 TabMain:CreateToggle({
-    Name = 
-"Anti Lag",
+    Name = "Anti Lag",
     CurrentValue = false,
     Flag = "AntiLagToggle",
     Callback = function(state)
@@ -561,40 +562,32 @@ TabMain:CreateToggle({
             task.spawn(function()
                 while antiLagFlag do
                 
-    -- Remove all decals
+                    -- Remove all decals
                     for _, obj in ipairs(workspace:GetDescendants()) do
                         if obj:IsA("Decal") or obj:IsA("Texture") then
                             pcall(function() obj:Destroy() end)
-          
-              end
+                        end
                         -- Optionally remove particle emitters
                         if obj:IsA("ParticleEmitter") then
-                            pcall(function() obj.Enabled = false 
-end)
+                            pcall(function() obj.Enabled = false end)
                         end
                         -- Optionally remove sounds
                         if obj:IsA("Sound") then
-                       
-     pcall(function() obj:Stop() end)
+                            pcall(function() obj:Stop() end)
                         end
                     end
                     task.wait(2)
                 end
             end)
- 
-       end
+        end
     end
 })
 
--- Auto Collect Tab (New)
-TabCollect:CreateButton({
-    Name = "Teleport: Nearest Candy",
-    Callback = teleportToRandomCandy
-})
+-- ⭐ Auto Collect Tab (NEW)
 TabCollect:CreateToggle({
     Name = "Auto Collect Candys",
     CurrentValue = false,
-    Flag = "AutoTeleportCandyHalloween",
+    Flag = "AutoCollectCandyHalloween",
     Callback = function(state)
         autoCollectCandyFlag = state
         if state then
@@ -608,6 +601,7 @@ TabCollect:CreateToggle({
     Flag = "AutoTeleportSpiritsHalloween",
     Callback = function(state)
         autoTeleportSpiritsFlag = state
+        hoverEnabled = state
         if state then
             autoBypassSpirits()
         end
@@ -659,7 +653,7 @@ local function enableNoclip()
         if character then
             for _, part in ipairs(character:GetDescendants()) do
         
-        if part:IsA("BasePart") then
+                if part:IsA("BasePart") then
                     part.CanCollide = false
                 end
             end
@@ -672,7 +666,7 @@ local function disableNoclip()
         noclipConnection:Disconnect()
         noclipConnection = nil
   
-  end
+    end
     -- restore collisions
     local character = Player.Character
     if character then
@@ -703,7 +697,7 @@ CurrentValue = false,
 Player.CharacterAdded:Connect(function(char)
     -- small delay to let parts load
   
-  task.wait(0.2)
+    task.wait(0.2)
     if noclip then
         -- if noclip active, re-enable (ensures connection is active for new character)
         enableNoclip()
