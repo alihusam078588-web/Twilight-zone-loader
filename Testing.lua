@@ -146,7 +146,43 @@ local function teleportToRandomMachine()
     if #parts == 0 then return false end
     return teleportToPart(parts[math.random(1,#parts)])
 end
-
+-- // Auto Collect Items
+local function collectNearbyItems()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    -- Search for Halloween items/collectibles
+    local collectibles = {}
+    
+    -- Look for items in common locations
+    if Workspace:FindFirstChild("Floor") then
+        for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
+            local name = tostring(obj.Name):lower()
+            -- Common collectible names
+            if (name:find("halloween") or name:find("candy") or name:find("item") or name:find("collectible")) 
+               and obj:IsA("BasePart") then
+                table.insert(collectibles, obj)
+            end
+        end
+    end
+    
+    -- Try to collect nearby items
+    for _, item in ipairs(collectibles) do
+        if item and item.Parent then
+            local distance = (item.Position - hrp.Position).Magnitude
+            if distance < 20 then -- within range
+                -- Try to fire touch/proximity events
+                pcall(function()
+                    firetouchinterest(hrp, item, 0)
+                    task.wait(0.1)
+                    firetouchinterest(hrp, item, 1)
+                end)
+            end
+        end
+    end
+end
 local function teleportToNearestMachine()
     local p = findNearestMachinePart()
     if not p then return false end
@@ -268,6 +304,21 @@ do
     end)
 end
 
+-- // Auto Teleport with Collection
+local autoTeleportFlag = false
+task.spawn(function()
+    while true do
+        if autoTeleportFlag then
+            local parts = gatherMachineParts()
+            if #parts > 0 then 
+                teleportToPart(parts[math.random(1,#parts)])
+                task.wait(0.5) -- wait after teleport
+                collectNearbyItems() -- collect items at location
+            end
+        end
+        task.wait(3)
+    end
+end)
 -- // Infinite Stamina
 local staminaFlag = false
 local AddStamina
