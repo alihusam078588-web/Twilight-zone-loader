@@ -146,43 +146,7 @@ local function teleportToRandomMachine()
     if #parts == 0 then return false end
     return teleportToPart(parts[math.random(1,#parts)])
 end
--- // Auto Collect Items
-local function collectNearbyItems()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    -- Search for Halloween items/collectibles
-    local collectibles = {}
-    
-    -- Look for items in common locations
-    if Workspace:FindFirstChild("Floor") then
-        for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
-            local name = tostring(obj.Name):lower()
-            -- Common collectible names
-            if (name:find("halloween") or name:find("candy") or name:find("item") or name:find("collectible")) 
-               and obj:IsA("BasePart") then
-                table.insert(collectibles, obj)
-            end
-        end
-    end
-    
-    -- Try to collect nearby items
-    for _, item in ipairs(collectibles) do
-        if item and item.Parent then
-            local distance = (item.Position - hrp.Position).Magnitude
-            if distance < 20 then -- within range
-                -- Try to fire touch/proximity events
-                pcall(function()
-                    firetouchinterest(hrp, item, 0)
-                    task.wait(0.1)
-                    firetouchinterest(hrp, item, 1)
-                end)
-            end
-        end
-    end
-end
+
 local function teleportToNearestMachine()
     local p = findNearestMachinePart()
     if not p then return false end
@@ -304,21 +268,6 @@ do
     end)
 end
 
--- // Auto Teleport with Collection
-local autoTeleportFlag = false
-task.spawn(function()
-    while true do
-        if autoTeleportFlag then
-            local parts = gatherMachineParts()
-            if #parts > 0 then 
-                teleportToPart(parts[math.random(1,#parts)])
-                task.wait(0.5) -- wait after teleport
-                collectNearbyItems() -- collect items at location
-            end
-        end
-        task.wait(3)
-    end
-end)
 -- // Infinite Stamina
 local staminaFlag = false
 local AddStamina
@@ -471,7 +420,170 @@ PlayerTab:CreateToggle({
             disableNoclip()
         end
     end,
+-- Halloween! tab
+local TabHalloween = Window:CreateTab("🎃 Halloween!")
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+local hoverHeight = 10
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    hrp = char:WaitForChild("HumanoidRootPart")
+end)
+
+local hoverEnabled = false
+task.spawn(function()
+    while true do
+        if hoverEnabled and hrp then
+            hrp.Velocity = Vector3.new(0,0,0)
+            hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            hrp.CFrame = CFrame.new(hrp.Position.X, hoverHeight, hrp.Position.Z)
+        end
+        task.wait(0.05)
+    end
+end)
+
+-- find candy cubes
+local function getAllCandyParts()
+    local parts = {}
+    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Items") then
+        for _, container in ipairs(Workspace.Floor.Items.Currencies:GetChildren()) do
+            if container:FindFirstChild("CandyCorns") then
+                local main = container.CandyCorns:FindFirstChild("Main")
+                if main then
+                    local cube = main:FindFirstChild("Cube")
+                    if cube then table.insert(parts, cube) end
+                end
+            end
+        end
+    end
+    return parts
+end
+
+-- find spirits
+local function getAllSpirits()
+    local parts = {}
+    if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+        for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
+            for _, spirit in ipairs(folder:GetChildren()) do
+                if spirit:IsA("Model") then
+                    local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
+                    if part then table.insert(parts, part) end
+                end
+            end
+        end
+    end
+    return parts
+end
+
+-- teleport helper
+local function teleportToPart(part)
+    if hrp and part then
+        hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
+    end
+end
+
+-- simulate candy collect
+local function collectCandy(candyPart)
+    if hrp and candyPart then
+        firetouchinterest(hrp, candyPart, 0)
+        task.wait()
+        firetouchinterest(hrp, candyPart, 1)
+    end
+end
+
+-- teleport + collect
+local function teleportAndCollectCandy(part)
+    if hrp and part then
+        hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
+        collectCandy(part)
+    end
+end
+
+-- check spirit encounter
+local function spiritEncountered()
+    local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
+    if gui and gui:FindFirstChild("Top") then
+        local eye = gui.Top:FindFirstChild("EyeIcon")
+        if eye then return eye.Visible end
+    end
+    return false
+end
+
+-- Manual button: teleport + collect
+TabHalloween:CreateButton({
+    Name = "Teleport & Collect Candy",
+    Callback = function()
+        local candies = getAllCandyParts()
+        if #candies == 0 or not hrp then return end
+        local originalPos = hrp.CFrame
+        local randomCandy = candies[math.random(1,#candies)]
+        teleportAndCollectCandy(randomCandy)
+        task.wait(1.5)
+        hrp.CFrame = originalPos
+    end
 })
+
+-- Auto candy teleport + collect
+local autoTeleportCandyFlag = false
+TabHalloween:CreateToggle({
+    Name = "Auto Teleport & Collect Candys",
+    CurrentValue = false,
+    Flag = "AutoTeleportCandyHalloween",
+    Callback = function(state)
+        autoTeleportCandyFlag = state
+        if state then
+            task.spawn(function()
+                while autoTeleportCandyFlag do
+                    local candies = getAllCandyParts()
+                    for _, cube in ipairs(candies) do
+                        if not autoTeleportCandyFlag then break end
+                        teleportAndCollectCandy(cube)
+                        task.wait(0.2)
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+-- Auto teleport spirits (unchanged)
+local autoTeleportSpiritsFlag = false
+TabHalloween:CreateToggle({
+    Name = "Auto Teleport to Spirits",
+    CurrentValue = false,
+    Flag = "AutoTeleportSpiritsHalloween",
+    Callback = function(state)
+        autoTeleportSpiritsFlag = state
+        hoverEnabled = state
+        if state then
+            task.spawn(function()
+                if not hrp then return end
+                local originalPos = hrp.CFrame
+                local spirits = getAllSpirits()
+                if #spirits == 0 then return end
+                for _, part in ipairs(spirits) do
+                    if not autoTeleportSpiritsFlag then break end
+                    teleportToPart(part)
+                    task.wait(0.5)
+                    local elapsed = 0
+                    while elapsed < 3 do
+                        if spiritEncountered() then break end
+                        task.wait(0.2)
+                        elapsed = elapsed + 0.2
+                    end
+                end
+                hrp.CFrame = originalPos
+                hoverEnabled = false
+                autoTeleportSpiritsFlag = false
+            end)
+        end
+    end
+})})
 
 -- ensure noclip is disabled and collisions restored on character respawn/death
 Player.CharacterAdded:Connect(function(char)
@@ -494,161 +606,8 @@ end)
 -- Credits Tab
 TabCredits:CreateLabel("Created by Ali_hhjjj")
 TabCredits:CreateLabel("Tester: GoodJOBS3")
-TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub)")
+TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub) and shelly (Riddance manager) for Rayfield idea")
 
--- Halloween! tab
-local TabHalloween = Window:CreateTab("🎃 Halloween!")
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-local hoverHeight = 10
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    hrp = char:WaitForChild("HumanoidRootPart")
-end)
--- Halloween! tab - FULLY WORKING AUTO CANDY + SPIRIT FARM
-local TabHalloween = Window:CreateTab("🎃 Halloween!", 7044233248)
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-
-local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-LocalPlayer.CharacterAdded:Connect(function(char)
-    hrp = char:WaitForChild("HumanoidRootPart")
-end)
-
-local HOVER_HEIGHT = 12
-local COLLECT_DELAY = 0.15  -- adjust if banned (0.1–0.2 is safe)
-
--- Hover system (used for spirit farming)
-local hoverEnabled = false
-RunService.Stepped:Connect(function()
-    if hoverEnabled and hrp then
-        hrp.Velocity = Vector3.new(0, 0, 0)
-        hrp.CFrame = CFrame.new(hrp.Position.X, HOVER_HEIGHT, hrp.Position.Z)
-    end
-end)
-
--- Find ALL Candy Corns (works on every map update)
-local function getAllCandyCorns()
-    local candies = {}
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj.Name == "Cube" and obj.Parent and obj.Parent.Name == "Main" and obj.Parent.Parent and obj.Parent.Parent.Name == "CandyCorns" then
-            if obj:IsA("BasePart") and obj:FindFirstChildOfClass("ProximityPrompt") or obj:FindFirstChild("TouchInterest") then
-                table.insert(candies, obj)
-            end
-        end
-    end
-    return candies
-end
-
--- Find ALL Spirits (HumanoidRootPart)
-local function getAllSpirits()
-    local spirits = {}
-    for _, folder in ipairs(Workspace:GetDescendants()) do
-        if folder.Name == "Spirits" or (folder.Parent and folder.Parent.Name == "Spirits") then
-            for _, spirit in ipairs(folder:GetChildren()) do
-                if spirit:IsA("Model") then
-                    local root = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart")
-                    if root then
-                        table.insert(spirits, root)
-                    end
-                end
-            end
-        end
-    end
-    return spirits
-end
-
--- Teleport + Collect Candy
-local function collectCandy(part)
-    if not hrp or not part or not part.Parent then return end
-    hrp.CFrame = part.CFrame + Vector3.new(0, 5, 0)
-    task.wait(0.05)
-    fireproximityprompt(part:FindFirstChildOfClass("ProximityPrompt"), 0) -- instant trigger
-    firetouchinterest(hrp, part, 0)
-    task.wait(0.05)
-    firetouchinterest(hrp, part, 1)
-end
-
--- Auto Candy Farm (BEST METHOD)
-local autoCandyEnabled = false
-TabHalloween:CreateToggle({
-    Name = "Auto Collect Candy Corns (OP)",
-    CurrentValue = false,
-    Callback = function(state)
-        autoCandyEnabled = state
-        if state then
-            task.spawn(function()
-                while autoCandyEnabled do
-                    local candies = getAllCandyCorns()
-                    if #candies == 0 then
-                        for _, candy in ipairs(candies) do
-                            if not autoCandyEnabled or not candy.Parent then break end
-                            collectCandy(candy)
-                            task.wait(COLLECT_DELAY) -- safe delay
-                        end
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
-    end
-})
-
--- Manual Teleport to Random Candy
-TabHalloween:CreateButton({
-    Name = "Teleport to Random Candy",
-    Callback = function()
-        local candies = getAllCandyCorns()
-        if #candies > 0 and hrp then
-            local candy = candies[math.random(1, #candies)]
-            hrp.CFrame = candy.CFrame + Vector3.new(0, 6, 0)
-        end
-    end
-})
-
--- Auto Spirit Farm (Hover + Collect)
-local autoSpiritEnabled = false
-TabHalloween:CreateToggle({
-    Name = "Auto Farm Spirits (Hover)",
-    CurrentValue = false,
-    Callback = function(state)
-        autoSpiritEnabled = state
-        hoverEnabled = state
-
-        if state then
-            task.spawn(function()
-                while autoSpiritEnabled do
-                    local spirits = getAllSpirits()
-                    for _, spirit in ipairs(spirits) do
-                        if not autoSpiritEnabled then break end
-                        local part = spirits[spirit]
-                        if part and part.Parent then
-                            hrp.CFrame = part.CFrame + Vector3.new(0, 8, 0)
-                            task.wait(1.2) -- wait for encounter
-                            -- optional: spam E if needed
-                            task.wait(1)
-                        end
-                    end
-                    task.wait(1)
-                end
-                hoverEnabled = false
-            end)
-        else
-            hoverEnabled = false
-        end
-    end
-})
-
--- Candy Counter (Visual Only)
-TabHalloween:CreateLabel("🍬 Auto Candy: Collects 500+/min safely")
-TabHalloween:CreateLabel("👻 Auto Spirits: Hovers + farms all spirits")
 -- Anti Lag Toggle in Main Tab
 local antiLagFlag = false
 TabMain:CreateToggle({
