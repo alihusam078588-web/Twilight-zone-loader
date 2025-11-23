@@ -365,24 +365,7 @@ do
     LocalPlayer.CharacterAdded:Connect(function(char)
         hrp = char:WaitForChild("HumanoidRootPart")
     end)
-
-    local function getAllCandyParts()
-        local parts = {}
-        if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Items") then
-            for _, container in ipairs(Workspace.Floor.Items.Currencies:GetChildren()) do
-                if container:FindFirstChild("CandyCorns") then
-                    local main = container.CandyCorns:FindFirstChild("Main")
-                    if main then
-                        local cube = main:FindFirstChild("Cube")
-                        if cube then
-                            table.insert(parts, cube)
-                        end
-                    end
-                end
-            end
-        end
-        return parts
-    end
+    
 
     local function getAllSpirits()
         local parts = {}
@@ -401,26 +384,7 @@ do
         return parts
     end
 
-    local function teleportTo(part)
-        if hrp and part then
-            hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
-        end
-    end
 
-    local function collectCandy(candyPart)
-        if hrp and candyPart then
-            firetouchinterest(hrp, candyPart, 0)
-            task.wait()
-            firetouchinterest(hrp, candyPart, 1)
-        end
-    end
-
-    local function teleportAndCollectCandy(part)
-        if hrp and part then
-            hrp.CFrame = CFrame.new(part.Position.X, hoverHeight, part.Position.Z)
-            collectCandy(part)
-        end
-    end
 
     local function spiritEncountered()
         local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
