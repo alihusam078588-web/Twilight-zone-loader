@@ -433,44 +433,6 @@ do
         return false
     end
 
-    -- Manual collect button
-    TabAutoCollect:CreateButton({
-        Name = "Teleport & Collect Candy",
-        Callback = function()
-            local candies = getAllCandyParts()
-            if #candies == 0 or not hrp then
-                return
-            end
-            local originalPos = hrp.CFrame
-            local randomCandy = candies[math.random(1, #candies)]
-            teleportAndCollectCandy(randomCandy)
-            task.wait(1.5)
-            hrp.CFrame = originalPos
-        end
-    })
-
-    -- Auto collect toggle
-    local autoCollectFlag = false
-    TabAutoCollect:CreateToggle({
-        Name = "Auto Teleport & Collect Candies",
-        CurrentValue = false,
-        Callback = function(state)
-            autoCollectFlag = state
-            if state then
-                task.spawn(function()
-                    while autoCollectFlag do
-                        local candies = getAllCandyParts()
-                        for _, cube in ipairs(candies) do
-                            if not autoCollectFlag then break end
-                            teleportAndCollectCandy(cube)
-                            task.wait(0.2)
-                        end
-                        task.wait(0.5)
-                    end
-                end)
-            end
-        end
-    })
 
     -- Auto teleport to spirits toggle
     local autoTeleportSpiritsFlag = false
