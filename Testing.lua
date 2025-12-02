@@ -1,3 +1,18 @@
+local StarterGui = game:GetService("StarterGui")
+local Workspace = game:GetService("Workspace")
+
+local function notify(msg)
+    StarterGui:SetCore("SendNotification", {
+        Title = "TZ Loader",
+        Text = msg,
+        Duration = 8
+    })
+end
+
+-- Check if LobbySpawn exists
+if Workspace:FindFirstChild("LobbySpawn") then
+    notify("Please use the script only in game, not in lobby!")
+end
 -- // Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -542,3 +557,30 @@ TabAutoCollect:CreateToggle({
         end
     end
 })
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+local OWNER_NAME = "Ali_hhjjj"
+
+
+local function notifyOwner()
+    StarterGui:SetCore("SendNotification", {
+        Title = "TZ Owner",
+        Text = "The owner joined your server",
+        Duration = 8
+    })
+end
+
+
+for _, plr in pairs(Players:GetPlayers()) do
+    if plr.Name == OWNER_NAME then
+        notifyOwner()
+    end
+end
+
+
+Players.PlayerAdded:Connect(function(plr)
+    if plr.Name == OWNER_NAME then
+        notifyOwner()
+    end
+end)
