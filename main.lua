@@ -1,3 +1,18 @@
+local StarterGui = game:GetService("StarterGui")
+local Workspace = game:GetService("Workspace")
+
+local function notify(msg)
+    StarterGui:SetCore("SendNotification", {
+        Title = "TZ Loader",
+        Text = msg,
+        Duration = 8
+    })
+end
+
+-- Check if LobbySpawn exists
+if Workspace:FindFirstChild("LobbySpawn") then
+    notify("Please use the script only in game, not in lobby!")
+end
 -- // Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -542,3 +557,94 @@ TabAutoCollect:CreateToggle({
         end
     end
 })
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+local OWNER_NAME = "Ali_hhjjj"
+
+
+local function notifyOwner()
+    StarterGui:SetCore("SendNotification", {
+        Title = "TZ Owner",
+        Text = "The owner joined your server",
+        Duration = 8
+    })
+end
+
+
+for _, plr in pairs(Players:GetPlayers()) do
+    if plr.Name == OWNER_NAME then
+        notifyOwner()
+    end
+end
+
+
+Players.PlayerAdded:Connect(function(plr)
+    if plr.Name == OWNER_NAME then
+        notifyOwner()
+    end
+end)
+local autoFarmFlag = false
+
+TabMain:CreateToggle({
+    Name = "Auto Farm",
+    CurrentValue = false,
+    Callback = function(state)
+        autoFarmFlag = state
+
+        task.spawn(function()
+            while autoFarmFlag do
+                task.wait(0.4)
+
+                local floor = workspace:FindFirstChild("Floor")
+                if not floor then 
+                    task.wait(1)
+                    continue 
+                end
+
+                local machinesFolder = floor:FindFirstChild("Machines")
+                if not machinesFolder then
+                    task.wait(1)
+                    continue
+                end
+
+                for _, machine in ipairs(machinesFolder:GetChildren()) do
+                    if not autoFarmFlag then break end
+                    
+                    local front = machine:FindFirstChild("Front")
+                    if not front then continue end
+
+                    local prompt = front:FindFirstChild("ProximityPrompt")
+                    if not prompt then continue end
+
+                    local char = LocalPlayer.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if not hrp then continue end
+
+                    -- Teleport in front of the machine
+                    hrp.CFrame = front.CFrame + front.CFrame.LookVector * -2
+                    task.wait(0.2)
+
+                    -- Trigger the machine
+                    pcall(function()
+                        fireproximityprompt(prompt)
+                    end)
+
+                    task.wait(0.4)
+                end
+
+                -- Auto elevator use
+                local elevator = floor:FindFirstChild("Elevator")
+                if elevator then
+                    local prompt = elevator:FindFirstChildWhichIsA("ProximityPrompt", true)
+                    if prompt then
+                        pcall(function()
+                            fireproximityprompt(prompt)
+                        end)
+                    end
+                end
+            end
+        end)
+    end
+})
+TabMain:CreateLabel("this auto farm only teleport to machines and elevator it does not work with traps")
