@@ -586,6 +586,21 @@ Players.PlayerAdded:Connect(function(plr)
 end)
 local autoFarmFlag = false
 
+local function hasAvailableMachinePrompt(machinesFolder)
+    if not machinesFolder then return false end
+    for _, machine in ipairs(machinesFolder:GetChildren()) do
+        local front = machine:FindFirstChild("Front")
+        if front then
+            local prompt = front:FindFirstChildWhichIsA("ProximityPrompt", true) or front:FindFirstChild("ProximityPrompt")
+            if prompt and (not prompt.Enabled or prompt.Enabled == nil) == false then
+                -- prompt exists and appears enabled (some games set Enabled = true/false)
+                return true
+            end
+        end
+    end
+    return false
+end
+
 TabMain:CreateToggle({
     Name = "Auto Farm",
     CurrentValue = false,
@@ -597,9 +612,9 @@ TabMain:CreateToggle({
                 task.wait(0.4)
 
                 local floor = workspace:FindFirstChild("Floor")
-                if not floor then 
+                if not floor then
                     task.wait(1)
-                    continue 
+                    continue
                 end
 
                 local machinesFolder = floor:FindFirstChild("Machines")
@@ -608,13 +623,15 @@ TabMain:CreateToggle({
                     continue
                 end
 
+                local anyTriggered = false
+
                 for _, machine in ipairs(machinesFolder:GetChildren()) do
                     if not autoFarmFlag then break end
-                    
+
                     local front = machine:FindFirstChild("Front")
                     if not front then continue end
 
-                    local prompt = front:FindFirstChild("ProximityPrompt")
+                    local prompt = front:FindFirstChildWhichIsA("ProximityPrompt", true) or front:FindFirstChild("ProximityPrompt")
                     if not prompt then continue end
 
                     local char = LocalPlayer.Character
@@ -630,10 +647,11 @@ TabMain:CreateToggle({
                         fireproximityprompt(prompt)
                     end)
 
+                    anyTriggered = true
                     task.wait(0.4)
                 end
 
-                -- Auto elevator use
+                -- Auto elevator use if elevator prompt exists (original behaviour)
                 local elevator = floor:FindFirstChild("Elevator")
                 if elevator then
                     local prompt = elevator:FindFirstChildWhichIsA("ProximityPrompt", true)
@@ -641,6 +659,19 @@ TabMain:CreateToggle({
                         pcall(function()
                             fireproximityprompt(prompt)
                         end)
+                    end
+                end
+
+                -- If we didn't trigger any machines this pass, teleport to elevator in a loop
+                if not anyTriggered then
+                    -- keep teleporting to elevator until a new machine prompt appears or autoFarmFlag becomes false
+                    local attempts = 0
+                    while autoFarmFlag and not hasAvailableMachinePrompt(machinesFolder) and attempts < 30 do
+                        pcall(function()
+                            teleportToElevator()
+                        end)
+                        attempts = attempts + 1
+                        task.wait(2) -- wait between teleports; you can lower this if you want faster looping
                     end
                 end
             end
