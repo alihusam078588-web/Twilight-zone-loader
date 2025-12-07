@@ -584,16 +584,39 @@ Players.PlayerAdded:Connect(function(plr)
         notifyOwner()
     end
 end)
+
 local autoFarmFlag = false
 
-local function hasAvailableMachinePrompt(machinesFolder)
+local function isMachineCompleted(machine)
+    if not machine then return false end
+    -- common value names used to mark completion
+    local names = {"Machine","machine","Value","value","Completed","completed","Done","done"}
+    for _, n in ipairs(names) do
+        local v = machine:FindFirstChild(n)
+        if v and (v:IsA("BoolValue") or v:IsA("IntValue") or v:IsA("NumberValue")) then
+            if v.Value ~= 0 then
+                return true
+            else
+                return false
+            end
+        end
+    end
+    -- check attributes too (if dev used Attributes)
+    for _, n in ipairs(names) do
+        local attr = machine:GetAttribute and machine:GetAttribute(n)
+        if attr ~= nil then
+            if type(attr) == "boolean" and attr == true then return true end
+            if type(attr) == "number" and attr ~= 0 then return true end
+        end
+    end
+    return false
+end
+
+local function anyIncompleteMachines(machinesFolder)
     if not machinesFolder then return false end
     for _, machine in ipairs(machinesFolder:GetChildren()) do
-        local front = machine:FindFirstChild("Front")
-        if front then
-            local prompt = front:FindFirstChildWhichIsA("ProximityPrompt", true) or front:FindFirstChild("ProximityPrompt")
-            if prompt and (not prompt.Enabled or prompt.Enabled == nil) == false then
-                -- prompt exists and appears enabled (some games set Enabled = true/false)
+        if machine:IsA("Model") and not isFuseLike(machine.Name) then
+            if not isMachineCompleted(machine) then
                 return true
             end
         end
@@ -623,10 +646,35 @@ TabMain:CreateToggle({
                     continue
                 end
 
-                local anyTriggered = false
+                -- If all machines are completed, loop teleport to elevator using Auto Elevator logic
+                if not anyIncompleteMachines(machinesFolder) then
+                    while autoFarmFlag and not anyIncompleteMachines(machinesFolder) do
+                        local elevator = floor:FindFirstChild("Elevator") or workspace:FindFirstChild("Elevator")
+                        if elevator then
+                            local tele = elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
+                            local msg = tele and tele:FindFirstChild("Message")
+                            if msg and msg.Enabled then
+                                pcall(function() teleportToElevator() end)
+                                repeat task.wait(1) until not msg.Enabled or not autoFarmFlag
+                            else
+                                -- no message; just teleport and wait a bit before retry
+                                pcall(function() teleportToElevator() end)
+                                task.wait(2)
+                            end
+                        else
+                            task.wait(2)
+                        end
+                    end
+                    task.wait(0.5)
+                    continue
+                end
 
+                -- Iterate machines, skipping fuseboxes and already-completed ones
                 for _, machine in ipairs(machinesFolder:GetChildren()) do
                     if not autoFarmFlag then break end
+                    if not machine:IsA("Model") then continue end
+                    if isFuseLike(machine.Name) then continue end
+                    if isMachineCompleted(machine) then continue end
 
                     local front = machine:FindFirstChild("Front")
                     if not front then continue end
@@ -638,8 +686,10 @@ TabMain:CreateToggle({
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     if not hrp then continue end
 
-                    -- Teleport in front of the machine
-                    hrp.CFrame = front.CFrame + front.CFrame.LookVector * -2
+                    -- Teleport in front of the machine (same-ish positioning as original)
+                    pcall(function()
+                        hrp.CFrame = front.CFrame + front.CFrame.LookVector * -2
+                    end)
                     task.wait(0.2)
 
                     -- Trigger the machine
@@ -647,11 +697,19 @@ TabMain:CreateToggle({
                         fireproximityprompt(prompt)
                     end)
 
-                    anyTriggered = true
+                    -- Wait until machine is marked completed (or timeout) before moving to next
+                    local elapsed = 0
+                    local timeout = 8 -- seconds, adjust if needed
+                    while autoFarmFlag and elapsed < timeout and not isMachineCompleted(machine) do
+                        task.wait(0.25)
+                        elapsed = elapsed + 0.25
+                    end
+
+                    -- small delay before next machine
                     task.wait(0.4)
                 end
 
-                -- Auto elevator use if elevator prompt exists (original behaviour)
+                -- original elevator prompt trigger (keep behavior)
                 local elevator = floor:FindFirstChild("Elevator")
                 if elevator then
                     local prompt = elevator:FindFirstChildWhichIsA("ProximityPrompt", true)
@@ -659,19 +717,6 @@ TabMain:CreateToggle({
                         pcall(function()
                             fireproximityprompt(prompt)
                         end)
-                    end
-                end
-
-                -- If we didn't trigger any machines this pass, teleport to elevator in a loop
-                if not anyTriggered then
-                    -- keep teleporting to elevator until a new machine prompt appears or autoFarmFlag becomes false
-                    local attempts = 0
-                    while autoFarmFlag and not hasAvailableMachinePrompt(machinesFolder) and attempts < 30 do
-                        pcall(function()
-                            teleportToElevator()
-                        end)
-                        attempts = attempts + 1
-                        task.wait(2) -- wait between teleports; you can lower this if you want faster looping
                     end
                 end
             end
