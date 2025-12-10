@@ -165,3 +165,38 @@ task.spawn(function()
         scanContainers()
     end
 end)
+
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+local function notify(msg)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Kill Alert",
+        Text = msg,
+        Duration = 6
+    })
+end
+
+local function watchPlayer(player)
+    player.CharacterAdded:Connect(function(char)
+        local hum = char:WaitForChild("Humanoid")
+        hum.Died:Connect(function()
+            local tag = hum:FindFirstChild("creator")
+            if tag and tag.Value and tag.Value ~= player then
+                notify(tag.Value.Name.." killed "..player.Name)
+            end
+        end)
+    end)
+end
+
+for _,p in ipairs(Players:GetPlayers()) do
+    if p ~= Players.LocalPlayer then
+        watchPlayer(p)
+    end
+end
+
+Players.PlayerAdded:Connect(function(p)
+    if p ~= Players.LocalPlayer then
+        watchPlayer(p)
+    end
+end)
