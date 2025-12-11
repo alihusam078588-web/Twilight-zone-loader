@@ -3,21 +3,6 @@ local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
-local window = Rayfield:CreateWindow({
-    Name = "TZ HUB",
-    LoadingTitle = "TZ HUB",
-    LoadingSubtitle = "Carnage ESP",
-    ConfigurationSaving = { Enabled = true, FileName = "TZHubConfig" }
-})
-
-local playersTab = window:CreateTab("Players ESP")
-local containersTab = window:CreateTab("Containers ESP")
-local alertsTab = window:CreateTab("Kill Alerts")
-
-local playersSection = playersTab:CreateSection("Players Settings")
-local containersSection = containersTab:CreateSection("Containers Settings")
-local alertsSection = alertsTab:CreateSection("Alerts Settings")
-
 local settings = {
     playersESPEnabled = true,
     containersESPEnabled = true,
@@ -27,77 +12,9 @@ local settings = {
     showHighlights = true,
     updateRate = 0.35,
     containerNames = {"Cabinet","Cardboard Box","TrashBin","Metal Locker"},
-    killAlerts = true
+    killAlerts = true,
+    containerHighlights = true
 }
-
-playersSection:CreateToggle({
-    Name = "Enable Players ESP",
-    CurrentValue = settings.playersESPEnabled,
-    Flag = "playersESPEnabled",
-    Callback = function(v) settings.playersESPEnabled = v end
-})
-
-playersSection:CreateToggle({
-    Name = "Show Backpack Items",
-    CurrentValue = settings.showBackpack,
-    Flag = "showBackpack",
-    Callback = function(v) settings.showBackpack = v end
-})
-
-playersSection:CreateToggle({
-    Name = "Use Highlights (may lag)",
-    CurrentValue = settings.showHighlights,
-    Flag = "showHighlights",
-    Callback = function(v) settings.showHighlights = v end
-})
-
-playersSection:CreateSlider({
-    Name = "ESP Text Size",
-    Min = 10,
-    Max = 40,
-    Increment = 1,
-    Suffix = "px",
-    CurrentValue = settings.textSize,
-    Flag = "textSize",
-    Callback = function(v) settings.textSize = v end
-})
-
-playersSection:CreateToggle({
-    Name = "Anti-Lag Mode",
-    CurrentValue = settings.antiLag,
-    Flag = "antiLag",
-    Callback = function(v)
-        settings.antiLag = v
-        settings.updateRate = v and 1 or 0.35
-        if v then settings.showHighlights = false end
-    end
-})
-
-containersSection:CreateToggle({
-    Name = "Enable Containers ESP",
-    CurrentValue = settings.containersESPEnabled,
-    Flag = "containersESPEnabled",
-    Callback = function(v) settings.containersESPEnabled = v end
-})
-
-containersSection:CreateToggle({
-    Name = "Container Highlights (may lag)",
-    CurrentValue = true,
-    Flag = "containerHighlights",
-    Callback = function(v) settings.containerHighlights = v end
-})
-
-containersSection:CreateButton({
-    Name = "Rescan Containers Now",
-    Callback = function() scanContainers(true) end
-})
-
-alertsSection:CreateToggle({
-    Name = "Kill Alerts",
-    CurrentValue = settings.killAlerts,
-    Flag = "killAlerts",
-    Callback = function(v) settings.killAlerts = v end
-})
 
 local function notify(msg)
     pcall(function()
@@ -294,6 +211,116 @@ local function updateContainerLabel(obj)
     label.Text = obj.Name.."\nItems: "..((#found>0) and table.concat(found,", ") or "None")
 end
 
+local function scanContainers(force)
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if isContainerByName(v) then
+            if settings.containersESPEnabled then
+                ensureContainerESP(v)
+                if force then updateContainerLabel(v) end
+            else
+                if v:FindFirstChild("TZ_ContainerESP_Gui") then v.TZ_ContainerESP_Gui:Destroy() end
+                if v:FindFirstChild("TZ_ContainerESP_Highlight") then v.TZ_ContainerESP_Highlight:Destroy() end
+            end
+        end
+    end
+end
+
+local window = Rayfield:CreateWindow({
+    Name = "TZ HUB",
+    LoadingTitle = "TZ HUB",
+    LoadingSubtitle = "Carnage ESP",
+    ConfigurationSaving = { Enabled = true, FileName = "TZHubConfig" }
+})
+
+local playersTab = window:CreateTab("Players ESP")
+local containersTab = window:CreateTab("Containers ESP")
+local alertsTab = window:CreateTab("Kill Alerts")
+
+local playersSection = playersTab:CreateSection("Players Settings")
+local containersSection = containersTab:CreateSection("Containers Settings")
+local alertsSection = alertsTab:CreateSection("Alerts Settings")
+
+playersSection:CreateToggle({
+    Name = "Enable Players ESP",
+    CurrentValue = settings.playersESPEnabled,
+    Flag = "playersESPEnabled",
+    Callback = function(v) settings.playersESPEnabled = v end
+})
+
+playersSection:CreateToggle({
+    Name = "Show Backpack Items",
+    CurrentValue = settings.showBackpack,
+    Flag = "showBackpack",
+    Callback = function(v) settings.showBackpack = v end
+})
+
+playersSection:CreateToggle({
+    Name = "Use Highlights (may lag)",
+    CurrentValue = settings.showHighlights,
+    Flag = "showHighlights",
+    Callback = function(v) settings.showHighlights = v end
+})
+
+playersSection:CreateSlider({
+    Name = "ESP Text Size",
+    Min = 10,
+    Max = 40,
+    Increment = 1,
+    Suffix = "px",
+    CurrentValue = settings.textSize,
+    Flag = "textSize",
+    Callback = function(v) settings.textSize = v end
+})
+
+playersSection:CreateToggle({
+    Name = "Anti-Lag Mode",
+    CurrentValue = settings.antiLag,
+    Flag = "antiLag",
+    Callback = function(v)
+        settings.antiLag = v
+        settings.updateRate = v and 1 or 0.35
+        if v then settings.showHighlights = false end
+    end
+})
+
+containersSection:CreateToggle({
+    Name = "Enable Containers ESP",
+    CurrentValue = settings.containersESPEnabled,
+    Flag = "containersESPEnabled",
+    Callback = function(v) settings.containersESPEnabled = v end
+})
+
+containersSection:CreateToggle({
+    Name = "Container Highlights (may lag)",
+    CurrentValue = settings.containerHighlights,
+    Flag = "containerHighlights",
+    Callback = function(v) settings.containerHighlights = v end
+})
+
+containersSection:CreateButton({
+    Name = "Rescan Containers Now",
+    Callback = function() scanContainers(true) end
+})
+
+alertsSection:CreateToggle({
+    Name = "Kill Alerts",
+    CurrentValue = settings.killAlerts,
+    Flag = "killAlerts",
+    Callback = function(v) settings.killAlerts = v end
+})
+
+alertsSection:CreateButton({Name = "Test Kill Alert", Callback = function() notify("Test: killer killed victim") end})
+playersSection:CreateButton({Name = "Disable All ESP", Callback = function() settings.playersESPEnabled = false settings.containersESPEnabled = false end})
+playersSection:CreateButton({Name = "Enable All ESP", Callback = function() settings.playersESPEnabled = true settings.containersESPEnabled = true end})
+containersSection:CreateButton({Name = "Clear Container GUIs", Callback = function()
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if isContainerByName(v) then
+            if v:FindFirstChild("TZ_ContainerESP_Gui") then v.TZ_ContainerESP_Gui:Destroy() end
+            if v:FindFirstChild("TZ_ContainerESP_Highlight") then v.TZ_ContainerESP_Highlight:Destroy() end
+        end
+    end
+end})
+
 local PlayerConnections = {}
 local function onPlayerAdded(plr)
     if plr == LocalPlayer then return end
@@ -326,7 +353,8 @@ local function onPlayerAdded(plr)
         end
     end
 
-    plr.CharacterAdded:Connect(charAdded)
+    local connChar = plr.CharacterAdded:Connect(charAdded)
+    table.insert(PlayerConnections[plr], connChar)
     if plr.Character then charAdded(plr.Character) end
 end
 
@@ -342,18 +370,21 @@ end)
 
 task.spawn(function()
     while true do
-        for _, v in ipairs(workspace:GetDescendants()) do
-            if isContainerByName(v) then
-                if settings.containersESPEnabled then
-                    updateContainerLabel(v)
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                if settings.playersESPEnabled then
+                    if plr.Character then
+                        updatePlayerESPText(plr)
+                    else
+                        ensurePlayerESP(plr)
+                    end
+                else
+                    cleanupPlayerESP(plr)
                 end
             end
         end
+        scanContainers(false)
         task.wait(settings.updateRate)
     end
 end)
-
-playersSection:CreateButton({Name = "Disable All ESP", Callback = function() settings.playersESPEnabled = false settings.containersESPEnabled = false end})
-playersSection:CreateButton({Name = "Enable All ESP", Callback = function() settings.playersESPEnabled = true settings.containersESPEnabled = true end})
-containersSection:CreateButton({Name = "Clear Container GUIs", Callback = function() for _, v in ipairs(workspace:GetDescendants()) do if isContainerByName(v) then if v:FindFirstChild("TZ_ContainerESP_Gui") then v.TZ_ContainerESP_Gui:Destroy() end if v:FindFirstChild("TZ_ContainerESP_Highlight") then v.TZ_ContainerESP_Highlight:Destroy() end end end end})
-alertsSection:CreateButton({Name = "Test Kill Alert", Callback = function() notify("Test: killer killed victim") end})
+```0
