@@ -648,3 +648,10 @@ TabMain:CreateToggle({
     end
 })
 TabMain:CreateLabel("this auto farm only teleport to machines and elevator it does not work with traps")
+
+Rayfield:Notify({
+   Title = "TZ announcement",
+   Content = "OMG CHRISTMAS IS COMING",
+   Duration = 6.5,
+   Image = "rewind",
+})
