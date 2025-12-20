@@ -651,7 +651,7 @@ TabMain:CreateLabel("this auto farm only teleport to machines and elevator it do
 
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = "Update soon! Ho Ho Ho! 😊",
+   Content = "OK I'll add the new feature in the auto collect tab soon",
    Duration = 6.5,
-   Image = "rewind",
+   Image = "megaphone",
 })
