@@ -649,9 +649,79 @@ TabMain:CreateToggle({
 })
 TabMain:CreateLabel("this auto farm only teleport to machines and elevator it does not work with traps")
 
+local autoSnowflakes = false
+
+TabAutoCollect:CreateToggle({
+    Name = "Auto Collect Snowflakes",
+    CurrentValue = false,
+    Callback = function(state)
+        autoSnowflakes = state
+
+        if state then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+
+                -- Save original position
+                local originalCFrame = hrp.CFrame
+
+                while autoSnowflakes do
+                    local folder = workspace:FindFirstChild("Floor")
+                        and workspace.Floor:FindFirstChild("Items")
+                        and workspace.Floor.Items:FindFirstChild("Currencies")
+
+                    if not folder then break end
+
+                    local children = folder:GetChildren()
+                    local foundAny = false
+
+                    for index, item in ipairs(children) do
+                        if not autoSnowflakes then break end
+
+                        -- ❌ Ignore index 2
+                        if index == 2 then
+                            continue
+                        end
+
+                        -- Only Snowflakes
+                        if not item.Name:lower():find("snow") then
+                            continue
+                        end
+
+                        local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt then
+                            foundAny = true
+
+                            -- Teleport & collect
+                            hrp.CFrame = item:GetPivot() + Vector3.new(0, 2, 0)
+                            task.wait(0.25)
+
+                            pcall(function()
+                                fireproximityprompt(prompt)
+                            end)
+
+                            task.wait(0.3)
+                        end
+                    end
+
+                    -- If no snowflakes left → return to original spot
+                    if not foundAny then
+                        hrp.CFrame = originalCFrame
+                        autoSnowflakes = false
+                        break
+                    end
+
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = "OK I'll add the new feature in the auto collect tab soon",
+   Content = "Hope you like it 😊 Ho Ho Ho!",
    Duration = 6.5,
    Image = "megaphone",
 })
