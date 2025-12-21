@@ -370,8 +370,62 @@ TabMain:CreateToggle({ Name = "Anti Lag", CurrentValue = false, Callback = funct
 end })
 
 -- ESP Tab
-TabESP:CreateToggle({ Name = "ESP Machines", CurrentValue = false, Callback = function(v) espMachinesOn = v if not v then clearAllHighlights() end end })
-TabESP:CreateToggle({ Name = "ESP Spirits", CurrentValue = false, Callback = function(v) espSpiritsOn = v if not v then clearAllHighlights() end end })
+-- 🚨 Improved ESP for Machines & Spirits
+
+TabESP:CreateToggle({
+    Name = "ESP Machines",
+    CurrentValue = false,
+    Callback = function(v)
+        espMachinesOn = v
+        if not v then clearAllHighlights() end
+    end
+})
+
+TabESP:CreateToggle({
+    Name = "ESP Spirits",
+    CurrentValue = false,
+    Callback = function(v)
+        espSpiritsOn = v
+        if not v then clearAllHighlights() end
+    end
+})
+
+-- Main ESP loop (runs every second)
+task.spawn(function()
+    while true do
+        -- Remove dead highlights
+        cleanupDeadHighlights()
+
+        -- Machines ESP
+        if espMachinesOn then
+            local machineReps = gatherMachineParts()
+            for _, rep in ipairs(machineReps) do
+                local model = rep and rep:IsA("BasePart") and rep.Parent or rep
+                if model and model:IsA("Model") and not espMap[model] then
+                    createHighlightForModel(model, Color3.fromRGB(0, 200, 0))
+                end
+            end
+        end
+
+        -- Spirits ESP
+        if espSpiritsOn then
+            if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
+                for _, spiritGroup in ipairs(Workspace.Floor.Spirits:GetChildren()) do
+                    for _, spirit in ipairs(spiritGroup:GetChildren()) do
+                        if spirit:IsA("Model") then
+                            if not espMap[spirit] then
+                                createHighlightForModel(spirit, Color3.fromRGB(200, 0, 200))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        task.wait(1)
+    end
+end)
+
 
 -- Auto Collect Tab (new)
 do
