@@ -786,7 +786,7 @@ local function copyLink(name, link)
     })
 end
 
--- LOW → HIGH
+-- From low robux to high plz support me!
 SupportTab:CreateButton({
     Name = "💎 3 Robux",
     Callback = function()
