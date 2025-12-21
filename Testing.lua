@@ -584,45 +584,7 @@ Players.PlayerAdded:Connect(function(plr)
         notifyOwner()
     end
 end)
-
 local autoFarmFlag = false
-
-local function isMachineCompleted(machine)
-    if not machine then return false end
-    -- common value names used to mark completion
-    local names = {"Machine","machine","Value","value","Completed","completed","Done","done"}
-    for _, n in ipairs(names) do
-        local v = machine:FindFirstChild(n)
-        if v and (v:IsA("BoolValue") or v:IsA("IntValue") or v:IsA("NumberValue")) then
-            if v.Value ~= 0 then
-                return true
-            else
-                return false
-            end
-        end
-    end
-    -- check attributes too (if dev used Attributes)
-    for _, n in ipairs(names) do
-        local attr = machine:GetAttribute and machine:GetAttribute(n)
-        if attr ~= nil then
-            if type(attr) == "boolean" and attr == true then return true end
-            if type(attr) == "number" and attr ~= 0 then return true end
-        end
-    end
-    return false
-end
-
-local function anyIncompleteMachines(machinesFolder)
-    if not machinesFolder then return false end
-    for _, machine in ipairs(machinesFolder:GetChildren()) do
-        if machine:IsA("Model") and not isFuseLike(machine.Name) then
-            if not isMachineCompleted(machine) then
-                return true
-            end
-        end
-    end
-    return false
-end
 
 TabMain:CreateToggle({
     Name = "Auto Farm",
@@ -635,9 +597,9 @@ TabMain:CreateToggle({
                 task.wait(0.4)
 
                 local floor = workspace:FindFirstChild("Floor")
-                if not floor then
+                if not floor then 
                     task.wait(1)
-                    continue
+                    continue 
                 end
 
                 local machinesFolder = floor:FindFirstChild("Machines")
@@ -646,50 +608,21 @@ TabMain:CreateToggle({
                     continue
                 end
 
-                -- If all machines are completed, loop teleport to elevator using Auto Elevator logic
-                if not anyIncompleteMachines(machinesFolder) then
-                    while autoFarmFlag and not anyIncompleteMachines(machinesFolder) do
-                        local elevator = floor:FindFirstChild("Elevator") or workspace:FindFirstChild("Elevator")
-                        if elevator then
-                            local tele = elevator:FindFirstChild("TeleportExit") or elevator:FindFirstChild("Teleport")
-                            local msg = tele and tele:FindFirstChild("Message")
-                            if msg and msg.Enabled then
-                                pcall(function() teleportToElevator() end)
-                                repeat task.wait(1) until not msg.Enabled or not autoFarmFlag
-                            else
-                                -- no message; just teleport and wait a bit before retry
-                                pcall(function() teleportToElevator() end)
-                                task.wait(2)
-                            end
-                        else
-                            task.wait(2)
-                        end
-                    end
-                    task.wait(0.5)
-                    continue
-                end
-
-                -- Iterate machines, skipping fuseboxes and already-completed ones
                 for _, machine in ipairs(machinesFolder:GetChildren()) do
                     if not autoFarmFlag then break end
-                    if not machine:IsA("Model") then continue end
-                    if isFuseLike(machine.Name) then continue end
-                    if isMachineCompleted(machine) then continue end
-
+                    
                     local front = machine:FindFirstChild("Front")
                     if not front then continue end
 
-                    local prompt = front:FindFirstChildWhichIsA("ProximityPrompt", true) or front:FindFirstChild("ProximityPrompt")
+                    local prompt = front:FindFirstChild("ProximityPrompt")
                     if not prompt then continue end
 
                     local char = LocalPlayer.Character
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     if not hrp then continue end
 
-                    -- Teleport in front of the machine (same-ish positioning as original)
-                    pcall(function()
-                        hrp.CFrame = front.CFrame + front.CFrame.LookVector * -2
-                    end)
+                    -- Teleport in front of the machine
+                    hrp.CFrame = front.CFrame + front.CFrame.LookVector * -2
                     task.wait(0.2)
 
                     -- Trigger the machine
@@ -697,19 +630,10 @@ TabMain:CreateToggle({
                         fireproximityprompt(prompt)
                     end)
 
-                    -- Wait until machine is marked completed (or timeout) before moving to next
-                    local elapsed = 0
-                    local timeout = 8 -- seconds, adjust if needed
-                    while autoFarmFlag and elapsed < timeout and not isMachineCompleted(machine) do
-                        task.wait(0.25)
-                        elapsed = elapsed + 0.25
-                    end
-
-                    -- small delay before next machine
                     task.wait(0.4)
                 end
 
-                -- original elevator prompt trigger (keep behavior)
+                -- Auto elevator use
                 local elevator = floor:FindFirstChild("Elevator")
                 if elevator then
                     local prompt = elevator:FindFirstChildWhichIsA("ProximityPrompt", true)
@@ -724,3 +648,80 @@ TabMain:CreateToggle({
     end
 })
 TabMain:CreateLabel("this auto farm only teleport to machines and elevator it does not work with traps")
+
+local autoSnowflakes = false
+
+TabAutoCollect:CreateToggle({
+    Name = "Auto Collect Snowflakes",
+    CurrentValue = false,
+    Callback = function(state)
+        autoSnowflakes = state
+
+        if state then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+
+                -- Save original position
+                local originalCFrame = hrp.CFrame
+
+                while autoSnowflakes do
+                    local folder = workspace:FindFirstChild("Floor")
+                        and workspace.Floor:FindFirstChild("Items")
+                        and workspace.Floor.Items:FindFirstChild("Currencies")
+
+                    if not folder then break end
+
+                    local children = folder:GetChildren()
+                    local foundAny = false
+
+                    for index, item in ipairs(children) do
+                        if not autoSnowflakes then break end
+
+                        -- ❌ Ignore index 2
+                        if index == 2 then
+                            continue
+                        end
+
+                        -- Only Snowflakes
+                        if not item.Name:lower():find("snow") then
+                            continue
+                        end
+
+                        local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt then
+                            foundAny = true
+
+                            -- Teleport & collect
+                            hrp.CFrame = item:GetPivot() + Vector3.new(0, 2, 0)
+                            task.wait(0.25)
+
+                            pcall(function()
+                                fireproximityprompt(prompt)
+                            end)
+
+                            task.wait(0.3)
+                        end
+                    end
+
+                    -- If no snowflakes left → return to original spot
+                    if not foundAny then
+                        hrp.CFrame = originalCFrame
+                        autoSnowflakes = false
+                        break
+                    end
+
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+Rayfield:Notify({
+   Title = "TZ announcement",
+   Content = "Hope you like it 😊 Ho Ho Ho!",
+   Duration = 6.5,
+   Image = "megaphone",
+})
