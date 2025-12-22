@@ -468,38 +468,67 @@ do
 
 
     -- Auto teleport to spirits toggle
-    local autoTeleportSpiritsFlag = false
-    TabAutoCollect:CreateToggle({
-        Name = "Auto Teleport to Spirits",
-        CurrentValue = false,
-        Callback = function(state)
-            autoTeleportSpiritsFlag = state
-            hoverEnabled = state
-            if state then
-                task.spawn(function()
-                    if not hrp then return end
-                    local originalPos = hrp.CFrame
-                    local spirits = getAllSpirits()
-                    if #spirits == 0 then return end
-                    for _, part in ipairs(spirits) do
-                        if not autoTeleportSpiritsFlag then break end
-                        teleportTo(part)
-                        task.wait(0.5)
-                        local elapsed = 0
-                        while elapsed < 3 do
-                            if spiritEncountered() then break end
-                            task.wait(0.2)
-                            elapsed = elapsed + 0.2
+    local autoTeleportSpirits = false
+
+TabAutoCollect:CreateToggle({
+    Name = "Auto Teleport to Spirits",
+    CurrentValue = false,
+    Callback = function(state)
+        autoTeleportSpirits = state
+
+        if state then
+            task.spawn(function()
+                -- Save start position
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+                local originalPos = hrp.CFrame
+
+                while autoTeleportSpirits do
+                    -- Get all existing spirits
+                    local spiritsToVisit = {}
+                    if workspace:FindFirstChild("Floor") and workspace.Floor:FindFirstChild("Spirits") then
+                        for _, folder in ipairs(workspace.Floor.Spirits:GetChildren()) do
+                            for _, spirit in ipairs(folder:GetChildren()) do
+                                if spirit:IsA("Model") then
+                                    local targetPart = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
+                                    if targetPart then
+                                        table.insert(spiritsToVisit, targetPart)
+                                    end
+                                end
+                            end
                         end
                     end
+
+                    -- If no spirits left → stop
+                    if #spiritsToVisit == 0 then
+                        autoTeleportSpirits = false
+                        break
+                    end
+
+                    -- Loop through all detected spirits
+                    for _, part in ipairs(spiritsToVisit) do
+                        if not autoTeleportSpirits then break end
+
+                        -- Teleport to spirit faster
+                        pcall(function()
+                            hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+                        end)
+
+                        -- Short delay between teleports
+                        task.wait(0.15)
+                    end
+
+                    task.wait(0.2) -- small wait before re-detecting
+                end
+
+                -- Restore original position
+                pcall(function()
                     hrp.CFrame = originalPos
-                    hoverEnabled = false
-                    autoTeleportSpiritsFlag = false
                 end)
-            end
+            end)
         end
-    })
-end
+    end
+})
 
 -- Credits Tab
 TabCredits:CreateLabel("Created by Ali_hhjjj")
