@@ -1,6 +1,11 @@
 local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
+-- Notification utility
 local function notify(msg)
     StarterGui:SetCore("SendNotification", {
         Title = "TZ Loader",
@@ -9,18 +14,12 @@ local function notify(msg)
     })
 end
 
--- Check if LobbySpawn exists
+-- Lobby check
 if Workspace:FindFirstChild("LobbySpawn") then
     notify("Please use the script only in game, not in lobby!")
 end
--- // Services
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
 
--- // Util
+-- Utility functions
 local function findRepresentativePart(model)
     if not model then return nil end
     if model:IsA("BasePart") then return model end
@@ -43,7 +42,7 @@ local function isFuseLike(name)
     return s:find("fuse") or s:find("fusebox") or s:find("fuse_box")
 end
 
--- // Godmode (remove HitPlayer)
+-- Godmode: remove HitPlayer
 task.spawn(function()
     while true do
         pcall(function()
@@ -61,7 +60,7 @@ task.spawn(function()
     end
 end)
 
--- // Gather machines (robust search)
+-- Machine gathering
 local function findMachinesFolders()
     local folders = {}
     if Workspace:FindFirstChild("Machines") then
@@ -137,7 +136,7 @@ local function findNearestMachinePart()
     return parts[1]
 end
 
--- // Teleports
+-- Teleports
 local function teleportToPart(part, yOffset)
     yOffset = yOffset or 5
     if not part then return false end
@@ -170,7 +169,7 @@ local function teleportToElevator()
     return teleportToPart(spawn, 2)
 end
 
--- // ESP
+-- ESP
 local espMachinesOn, espSpiritsOn = false, false
 local espMap = {}
 
@@ -253,7 +252,7 @@ task.spawn(function()
     end
 end)
 
--- // AutoSkill
+-- AutoSkill
 do
     local function tryAttachSkillCheck(remote)
         if not remote then return end
@@ -276,7 +275,7 @@ do
     end)
 end
 
--- // Infinite Stamina
+-- Infinite Stamina
 local staminaFlag = false
 local AddStamina
 pcall(function()
@@ -293,7 +292,7 @@ task.spawn(function()
     end
 end)
 
--- // Auto Elevator
+-- Auto Elevator
 local autoElevatorFlag = false
 task.spawn(function()
     while true do
@@ -314,7 +313,7 @@ task.spawn(function()
     end
 end)
 
--- // Auto Teleport
+-- Auto Teleport
 local autoTeleportFlag = false
 task.spawn(function()
     while true do
@@ -328,7 +327,7 @@ task.spawn(function()
     end
 end)
 
--- // Rayfield GUI
+-- Rayfield GUI & Tabs
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
@@ -342,14 +341,21 @@ local TabMain = Window:CreateTab("Main")
 local TabESP = Window:CreateTab("ESP")
 local TabAutoCollect = Window:CreateTab("Auto collect")
 local TabCredits = Window:CreateTab("Credits")
+local SupportTab = Window:CreateTab("Support", 4483362458)
 
--- Main Tab
 TabMain:CreateButton({ Name = "Teleport: Nearest Machine", Callback = teleportToNearestMachine })
+
 TabMain:CreateButton({ Name = "Teleport: Random Machine", Callback = teleportToRandomMachine })
+
+
 TabMain:CreateButton({ Name = "Teleport: Elevator", Callback = teleportToElevator })
+
+
 TabMain:CreateToggle({ Name = "Auto Teleport Machines", CurrentValue = false, Callback = function(v) autoTeleportFlag = v end })
 TabMain:CreateToggle({ Name = "Auto Elevator", CurrentValue = false, Callback = function(v) autoElevatorFlag = v end })
+
 TabMain:CreateToggle({ Name = "Infinite Stamina", CurrentValue = false, Callback = function(v) staminaFlag = v end })
+
 TabMain:CreateToggle({ Name = "Anti Lag", CurrentValue = false, Callback = function(state)
     if state then
         task.spawn(function()
@@ -369,9 +375,6 @@ TabMain:CreateToggle({ Name = "Anti Lag", CurrentValue = false, Callback = funct
     end
 end })
 
--- ESP Tab
--- 🚨 Improved ESP for Machines & Spirits
-
 TabESP:CreateToggle({
     Name = "ESP Machines",
     CurrentValue = false,
@@ -380,7 +383,6 @@ TabESP:CreateToggle({
         if not v then clearAllHighlights() end
     end
 })
-
 TabESP:CreateToggle({
     Name = "ESP Spirits",
     CurrentValue = false,
@@ -390,157 +392,8 @@ TabESP:CreateToggle({
     end
 })
 
--- Main ESP loop (runs every second)
-task.spawn(function()
-    while true do
-        -- Remove dead highlights
-        cleanupDeadHighlights()
-
-        -- Machines ESP
-        if espMachinesOn then
-            local machineReps = gatherMachineParts()
-            for _, rep in ipairs(machineReps) do
-                local model = rep and rep:IsA("BasePart") and rep.Parent or rep
-                if model and model:IsA("Model") and not espMap[model] then
-                    createHighlightForModel(model, Color3.fromRGB(0, 200, 0))
-                end
-            end
-        end
-
-        -- Spirits ESP
-        if espSpiritsOn then
-            if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
-                for _, spiritGroup in ipairs(Workspace.Floor.Spirits:GetChildren()) do
-                    for _, spirit in ipairs(spiritGroup:GetChildren()) do
-                        if spirit:IsA("Model") then
-                            if not espMap[spirit] then
-                                createHighlightForModel(spirit, Color3.fromRGB(200, 0, 200))
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        task.wait(1)
-    end
-end)
 
 
--- Auto Collect Tab (new)
-do
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    local hoverHeight = 10
-    LocalPlayer.CharacterAdded:Connect(function(char)
-        hrp = char:WaitForChild("HumanoidRootPart")
-    end)
-    
-
-    local function getAllSpirits()
-        local parts = {}
-        if Workspace:FindFirstChild("Floor") and Workspace.Floor:FindFirstChild("Spirits") then
-            for _, folder in ipairs(Workspace.Floor.Spirits:GetChildren()) do
-                for _, spirit in ipairs(folder:GetChildren()) do
-                    if spirit:IsA("Model") then
-                        local part = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
-                        if part then
-                            table.insert(parts, part)
-                        end
-                    end
-                end
-            end
-        end
-        return parts
-    end
-
-
-
-    local function spiritEncountered()
-        local gui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("main")
-        if gui and gui:FindFirstChild("Top") then
-            local eye = gui.Top:FindFirstChild("EyeIcon")
-            if eye then
-                return eye.Visible
-            end
-        end
-        return false
-    end
-
-
-    -- Auto teleport to spirits toggle
-    local autoTeleportSpirits = false
-
-TabAutoCollect:CreateToggle({
-    Name = "Auto Teleport to Spirits",
-    CurrentValue = false,
-    Callback = function(state)
-        autoTeleportSpirits = state
-
-        if state then
-            task.spawn(function()
-                -- Save start position
-                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                local hrp = char:WaitForChild("HumanoidRootPart")
-                local originalPos = hrp.CFrame
-
-                while autoTeleportSpirits do
-                    -- Get all existing spirits
-                    local spiritsToVisit = {}
-                    if workspace:FindFirstChild("Floor") and workspace.Floor:FindFirstChild("Spirits") then
-                        for _, folder in ipairs(workspace.Floor.Spirits:GetChildren()) do
-                            for _, spirit in ipairs(folder:GetChildren()) do
-                                if spirit:IsA("Model") then
-                                    local targetPart = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
-                                    if targetPart then
-                                        table.insert(spiritsToVisit, targetPart)
-                                    end
-                                end
-                            end
-                        end
-                    end
-
-                    -- If no spirits left → stop
-                    if #spiritsToVisit == 0 then
-                        autoTeleportSpirits = false
-                        break
-                    end
-
-                    -- Loop through all detected spirits
-                    for _, part in ipairs(spiritsToVisit) do
-                        if not autoTeleportSpirits then break end
-
-                        -- Teleport to spirit faster
-                        pcall(function()
-                            hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
-                        end)
-
-                        -- Short delay between teleports
-                        task.wait(0.15)
-                    end
-
-                    task.wait(0.2) -- small wait before re-detecting
-                end
-
-                -- Restore original position
-                pcall(function()
-                    hrp.CFrame = originalPos
-                end)
-            end)
-        end
-    end
-})
-
--- Credits Tab
-TabCredits:CreateLabel("Created by Ali_hhjjj")
-TabCredits:CreateLabel("Tester: GoodJOBS3")
-TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub) and shelly (Riddance manager) for Rayfield idea")
-
--- Notification (same as before)
-game.StarterGui:SetCore("SendNotification", {
-    Title = "TZ Script",
-    Text = "Godmode and Auto Skillcheck is ACTIVE!",
-    Duration = 8
-})
 
 TabAutoCollect:CreateButton({
     Name = "Collect Currency",
@@ -667,72 +520,6 @@ Players.PlayerAdded:Connect(function(plr)
         notifyOwner()
     end
 end)
-local autoFarmFlag = false
-
-TabMain:CreateToggle({
-    Name = "Auto Farm",
-    CurrentValue = false,
-    Callback = function(state)
-        autoFarmFlag = state
-
-        task.spawn(function()
-            while autoFarmFlag do
-                task.wait(0.4)
-
-                local floor = workspace:FindFirstChild("Floor")
-                if not floor then 
-                    task.wait(1)
-                    continue 
-                end
-
-                local machinesFolder = floor:FindFirstChild("Machines")
-                if not machinesFolder then
-                    task.wait(1)
-                    continue
-                end
-
-                for _, machine in ipairs(machinesFolder:GetChildren()) do
-                    if not autoFarmFlag then break end
-                    
-                    local front = machine:FindFirstChild("Front")
-                    if not front then continue end
-
-                    local prompt = front:FindFirstChild("ProximityPrompt")
-                    if not prompt then continue end
-
-                    local char = LocalPlayer.Character
-                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                    if not hrp then continue end
-
-                    -- Teleport in front of the machine
-                    hrp.CFrame = front.CFrame + front.CFrame.LookVector * -2
-                    task.wait(0.2)
-
-                    -- Trigger the machine
-                    pcall(function()
-                        fireproximityprompt(prompt)
-                    end)
-
-                    task.wait(0.4)
-                end
-
-                -- Auto elevator use
-                local elevator = floor:FindFirstChild("Elevator")
-                if elevator then
-                    local prompt = elevator:FindFirstChildWhichIsA("ProximityPrompt", true)
-                    if prompt then
-                        pcall(function()
-                            fireproximityprompt(prompt)
-                        end)
-                    end
-                end
-            end
-        end)
-    end
-})
-TabMain:CreateLabel("this auto farm only teleport to machines and elevator it does not work with traps")
-
-local autoSnowflakes = false
 
 TabAutoCollect:CreateToggle({
     Name = "Auto Collect Snowflakes",
@@ -802,144 +589,5 @@ TabAutoCollect:CreateToggle({
     end
 })
 
-local SupportTab = Window:CreateTab("Support", 4483362458)
 
-SupportTab:CreateSection("Support the Developer ❤️")
 
-local function copyLink(name, link)
-    setclipboard(link)
-    Rayfield:Notify({
-        Title = "Copied!",
-        Content = name .. " link copied to clipboard",
-        Duration = 3
-    })
-end
-
--- From low robux to high plz support me!
-SupportTab:CreateButton({
-    Name = "💎 3 Robux",
-    Callback = function()
-        copyLink("3 Robux", "https://www.roblox.com/game-pass/1393917970/3-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 5 Robux",
-    Callback = function()
-        copyLink("5 Robux", "https://www.roblox.com/game-pass/1394051778/5-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 7 Robux",
-    Callback = function()
-        copyLink("7 Robux", "https://www.roblox.com/game-pass/1590110782/7-ROBUX")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 10 Robux",
-    Callback = function()
-        copyLink("10 Robux", "https://www.roblox.com/game-pass/1397546692/10-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 20 Robux",
-    Callback = function()
-        copyLink("20 Robux", "https://www.roblox.com/game-pass/1399668269/20-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 50 Robux",
-    Callback = function()
-        copyLink("50 Robux", "https://www.roblox.com/game-pass/1396221207/50-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 100 Robux",
-    Callback = function()
-        copyLink("100 Robux", "https://www.roblox.com/game-pass/1394439639/100-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 150 Robux",
-    Callback = function()
-        copyLink("150 Robux", "https://www.roblox.com/game-pass/1421451261/Thanks")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 200 Robux",
-    Callback = function()
-        copyLink("200 Robux", "https://www.roblox.com/game-pass/1423400055/Ty")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 300 Robux",
-    Callback = function()
-        copyLink("300 Robux", "https://www.roblox.com/game-pass/1504992105/300-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 500 Robux",
-    Callback = function()
-        copyLink("500 Robux", "https://www.roblox.com/game-pass/1395983236/500-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 1000 Robux",
-    Callback = function()
-        copyLink("1000 Robux", "https://www.roblox.com/game-pass/1394041876/1000-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 1000 Robux (Thanks)",
-    Callback = function()
-        copyLink("1000 Robux Thanks", "https://www.roblox.com/game-pass/1460106222/Thanks-nnnnn")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 2500 Robux",
-    Callback = function()
-        copyLink("2500 Robux", "https://www.roblox.com/game-pass/1437117512/2-500-robux")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 3000 Robux",
-    Callback = function()
-        copyLink("3000 Robux", "https://www.roblox.com/game-pass/1587430862/3000-Robux")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 5000 Robux",
-    Callback = function()
-        copyLink("5000 Robux", "https://www.roblox.com/game-pass/1395963387/5000-rbx")
-    end
-})
-
-SupportTab:CreateButton({
-    Name = "💎 10000 Robux",
-    Callback = function()
-        copyLink("10000 Robux", "https://www.roblox.com/game-pass/1399060598/10000-rbx")
-    end
-})
-
-    
-    
-Rayfield:Notify({
-   Title = "TZ announcement",
-   Content = "I removed the feedback tab cause it's break the whole script 😭",
-   Duration = 6.5,
-   Image = "megaphone",
-})
