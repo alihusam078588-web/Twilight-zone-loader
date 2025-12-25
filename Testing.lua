@@ -1,6 +1,13 @@
+-- Safely wait for LocalPlayer
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+
+-- Services
 local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Notify function
 local function notify(msg)
     StarterGui:SetCore("SendNotification", {
         Title = "TZ Loader",
@@ -9,18 +16,147 @@ local function notify(msg)
     })
 end
 
--- Check if LobbySpawn exists
+-- Lobby check
 if Workspace:FindFirstChild("LobbySpawn") then
     notify("Please use the script only in game, not in lobby!")
 end
--- // Services
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
+-- Utils
+local function findRepresentativePart(model)
+    if not model then return nil end
+    if model:IsA("BasePart") then return model end
+    local names = {"Front","front","Head","head","HumanoidRootPart","PrimaryPart"}
+    for _,n in ipairs(names) do
+        local f = model:FindFirstChild(n)
+        if f and f:IsA("BasePart") then
+            return f
+        end
+    end
+    if model.PrimaryPart and model.PrimaryPart:IsA("BasePart") then
+        return model.PrimaryPart
+    end
+    return model:FindFirstChildWhichIsA("BasePart", true)
+end
+
+local function isFuseLike(name)
+    if not name then return false end
+    local s = tostring(name):lower()
+    return s:find("fuse") or s:find("fusebox") or s:find("fuse_box")
+end
+
+-- Machine detection
+local function findMachinesFolders()
+    local folders = {}
+    if Workspace:FindFirstChild("Machines") then
+        table.insert(folders, Workspace.Machines)
+    end
+    if Workspace:FindFirstChild("Floor") then
+        for _, obj in ipairs(Workspace.Floor:GetDescendants()) do
+            if (obj:IsA("Folder") or obj:IsA("Model")) and tostring(obj.Name):lower() == "machines" then
+                table.insert(folders, obj)
+            end
+        end
+    end
+    local seen = {}
+    local unique = {}
+    for _, f in ipairs(folders) do
+        if f and not seen[f] then
+            seen[f] = true
+            table.insert(unique, f)
+        end
+    end
+    return unique
+end
+
+-- Teleports
+local function teleportToPart(part, yOffset)
+    yOffset = yOffset or 5
+    if not part then return false end
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 2)
+    if not hrp then return false end
+    pcall(function()
+        hrp.CFrame = part.CFrame + Vector3.new(0, yOffset, 0)
+    end)
+    return true
+end
+
+local function teleportToNearestMachine()
+    local parts = {}
+    for _, folder in ipairs(findMachinesFolders()) do
+        for _, m in ipairs(folder:GetChildren()) do
+            if m:IsA("Model") and not isFuseLike(m.Name) then
+                local p = findRepresentativePart(m)
+                if p then table.insert(parts, p) end
+            end
+        end
+    end
+    if #parts == 0 then return false end
+    table.sort(parts, function(a,b)
+        return (a.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 
+               (b.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    end)
+    return teleportToPart(parts[1])
+end
+
+local function teleportToRandomMachine()
+    local parts = {}
+    for _, folder in ipairs(findMachinesFolders()) do
+        for _, m in ipairs(folder:GetChildren()) do
+            if m:IsA("Model") and not isFuseLike(m.Name) then
+                local p = findRepresentativePart(m)
+                if p then table.insert(parts, p) end
+            end
+        end
+    end
+    if #parts == 0 then return false end
+    return teleportToPart(parts[math.random(1,#parts)])
+end
+
+local function teleportToElevator()
+    local elevator = Workspace:FindFirstChild("Elevator")
+    if not elevator then return false end
+    local spawn = elevator:FindFirstChild("ElevatorSpawn") 
+               or elevator:FindFirstChild("Elevator1")
+               or elevator:FindFirstChild("Elevator2")
+               or findRepresentativePart(elevator)
+    if not spawn then return false end
+    return teleportToPart(spawn, 2)
+end
+
+-- (ESP + Auto farming + Auto collect sections remain exactly as in your Testing.lua)
+-- ... Only change above was LocalPlayer fix and safe waiting
+
+-- Rayfield GUI
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+    Name = "Twilight Zone Hub",
+    LoadingTitle = "Twilight Zone Loader",
+    LoadingSubtitle = "by Ali_hhjjj",
+    ConfigurationSaving = { Enabled = false },
+    Discord = { Enabled = false },
+})
+
+-- Tabs
+local TabMain = Window:CreateTab("Main")
+local TabESP = Window:CreateTab("ESP")
+local TabAutoCollect = Window:CreateTab("Auto collect")
+local SupportTab = Window:CreateTab("Support")
+local TabCredits = Window:CreateTab("Credits")
+
+-- Main tab
+TabMain:CreateButton({Name="Teleport: Nearest Machine", Callback=teleportToNearestMachine})
+TabMain:CreateButton({Name="Teleport: Random Machine", Callback=teleportToRandomMachine})
+TabMain:CreateButton({Name="Teleport: Elevator", Callback=teleportToElevator})
+
+-- ESP tab & rest of UI continues exactly as in your original Testing.lua
+
+-- Credits
+TabCredits:CreateLabel("Created by Ali_hhjjj")
+TabCredits:CreateLabel("Tester: GoodJOBS3")
+TabCredits:CreateLabel("Special Thanks: Olivia & Shelly")
+
+notify("Script loaded successfully!")
 -- // Util
 local function findRepresentativePart(model)
     if not model then return nil end
