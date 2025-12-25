@@ -1,6 +1,15 @@
-local StarterGui = game:GetService("StarterGui")
-local Workspace = game:GetService("Workspace")
 
+-- Services
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- notify helper
 local function notify(msg)
     StarterGui:SetCore("SendNotification", {
         Title = "TZ Loader",
@@ -9,16 +18,10 @@ local function notify(msg)
     })
 end
 
--- Check if LobbySpawn exists
+-- lobby protection
 if Workspace:FindFirstChild("LobbySpawn") then
     notify("Please use the script only in game, not in lobby!")
 end
--- // Services
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
 
 -- // Util
 local function findRepresentativePart(model)
@@ -329,13 +332,51 @@ task.spawn(function()
 end)
 
 -- // Rayfield GUI
+
+-- Rayfield UI
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
     LoadingTitle = "Twilight Zone Loader",
     LoadingSubtitle = "by Ali_hhjjj",
-    ConfigurationSaving = { Enabled = false },
-    Discord = { Enabled = false },
+    ConfigurationSaving = {
+        Enabled = true,        -- settings config enabled
+        FolderName = "TZConfigs", 
+        FileName = "TZConfig"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "https://discord.gg/tDhAWEwPW", 
+        RememberJoins = true
+    }
+})
+local SettingsTab = Window:CreateTab("Settings", 4483345998)
+
+-- Theme changer
+SettingsTab:CreateColorPicker({
+    Name = "Change UI Theme",
+    Color = Color3.fromRGB(0, 200, 200),
+    Callback = function(color)
+        Rayfield:ChangeThemeColor(color)
+    end
+})
+
+-- Config buttons
+SettingsTab:CreateButton({
+    Name = "Save Config",
+    Callback = function()
+        Rayfield:SaveConfiguration()
+        notify("Config saved!")
+    end
+})
+
+SettingsTab:CreateButton({
+    Name = "Load Config",
+    Callback = function()
+        Rayfield:LoadConfiguration()
+        notify("Config loaded!")
+    end
 })
 
 local TabMain = Window:CreateTab("Main")
