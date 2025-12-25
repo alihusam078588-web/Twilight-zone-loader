@@ -934,70 +934,12 @@ SupportTab:CreateButton({
         copyLink("10000 Robux", "https://www.roblox.com/game-pass/1399060598/10000-rbx")
     end
 })
-local FeedbackTab = Window:CreateTab("Feedback", 4483362458)
 
-local feedbackText = ""
-
-FeedbackTab:CreateInput({
-    Name = "Feedback",
-    PlaceholderText = "Write your feedback here...",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(text)
-        feedbackText = text
-    end
-})
-
-FeedbackTab:CreateButton({
-    Name = "Send Feedback",
-    Callback = function()
-        if feedbackText == "" then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Feedback is empty",
-                Duration = 3
-            })
-            return
-        end
-
-        local payload = {
-            ["content"] = "**Webhook:**\n" .. feedbackText
-        }
-
-        local requestFunc =
-            syn and syn.request or
-            http_request or
-            request
-
-        if not requestFunc then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Executor does not support HTTP requests",
-                Duration = 4
-            })
-            return
-        end
-
-        requestFunc({
-            Url = "https://discord.com/api/webhooks/1453430027491479754/yiHEHCJa35N2zTS7RGuw41deIn9INJPsyBl8dsjQlrGNL4E-4b_-QeEWDd-m82fcSRPA",
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = game:GetService("HttpService"):JSONEncode(payload)
-        })
-
-        Rayfield:Notify({
-            Title = "Sent",
-            Content = "Feedback sent successfully!",
-            Duration = 3
-        })
-    end
-})
     
     
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = "Hey guys! I added a feedback channel I want to see how the script working and see if you like it but please tell me if godmode is working",
+   Content = "I removed the feedback tab cause it's break the whole script 😭",
    Duration = 6.5,
    Image = "megaphone",
 })
