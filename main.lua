@@ -886,50 +886,71 @@ TabMain:CreateToggle({
 })
 
 -- // Player ESP Variables
+-- Player ESP Variables
 local espPlayersOn = false
 local espNameOn = true
 local espDistanceOn = true
 local playerESPMap = {}
 
 -- Create or update ESP for a player
-local function createPlayerESP(player)
-    if playerESPMap[player] then return end
+local function createOrUpdatePlayerESP(player)
+    if not player.Character then return end
+    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
-    -- Highlight
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "TZ_PlayerHighlight"
-    highlight.Adornee = player.Character
-    highlight.FillColor = Color3.fromRGB(0, 255, 0)
-    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-    highlight.FillTransparency = 0.7
-    highlight.Parent = workspace
+    local data = playerESPMap[player]
+    
+    if not data then
+        -- Highlight
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "TZ_PlayerHighlight"
+        highlight.Adornee = player.Character
+        highlight.FillColor = Color3.fromRGB(0, 255, 0)
+        highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+        highlight.FillTransparency = 0.7
+        highlight.Parent = workspace
 
-    -- Billboard for Name & Distance
-    local billboard
-    local textLabel
-    if espNameOn or espDistanceOn then
-        billboard = Instance.new("BillboardGui")
-        billboard.Name = "TZ_PlayerESPText"
-        billboard.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        billboard.Size = UDim2.new(0, 100, 0, 50)
-        billboard.StudsOffset = Vector3.new(0, 3, 0)
-        billboard.AlwaysOnTop = true
+        -- Billboard for name & distance
+        local billboard, textLabel
+        if espNameOn or espDistanceOn then
+            billboard = Instance.new("BillboardGui")
+            billboard.Name = "TZ_PlayerESPText"
+            billboard.Adornee = hrp
+            billboard.Size = UDim2.new(0, 100, 0, 50)
+            billboard.StudsOffset = Vector3.new(0, 3, 0)
+            billboard.AlwaysOnTop = true
 
-        textLabel = Instance.new("TextLabel")
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
-        textLabel.BackgroundTransparency = 1
-        textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-        textLabel.TextScaled = true
-        textLabel.Text = player.Name
-        textLabel.Parent = billboard
-        billboard.Parent = workspace
+            textLabel = Instance.new("TextLabel")
+            textLabel.Size = UDim2.new(1, 0, 1, 0)
+            textLabel.BackgroundTransparency = 1
+            textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+            textLabel.TextScaled = true
+            textLabel.Text = player.Name
+            textLabel.Parent = billboard
+            billboard.Parent = workspace
+        end
+
+        playerESPMap[player] = {
+            highlight = highlight,
+            billboard = billboard,
+            textLabel = textLabel
+        }
     end
 
-    playerESPMap[player] = {
-        highlight = highlight,
-        billboard = billboard,
-        textLabel = textLabel
-    }
+    -- Update Billboard text
+    local data2 = playerESPMap[player]
+    if data2 and data2.textLabel then
+        local dist = math.floor((hrp.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)
+        if espNameOn and espDistanceOn then
+            data2.textLabel.Text = player.Name .. " | " .. dist .. "m"
+        elseif espNameOn then
+            data2.textLabel.Text = player.Name
+        elseif espDistanceOn then
+            data2.textLabel.Text = dist .. "m"
+        else
+            data2.textLabel.Text = ""
+        end
+    end
 end
 
 -- Remove ESP for a player
@@ -941,6 +962,27 @@ local function removePlayerESP(player)
         playerESPMap[player] = nil
     end
 end
+
+-- Main ESP loop
+task.spawn(function()
+    while true do
+        if espPlayersOn then
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    createOrUpdatePlayerESP(player)
+                end
+            end
+        else
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                removePlayerESP(player)
+            end
+        end
+        task.wait(0.5) -- Update every 0.5s
+    end
+end)
+
+-- Remove ESP when player leaves
+game.Players.PlayerRemoving:Connect(removePlayerESP)
 
 -- Update ESP text with name/distance
 task.spawn(function()
@@ -998,5 +1040,69 @@ TabESP:CreateToggle({
     CurrentValue = true,
     Callback = function(state)
         espDistanceOn = state
+    end
+})
+
+-- // Item ESP Variables
+local espItemsOn = false
+local itemESPMap = {}
+
+-- Create highlight for an item
+local function createItemESP(item)
+    if not item or not item.Parent or itemESPMap[item] then return end
+    local hl = Instance.new("Highlight")
+    hl.Name = "TZ_ItemHighlight"
+    hl.Adornee = item
+    hl.FillColor = Color3.fromRGB(0, 255, 0)
+    hl.OutlineColor = Color3.fromRGB(0, 255, 0)
+    hl.FillTransparency = 0.7
+    hl.Parent = workspace
+    itemESPMap[item] = hl
+end
+
+-- Remove highlight for an item
+local function removeItemESP(item)
+    if itemESPMap[item] then
+        pcall(function() itemESPMap[item]:Destroy() end)
+        itemESPMap[item] = nil
+    end
+end
+
+-- Cleanup dead item highlights
+local function cleanupDeadItemHighlights()
+    for item, hl in pairs(itemESPMap) do
+        if not item or not item.Parent then
+            removeItemESP(item)
+        end
+    end
+end
+
+-- Item ESP loop
+task.spawn(function()
+    while true do
+        cleanupDeadItemHighlights()
+        if espItemsOn then
+            if workspace:FindFirstChild("Floor") and workspace.Floor:FindFirstChild("Items") then
+                for _, category in ipairs(workspace.Floor.Items:GetChildren()) do
+                    for _, item in ipairs(category:GetChildren()) do
+                        createItemESP(item)
+                    end
+                end
+            end
+        else
+            for item, _ in pairs(itemESPMap) do
+                removeItemESP(item)
+            end
+        end
+        task.wait(1)
+    end
+end)
+
+-- ESP Tab toggle
+TabESP:CreateToggle({
+    Name = "ESP Items",
+    CurrentValue = false,
+    Callback = function(state)
+        espItemsOn = state
     end
 })
