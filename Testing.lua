@@ -337,52 +337,6 @@ local Window = Rayfield:CreateWindow({
     ConfigurationSaving = { Enabled = false },
     Discord = { Enabled = false },
 })
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Create / get Credits tab
-local CreditsTab = Window:CreateTab("Credits", 4483362458)
-CreditsTab:CreateSection("Developer")
-
--- Get UserId safely
-local userId
-pcall(function()
-    userId = Players:GetUserIdFromNameAsync("Ali_hhjjj")
-end)
-
--- Avatar frame
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 320, 0, 70)
-Frame.BackgroundTransparency = 1
-Frame.Parent = CreditsTab.SectionHolder
-
--- Layout
-local UIList = Instance.new("UIListLayout")
-UIList.FillDirection = Enum.FillDirection.Horizontal
-UIList.VerticalAlignment = Enum.VerticalAlignment.Center
-UIList.Padding = UDim.new(0, 12)
-UIList.Parent = Frame
-
--- Avatar image
-local Avatar = Instance.new("ImageLabel")
-Avatar.Size = UDim2.new(0, 56, 0, 56)
-Avatar.BackgroundTransparency = 1
-Avatar.Image = userId
-    and ("rbxthumb://type=AvatarHeadShot&id=" .. userId .. "&w=420&h=420")
-    or ""
-Avatar.Parent = Frame
-
--- Name text
-local Name = Instance.new("TextLabel")
-Name.Size = UDim2.new(0, 240, 1, 0)
-Name.BackgroundTransparency = 1
-Name.Text = "Created by Ali_hhjjj"
-Name.TextScaled = true
-Name.TextXAlignment = Enum.TextXAlignment.Left
-Name.TextColor3 = Color3.fromRGB(255, 255, 255)
-Name.Font = Enum.Font.GothamBold
-Name.Parent = Frame
-
 
 local TabMain = Window:CreateTab("Main")
 local TabESP = Window:CreateTab("ESP")
@@ -514,38 +468,67 @@ do
 
 
     -- Auto teleport to spirits toggle
-    local autoTeleportSpiritsFlag = false
-    TabAutoCollect:CreateToggle({
-        Name = "Auto Teleport to Spirits",
-        CurrentValue = false,
-        Callback = function(state)
-            autoTeleportSpiritsFlag = state
-            hoverEnabled = state
-            if state then
-                task.spawn(function()
-                    if not hrp then return end
-                    local originalPos = hrp.CFrame
-                    local spirits = getAllSpirits()
-                    if #spirits == 0 then return end
-                    for _, part in ipairs(spirits) do
-                        if not autoTeleportSpiritsFlag then break end
-                        teleportTo(part)
-                        task.wait(0.5)
-                        local elapsed = 0
-                        while elapsed < 3 do
-                            if spiritEncountered() then break end
-                            task.wait(0.2)
-                            elapsed = elapsed + 0.2
+    local autoTeleportSpirits = false
+
+TabAutoCollect:CreateToggle({
+    Name = "Auto Teleport to Spirits",
+    CurrentValue = false,
+    Callback = function(state)
+        autoTeleportSpirits = state
+
+        if state then
+            task.spawn(function()
+                -- Save start position
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+                local originalPos = hrp.CFrame
+
+                while autoTeleportSpirits do
+                    -- Get all existing spirits
+                    local spiritsToVisit = {}
+                    if workspace:FindFirstChild("Floor") and workspace.Floor:FindFirstChild("Spirits") then
+                        for _, folder in ipairs(workspace.Floor.Spirits:GetChildren()) do
+                            for _, spirit in ipairs(folder:GetChildren()) do
+                                if spirit:IsA("Model") then
+                                    local targetPart = spirit:FindFirstChild("HumanoidRootPart") or spirit:FindFirstChildWhichIsA("BasePart", true)
+                                    if targetPart then
+                                        table.insert(spiritsToVisit, targetPart)
+                                    end
+                                end
+                            end
                         end
                     end
+
+                    -- If no spirits left → stop
+                    if #spiritsToVisit == 0 then
+                        autoTeleportSpirits = false
+                        break
+                    end
+
+                    -- Loop through all detected spirits
+                    for _, part in ipairs(spiritsToVisit) do
+                        if not autoTeleportSpirits then break end
+
+                        -- Teleport to spirit faster
+                        pcall(function()
+                            hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+                        end)
+
+                        -- Short delay between teleports
+                        task.wait(0.15)
+                    end
+
+                    task.wait(0.2) -- small wait before re-detecting
+                end
+
+                -- Restore original position
+                pcall(function()
                     hrp.CFrame = originalPos
-                    hoverEnabled = false
-                    autoTeleportSpiritsFlag = false
                 end)
-            end
+            end)
         end
-    })
-end
+    end
+})
 
 -- Credits Tab
 TabCredits:CreateLabel("Created by Ali_hhjjj")
@@ -951,10 +934,70 @@ SupportTab:CreateButton({
         copyLink("10000 Robux", "https://www.roblox.com/game-pass/1399060598/10000-rbx")
     end
 })
+local FeedbackTab = Window:CreateTab("Feedback", 4483362458)
 
+local feedbackText = ""
+
+FeedbackTab:CreateInput({
+    Name = "Feedback",
+    PlaceholderText = "Write your feedback here...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(text)
+        feedbackText = text
+    end
+})
+
+FeedbackTab:CreateButton({
+    Name = "Send Feedback",
+    Callback = function()
+        if feedbackText == "" then
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Feedback is empty",
+                Duration = 3
+            })
+            return
+        end
+
+        local payload = {
+            ["content"] = "**Webhook:**\n" .. feedbackText
+        }
+
+        local requestFunc =
+            syn and syn.request or
+            http_request or
+            request
+
+        if not requestFunc then
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Executor does not support HTTP requests",
+                Duration = 4
+            })
+            return
+        end
+
+        requestFunc({
+            Url = "https://discord.com/api/webhooks/1453430027491479754/yiHEHCJa35N2zTS7RGuw41deIn9INJPsyBl8dsjQlrGNL4E-4b_-QeEWDd-m82fcSRPA",
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = game:GetService("HttpService"):JSONEncode(payload)
+        })
+
+        Rayfield:Notify({
+            Title = "Sent",
+            Content = "Feedback sent successfully!",
+            Duration = 3
+        })
+    end
+})
+    
+    
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = "Hope you like it 😊 Ho Ho Ho!",
+   Content = "Hey guys! I added a feedback channel I want to see how the script working and see if you like it but please tell me if godmode is working",
    Duration = 6.5,
    Image = "megaphone",
 })
