@@ -1,15 +1,6 @@
-
--- Services
 local StarterGui = game:GetService("StarterGui")
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 
-local LocalPlayer = Players.LocalPlayer
-
--- notify helper
 local function notify(msg)
     StarterGui:SetCore("SendNotification", {
         Title = "TZ Loader",
@@ -18,10 +9,17 @@ local function notify(msg)
     })
 end
 
--- lobby protection
+-- Check if LobbySpawn exists
 if Workspace:FindFirstChild("LobbySpawn") then
     notify("Please use the script only in game, not in lobby!")
 end
+-- // Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
 -- // Util
 local function findRepresentativePart(model)
@@ -332,51 +330,13 @@ task.spawn(function()
 end)
 
 -- // Rayfield GUI
-
--- Rayfield UI
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
     LoadingTitle = "Twilight Zone Loader",
     LoadingSubtitle = "by Ali_hhjjj",
-    ConfigurationSaving = {
-        Enabled = true,        -- settings config enabled
-        FolderName = "TZConfigs", 
-        FileName = "TZConfig"
-    },
-    Discord = {
-        Enabled = true,
-        Invite = "https://discord.gg/tDhAWEwPW", 
-        RememberJoins = true
-    }
-})
-local SettingsTab = Window:CreateTab("Settings", 4483345998)
-
--- Theme changer
-SettingsTab:CreateColorPicker({
-    Name = "Change UI Theme",
-    Color = Color3.fromRGB(0, 200, 200),
-    Callback = function(color)
-        Rayfield:ChangeThemeColor(color)
-    end
-})
-
--- Config buttons
-SettingsTab:CreateButton({
-    Name = "Save Config",
-    Callback = function()
-        Rayfield:SaveConfiguration()
-        notify("Config saved!")
-    end
-})
-
-SettingsTab:CreateButton({
-    Name = "Load Config",
-    Callback = function()
-        Rayfield:LoadConfiguration()
-        notify("Config loaded!")
-    end
+    ConfigurationSaving = { Enabled = false },
+    Discord = { Enabled = false },
 })
 
 local TabMain = Window:CreateTab("Main")
@@ -975,70 +935,12 @@ SupportTab:CreateButton({
         copyLink("10000 Robux", "https://www.roblox.com/game-pass/1399060598/10000-rbx")
     end
 })
-local FeedbackTab = Window:CreateTab("Feedback", 4483362458)
 
-local feedbackText = ""
-
-FeedbackTab:CreateInput({
-    Name = "Feedback",
-    PlaceholderText = "Write your feedback here...",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(text)
-        feedbackText = text
-    end
-})
-
-FeedbackTab:CreateButton({
-    Name = "Send Feedback",
-    Callback = function()
-        if feedbackText == "" then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Feedback is empty",
-                Duration = 3
-            })
-            return
-        end
-
-        local payload = {
-            ["content"] = "**Webhook:**\n" .. feedbackText
-        }
-
-        local requestFunc =
-            syn and syn.request or
-            http_request or
-            request
-
-        if not requestFunc then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Executor does not support HTTP requests",
-                Duration = 4
-            })
-            return
-        end
-
-        requestFunc({
-            Url = "https://discord.com/api/webhooks/1453430027491479754/yiHEHCJa35N2zTS7RGuw41deIn9INJPsyBl8dsjQlrGNL4E-4b_-QeEWDd-m82fcSRPA",
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = game:GetService("HttpService"):JSONEncode(payload)
-        })
-
-        Rayfield:Notify({
-            Title = "Sent",
-            Content = "Feedback sent successfully!",
-            Duration = 3
-        })
-    end
-})
     
     
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = "Hey guys! I added a feedback channel I want to see how the script working and see if you like it but please tell me if godmode is working",
+   Content = "I removed the feedback tab cause it's break the whole script 😭",
    Duration = 6.5,
    Image = "megaphone",
 })
