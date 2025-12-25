@@ -1106,3 +1106,49 @@ TabESP:CreateToggle({
         espItemsOn = state
     end
 })
+
+local autoSnowball = false
+
+TabMain:CreateToggle({
+    Name = "Auto Teleport Snowball",
+    CurrentValue = false,
+    Callback = function(state)
+        autoSnowball = state
+
+        if state then
+            task.spawn(function()
+                while autoSnowball do
+                    local Workspace = game:GetService("Workspace")
+                    local Players = game:GetService("Players")
+                    local LocalPlayer = Players.LocalPlayer
+
+                    local machineFolder = Workspace:FindFirstChild("Floor") 
+                                        and Workspace.Floor:FindFirstChild("Machines")
+                    if machineFolder then
+                        local targetMachine = machineFolder:GetChildren()[3]
+                        if targetMachine then
+                            local snowman = targetMachine:FindFirstChild("Snowman")
+                            if snowman then
+                                local middleSnowball = snowman:FindFirstChild("MiddleSnowball")
+                                if middleSnowball then
+                                    local prompt = middleSnowball:FindFirstChildWhichIsA("ProximityPrompt")
+                                    if prompt then
+                                        -- Teleport player above the snowball
+                                        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                                        local hrp = char:WaitForChild("HumanoidRootPart")
+                                        hrp.CFrame = middleSnowball.CFrame + Vector3.new(0, 3, 0)
+
+                                        -- Fire the prompt
+                                        fireproximityprompt(prompt)
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    task.wait(0.5) -- wait half a second before checking again
+                end
+            end)
+        end
+    end
+})
