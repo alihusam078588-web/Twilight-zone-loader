@@ -1217,7 +1217,7 @@ TabMain:CreateToggle({
 
 -- Jump Height Slider
 local jumpHeight = 50 -- default jump power
-PlayerTab:CreateSlider({
+TabPlayer:CreateSlider({
     Name = "Jump Height",
     Min = 10,
     Max = 200,
@@ -1247,7 +1247,7 @@ end)
 
 -- Jump Toggle
 local jumpEnabled = false
-PlayerTab:CreateToggle({
+TabPlayer:CreateToggle({
     Name = "Enable Jump",
     CurrentValue = false,
     Callback = function(state)
@@ -1279,11 +1279,11 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 -- Player Tab
-local PlayerTab = Window:CreateTab("Player")
+local TabPlayer = Window:CreateTab("Player")
 
 -- Noclip
 local noclipEnabled = false
-PlayerTab:CreateToggle({
+TabPlayer:CreateToggle({
     Name = "Noclip",
     CurrentValue = false,
     Callback = function(state)
@@ -1307,7 +1307,7 @@ PlayerTab:CreateToggle({
 
 -- Custom Speed
 local walkSpeed = 16 -- default
-PlayerTab:CreateSlider({
+TabPlayer:CreateSlider({
     Name = "Custom Speed",
     Range = {16, 500}, -- Roblox default is 16
     Increment = 1,
