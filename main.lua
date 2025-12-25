@@ -590,4 +590,18 @@ TabAutoCollect:CreateToggle({
 })
 
 
+Rayfield:Notify({
+   Title = "TZ announcement",
+   Content = "Okay I fixed it there's some codes that I didn't add them back but when I get some free time I'll add them back also I'll remove the feedback tab and support tab features I'll just make it linkvertice support not Robux also I didn't test it yet",
+   Duration = 6.5,
+   Image = "megaphone",
+})
 
+task.wait(8)
+
+Rayfield:Notify({
+   Title = "TZ announcement",
+   Content = "Also thanks to @z4rl3y in discord for telling me this bug",
+   Duration = 6.5,
+   Image = "megaphone",
+})
