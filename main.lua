@@ -343,28 +343,56 @@ local Window = Rayfield:CreateWindow({
         Enabled = false
     }
 })
-local SettingsTab = Window:CreateTab("Settings", 4483362458)
 
-local themeMap = {
-    ["Default"] = "Default",
-    ["Amber Glow"] = "AmberGlow",
-    ["Amethyst"] = "Amethyst",
-    ["Bloom"] = "Bloom",
-    ["Dark Blue"] = "DarkBlue",
-    ["Green"] = "Green",
-    ["Light"] = "Light",
-    ["Ocean"] = "Ocean",
-    ["Serenity"] = "Serenity"
-}
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
 
 SettingsTab:CreateDropdown({
     Name = "UI Theme",
-    Options = {"Default", "Amber Glow", "Amethyst", "Bloom", "Dark Blue", "Green", "Light", "Ocean", "Serenity"},
+    Options = {"Default", "AmberGlow", "Amethyst", "Bloom", "DarkBlue", "Green", "Light", "Ocean", "Serenity"},
     CurrentOption = "Default",
-    Callback = function(selected)
-        Rayfield:SetTheme(themeMap[selected])
+    Callback = function(themeIdentifier)
+        -- themeIdentifier هنا فقط ThemeIdentifier الصحيح
+        Rayfield:SetTheme(themeIdentifier)
     end
 })
+
+-- لو تحب، تقدر تحط Custom Theme بدون Dropdown
+local myCustomTheme = {
+    TextColor = Color3.fromRGB(240, 240, 240),
+    Background = Color3.fromRGB(25, 25, 25),
+    Topbar = Color3.fromRGB(34, 34, 34),
+    Shadow = Color3.fromRGB(20, 20, 20),
+    NotificationBackground = Color3.fromRGB(20, 20, 20),
+    NotificationActionsBackground = Color3.fromRGB(230, 230, 230),
+    TabBackground = Color3.fromRGB(80, 80, 80),
+    TabStroke = Color3.fromRGB(85, 85, 85),
+    TabBackgroundSelected = Color3.fromRGB(210, 210, 210),
+    TabTextColor = Color3.fromRGB(240, 240, 240),
+    SelectedTabTextColor = Color3.fromRGB(50, 50, 50),
+    ElementBackground = Color3.fromRGB(35, 35, 35),
+    ElementBackgroundHover = Color3.fromRGB(40, 40, 40),
+    SecondaryElementBackground = Color3.fromRGB(25, 25, 25),
+    ElementStroke = Color3.fromRGB(50, 50, 50),
+    SecondaryElementStroke = Color3.fromRGB(40, 40, 40),
+    SliderBackground = Color3.fromRGB(50, 138, 220),
+    SliderProgress = Color3.fromRGB(50, 138, 220),
+    SliderStroke = Color3.fromRGB(58, 163, 255),
+    ToggleBackground = Color3.fromRGB(30, 30, 30),
+    ToggleEnabled = Color3.fromRGB(0, 146, 214),
+    ToggleDisabled = Color3.fromRGB(100, 100, 100),
+    ToggleEnabledStroke = Color3.fromRGB(0, 170, 255),
+    ToggleDisabledStroke = Color3.fromRGB(125, 125, 125),
+    ToggleEnabledOuterStroke = Color3.fromRGB(100, 100, 100),
+    ToggleDisabledOuterStroke = Color3.fromRGB(65, 65, 65),
+    DropdownSelected = Color3.fromRGB(40, 40, 40),
+    DropdownUnselected = Color3.fromRGB(30, 30, 30),
+    InputBackground = Color3.fromRGB(30, 30, 30),
+    InputStroke = Color3.fromRGB(65, 65, 65),
+    PlaceholderColor = Color3.fromRGB(178, 178, 178)
+}
+
+-- لتفعيل الثيم المخصص مباشرة:
+-- Rayfield:SetTheme(myCustomTheme)
 
 SettingsTab:CreateButton({
     Name = "Save Config",
@@ -1152,3 +1180,119 @@ TabMain:CreateToggle({
         end
     end
 })
+
+-- Jump Height Slider
+local jumpHeight = 50 -- default jump power
+PlayerTab:CreateSlider({
+    Name = "Jump Height",
+    Min = 10,
+    Max = 200,
+    Default = 50,
+    Increment = 5,
+    Suffix = "Studs",
+    Callback = function(value)
+        jumpHeight = value
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if char then
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = jumpHeight
+                humanoid.UseJumpPower = true
+            end
+        end
+    end
+})
+
+-- Apply jump height automatically if Jump Toggle is on and player respawns
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    humanoid.JumpPower = jumpHeight
+    humanoid.UseJumpPower = true
+end)
+
+-- Jump Toggle
+local jumpEnabled = false
+PlayerTab:CreateToggle({
+    Name = "Enable Jump",
+    CurrentValue = false,
+    Callback = function(state)
+        jumpEnabled = state
+        local player = game.Players.LocalPlayer
+        task.spawn(function()
+            while jumpEnabled do
+                local char = player.Character
+                if char then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.JumpPower = 50 -- default jump power, can adjust
+                        humanoid.UseJumpPower = true
+                    end
+                end
+                task.wait(0.5) -- continuously enforce jump power
+            end
+        end)
+    end
+})
+
+-- Optional: Apply jump on respawn
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    if jumpEnabled then
+        humanoid.JumpPower = 50
+        humanoid.UseJumpPower = true
+    end
+end)
+
+-- Player Tab
+local PlayerTab = Window:CreateTab("Player")
+
+-- Noclip
+local noclipEnabled = false
+PlayerTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Callback = function(state)
+        noclipEnabled = state
+        task.spawn(function()
+            local player = game.Players.LocalPlayer
+            while noclipEnabled do
+                local char = player.Character
+                if char then
+                    for _, part in ipairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+-- Custom Speed
+local walkSpeed = 16 -- default
+PlayerTab:CreateSlider({
+    Name = "Custom Speed",
+    Range = {16, 500}, -- Roblox default is 16
+    Increment = 1,
+    Suffix = "Studs",
+    CurrentValue = 16,
+    Flag = "WalkSpeed",
+    Callback = function(value)
+        walkSpeed = value
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = walkSpeed
+        end
+    end
+})
+
+-- Optional: Make speed update constantly if character respawns
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    humanoid.WalkSpeed = walkSpeed
+end)
+
