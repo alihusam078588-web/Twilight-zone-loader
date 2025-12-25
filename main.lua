@@ -328,6 +328,8 @@ task.spawn(function()
 end)
 
 -- Rayfield GUI & Tabs
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/Llapi-Source/Rayfield/main/source.lua"))()
+
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
     LoadingTitle = "Twilight Zone Loader",
