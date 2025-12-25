@@ -1,7 +1,12 @@
 -- Safely wait for LocalPlayer
+-- Safely wait for LocalPlayer
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+local LocalPlayer = Players.LocalPlayer
 
+-- Wait until the player exists
+if not LocalPlayer then
+    LocalPlayer = Players.PlayerAdded:Wait()
+end
 -- Services
 local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
