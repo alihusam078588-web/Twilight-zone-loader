@@ -818,7 +818,7 @@ SupportTab:CreateButton({
 
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = "I added a lot of features I hope they will work I'm very tired",
+   Content = "ok guys.. I know theres a lot of bugs but I'm tired right now I'll fix later",
    Duration = 6.5,
    Image = "megaphone",
 })
