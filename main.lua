@@ -818,26 +818,18 @@ SupportTab:CreateButton({
 
 Rayfield:Notify({
    Title = "TZ announcement",
+   Content = "I added a lot of features I hope they will work I'm very tired",
+   Duration = 6.5,
+   Image = "megaphone",
+})
+
+
+
+Rayfield:Notify({
+   Title = "TZ notify",
    Content = "Godmode and auto skillcheck is active!",
    Duration = 6.5,
    Image = "shield-half",
-})
-
-
-Rayfield:Notify({
-   Title = "TZ announcement",
-   Content = "Okay I fixed it there's some codes that I didn't add them back but when I get some free time I'll add them back also I'll remove the feedback tab and support tab features I'll just make it linkvertice support not Robux also I didn't test it yet",
-   Duration = 6.5,
-   Image = "megaphone",
-})
-
-task.wait(8)
-
-Rayfield:Notify({
-   Title = "TZ announcement",
-   Content = "Also thanks to @z4rl3y in discord for telling me this bug",
-   Duration = 6.5,
-   Image = "megaphone",
 })
 
 
@@ -1135,49 +1127,91 @@ TabESP:CreateToggle({
     end
 })
 
-local autoSnowball = false
+local autoSnowmapEnabled = false
 
 TabMain:CreateToggle({
-    Name = "Auto Teleport Snowball",
+    Name = "Auto Snowmap",
     CurrentValue = false,
     Callback = function(state)
-        autoSnowball = state
+        autoSnowmapEnabled = state
+        if not state then return end
 
-        if state then
-            task.spawn(function()
-                while autoSnowball do
-                    local Workspace = game:GetService("Workspace")
-                    local Players = game:GetService("Players")
-                    local LocalPlayer = Players.LocalPlayer
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
 
-                    local machineFolder = Workspace:FindFirstChild("Floor") 
-                                        and Workspace.Floor:FindFirstChild("Machines")
-                    if machineFolder then
-                        local targetMachine = machineFolder:GetChildren()[3]
-                        if targetMachine then
-                            local snowman = targetMachine:FindFirstChild("Snowman")
-                            if snowman then
-                                local middleSnowball = snowman:FindFirstChild("MiddleSnowball")
-                                if middleSnowball then
-                                    local prompt = middleSnowball:FindFirstChildWhichIsA("ProximityPrompt")
-                                    if prompt then
-                                        -- Teleport player above the snowball
-                                        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                                        local hrp = char:WaitForChild("HumanoidRootPart")
-                                        hrp.CFrame = middleSnowball.CFrame + Vector3.new(0, 3, 0)
+            local DropItem = player:WaitForChild("PlayerGui")
+                :WaitForChild("main")
+                :WaitForChild("Bottom")
+                :WaitForChild("DropItem")
 
-                                        -- Fire the prompt
-                                        fireproximityprompt(prompt)
-                                    end
-                                end
+            while autoSnowmapEnabled do
+                -- Map check
+                if not workspace:FindFirstChild("Floor")
+                or not workspace.Floor:FindFirstChild("Map")
+                or not workspace.Floor.Map:FindFirstChild("IceFloor") then
+                    task.wait(1)
+                    continue
+                end
+
+                local machines = workspace.Floor:FindFirstChild("Machines")
+                if not machines then task.wait(1) continue end
+
+                local didSomething = false
+
+                -- 🔁 IF HOLDING ITEM → GO TO SNOWMAN
+                if DropItem.Visible then
+                    for _, machine in ipairs(machines:GetChildren()) do
+                        if machine:FindFirstChild("Snowman") then
+                            local middle = machine.Snowman:FindFirstChild("MiddleSnowball")
+                            local prompt = middle and middle:FindFirstChildWhichIsA("ProximityPrompt")
+
+                            if prompt then
+                                hrp.CFrame = middle:GetPivot() + Vector3.new(0, 2, 0)
+                                task.wait(0.2)
+                                fireproximityprompt(prompt)
+                                task.wait(0.4)
+                                didSomething = true
+                                break
                             end
                         end
                     end
 
-                    task.wait(0.5) -- wait half a second before checking again
+                -- 🔁 IF NOT HOLDING ITEM → PICK ONE
+                else
+                    for _, machine in ipairs(machines:GetChildren()) do
+                        if not machine.Name:lower():find("fuse") and machine:FindFirstChild("Pickup") then
+                            for _, obj in ipairs(machine.Pickup:GetDescendants()) do
+                                if obj:IsA("ProximityPrompt") then
+                                    hrp.CFrame = obj.Parent:GetPivot() + Vector3.new(0, 2, 0)
+                                    task.wait(0.2)
+                                    fireproximityprompt(obj)
+                                    task.wait(0.4)
+                                    didSomething = true
+                                    break
+                                end
+                            end
+                        end
+                        if didSomething then break end
+                    end
                 end
-            end)
-        end
+
+                -- ✅ NOTHING LEFT → GO TO ELEVATOR
+                if not didSomething then
+                    local elevator = workspace:FindFirstChild("Elevator")
+                    local part = elevator and elevator:FindFirstChildWhichIsA("BasePart")
+                    if part then
+                        hrp.CFrame = part.CFrame + Vector3.new(0, 2, 0)
+                    end
+                    autoSnowmapEnabled = false
+                    break
+                end
+
+                task.wait(0.3)
+            end
+        end)
     end
 })
 
