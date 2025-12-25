@@ -345,19 +345,24 @@ local Window = Rayfield:CreateWindow({
 })
 local SettingsTab = Window:CreateTab("Settings", 4483362458)
 
+local themeMap = {
+    ["Default"] = "Default",
+    ["Amber Glow"] = "AmberGlow",
+    ["Amethyst"] = "Amethyst",
+    ["Bloom"] = "Bloom",
+    ["Dark Blue"] = "DarkBlue",
+    ["Green"] = "Green",
+    ["Light"] = "Light",
+    ["Ocean"] = "Ocean",
+    ["Serenity"] = "Serenity"
+}
+
 SettingsTab:CreateDropdown({
     Name = "UI Theme",
-    Options = {
-        "Default",
-        "Dark",
-        "Light",
-        "Ocean",
-        "Serenity",
-        "AmberGlow"
-    },
+    Options = {"Default", "Amber Glow", "Amethyst", "Bloom", "Dark Blue", "Green", "Light", "Ocean", "Serenity"},
     CurrentOption = "Default",
-    Callback = function(Theme)
-        Rayfield:SetTheme(Theme)
+    Callback = function(selected)
+        Rayfield:SetTheme(themeMap[selected])
     end
 })
 
