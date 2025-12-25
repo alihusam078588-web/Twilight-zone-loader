@@ -328,14 +328,61 @@ task.spawn(function()
 end)
 
 -- Rayfield GUI & Tabs
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "Twilight Zone Hub",
     LoadingTitle = "Twilight Zone Loader",
     LoadingSubtitle = "by Ali_hhjjj",
-    ConfigurationSaving = { Enabled = false },
-    Discord = { Enabled = false },
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "TwilightZoneHub",
+        FileName = "TZ_Config"
+    },
+    Discord = {
+        Enabled = false
+    }
 })
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
+
+SettingsTab:CreateDropdown({
+    Name = "UI Theme",
+    Options = {
+        "Default",
+        "Dark",
+        "Light",
+        "Ocean",
+        "Serenity",
+        "AmberGlow"
+    },
+    CurrentOption = "Default",
+    Callback = function(Theme)
+        Rayfield:SetTheme(Theme)
+    end
+})
+
+SettingsTab:CreateButton({
+    Name = "Save Config",
+    Callback = function()
+        Rayfield:SaveConfiguration()
+        Rayfield:Notify({
+            Title = "Settings",
+            Content = "Configuration saved!",
+            Duration = 4
+        })
+    end
+})
+
+SettingsTab:CreateButton({
+    Name = "Load Config",
+    Callback = function()
+        Rayfield:LoadConfiguration()
+        Rayfield:Notify({
+            Title = "Settings",
+            Content = "Configuration loaded!",
+            Duration = 4
+        })
+    end
+})
+
 
 local TabMain = Window:CreateTab("Main")
 local TabESP = Window:CreateTab("ESP")
