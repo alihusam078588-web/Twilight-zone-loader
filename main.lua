@@ -804,3 +804,192 @@ Rayfield:Notify({
    Duration = 6.5,
    Image = "megaphone",
 })
+
+
+local fullbrightEnabled = false
+local oldLighting = {}
+
+TabMain:CreateToggle({
+    Name = "FullBright",
+    CurrentValue = false,
+    Callback = function(state)
+        fullbrightEnabled = state
+
+        local Lighting = game:GetService("Lighting")
+
+        if state then
+            -- Save old values
+            oldLighting = {
+                Brightness = Lighting.Brightness,
+                ClockTime = Lighting.ClockTime,
+                FogEnd = Lighting.FogEnd,
+                GlobalShadows = Lighting.GlobalShadows,
+                Ambient = Lighting.Ambient,
+                OutdoorAmbient = Lighting.OutdoorAmbient
+            }
+
+            Lighting.Brightness = 3
+            Lighting.ClockTime = 12
+            Lighting.FogEnd = 1e9
+            Lighting.GlobalShadows = false
+            Lighting.Ambient = Color3.fromRGB(255,255,255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(255,255,255)
+        else
+            -- Restore old values
+            for prop, value in pairs(oldLighting) do
+                pcall(function()
+                    Lighting[prop] = value
+                end)
+            end
+        end
+    end
+})
+
+
+local noFogEnabled = false
+local originalFogEnd, originalFogStart
+
+TabMain:CreateToggle({
+    Name = "No Fog",
+    CurrentValue = false,
+    Callback = function(state)
+        noFogEnabled = state
+        local Lighting = game:GetService("Lighting")
+
+        if state then
+            originalFogEnd = Lighting.FogEnd
+            originalFogStart = Lighting.FogStart
+
+            task.spawn(function()
+                while noFogEnabled do
+                    Lighting.FogStart = 0
+                    Lighting.FogEnd = 1e9
+                    task.wait(1)
+                end
+            end)
+        else
+            if originalFogEnd then
+                Lighting.FogEnd = originalFogEnd
+            end
+            if originalFogStart then
+                Lighting.FogStart = originalFogStart
+            end
+        end
+    end
+})
+
+-- // Player ESP Variables
+local espPlayersOn = false
+local espNameOn = true
+local espDistanceOn = true
+local playerESPMap = {}
+
+-- Create or update ESP for a player
+local function createPlayerESP(player)
+    if playerESPMap[player] then return end
+
+    -- Highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "TZ_PlayerHighlight"
+    highlight.Adornee = player.Character
+    highlight.FillColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+    highlight.FillTransparency = 0.7
+    highlight.Parent = workspace
+
+    -- Billboard for Name & Distance
+    local billboard
+    local textLabel
+    if espNameOn or espDistanceOn then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "TZ_PlayerESPText"
+        billboard.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        billboard.Size = UDim2.new(0, 100, 0, 50)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.AlwaysOnTop = true
+
+        textLabel = Instance.new("TextLabel")
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+        textLabel.TextScaled = true
+        textLabel.Text = player.Name
+        textLabel.Parent = billboard
+        billboard.Parent = workspace
+    end
+
+    playerESPMap[player] = {
+        highlight = highlight,
+        billboard = billboard,
+        textLabel = textLabel
+    }
+end
+
+-- Remove ESP for a player
+local function removePlayerESP(player)
+    local data = playerESPMap[player]
+    if data then
+        if data.highlight then pcall(function() data.highlight:Destroy() end) end
+        if data.billboard then pcall(function() data.billboard:Destroy() end) end
+        playerESPMap[player] = nil
+    end
+end
+
+-- Update ESP text with name/distance
+task.spawn(function()
+    while true do
+        if espPlayersOn then
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    createPlayerESP(player)
+                    local data = playerESPMap[player]
+                    if data and data.textLabel then
+                        local dist = math.floor((player.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)
+                        if espNameOn and espDistanceOn then
+                            data.textLabel.Text = player.Name .. " | " .. dist .. "m"
+                        elseif espNameOn then
+                            data.textLabel.Text = player.Name
+                        elseif espDistanceOn then
+                            data.textLabel.Text = dist .. "m"
+                        else
+                            data.textLabel.Text = ""
+                        end
+                    end
+                end
+            end
+        else
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                removePlayerESP(player)
+            end
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- Remove ESP when player leaves
+game.Players.PlayerRemoving:Connect(removePlayerESP)
+
+-- ESP Tab
+TabESP:CreateToggle({
+    Name = "ESP Players",
+    CurrentValue = false,
+    Callback = function(state)
+        espPlayersOn = state
+    end
+})
+
+TabESP:CreateToggle({
+    Name = "ESP Name",
+    CurrentValue = true,
+    Callback = function(state)
+        espNameOn = state
+    end
+})
+
+TabESP:CreateToggle({
+    Name = "ESP Distance",
+    CurrentValue = true,
+    Callback = function(state)
+        espDistanceOn = state
+    end
+})
