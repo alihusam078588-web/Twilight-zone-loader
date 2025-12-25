@@ -589,6 +589,147 @@ TabAutoCollect:CreateToggle({
     end
 })
 
+local function copyLink(name, link)
+    setclipboard(link)
+    Rayfield:Notify({
+        Title = "Copied!",
+        Content = name .. " link copied to clipboard",
+        Duration = 3
+    })
+end
+
+-- From low robux to high plz support me!
+SupportTab:CreateButton({
+    Name = "linkvertice",
+    Callback = function()
+        setclipboard("https://link-hub.net/1402067/y38uvYI5ny4q")
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Support",
+            Text = "Link copied to clipboard!",
+            Duration = 5
+        })
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 3 Robux",
+    Callback = function()
+        copyLink("3 Robux", "https://www.roblox.com/game-pass/1393917970/3-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 5 Robux",
+    Callback = function()
+        copyLink("5 Robux", "https://www.roblox.com/game-pass/1394051778/5-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 7 Robux",
+    Callback = function()
+        copyLink("7 Robux", "https://www.roblox.com/game-pass/1590110782/7-ROBUX")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 10 Robux",
+    Callback = function()
+        copyLink("10 Robux", "https://www.roblox.com/game-pass/1397546692/10-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 20 Robux",
+    Callback = function()
+        copyLink("20 Robux", "https://www.roblox.com/game-pass/1399668269/20-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 50 Robux",
+    Callback = function()
+        copyLink("50 Robux", "https://www.roblox.com/game-pass/1396221207/50-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 100 Robux",
+    Callback = function()
+        copyLink("100 Robux", "https://www.roblox.com/game-pass/1394439639/100-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 150 Robux",
+    Callback = function()
+        copyLink("150 Robux", "https://www.roblox.com/game-pass/1421451261/Thanks")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 200 Robux",
+    Callback = function()
+        copyLink("200 Robux", "https://www.roblox.com/game-pass/1423400055/Ty")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 300 Robux",
+    Callback = function()
+        copyLink("300 Robux", "https://www.roblox.com/game-pass/1504992105/300-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 500 Robux",
+    Callback = function()
+        copyLink("500 Robux", "https://www.roblox.com/game-pass/1395983236/500-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 1000 Robux",
+    Callback = function()
+        copyLink("1000 Robux", "https://www.roblox.com/game-pass/1394041876/1000-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 1000 Robux (Thanks)",
+    Callback = function()
+        copyLink("1000 Robux Thanks", "https://www.roblox.com/game-pass/1460106222/Thanks-nnnnn")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 2500 Robux",
+    Callback = function()
+        copyLink("2500 Robux", "https://www.roblox.com/game-pass/1437117512/2-500-robux")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 3000 Robux",
+    Callback = function()
+        copyLink("3000 Robux", "https://www.roblox.com/game-pass/1587430862/3000-Robux")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 5000 Robux",
+    Callback = function()
+        copyLink("5000 Robux", "https://www.roblox.com/game-pass/1395963387/5000-rbx")
+    end
+})
+
+SupportTab:CreateButton({
+    Name = "💎 10000 Robux",
+    Callback = function()
+        copyLink("10000 Robux", "https://www.roblox.com/game-pass/1399060598/10000-rbx")
+    end
+})
+
 
 Rayfield:Notify({
    Title = "TZ announcement",
