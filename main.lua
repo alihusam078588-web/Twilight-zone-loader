@@ -730,6 +730,13 @@ SupportTab:CreateButton({
     end
 })
 
+Rayfield:Notify({
+   Title = "TZ announcement",
+   Content = "Godmode and auto skillcheck is active!",
+   Duration = 6.5,
+   Image = "shield-half",
+})
+
 
 Rayfield:Notify({
    Title = "TZ announcement",
