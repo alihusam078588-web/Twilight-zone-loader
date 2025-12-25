@@ -341,6 +341,10 @@ local TabMain = Window:CreateTab("Main")
 local TabESP = Window:CreateTab("ESP")
 local TabAutoCollect = Window:CreateTab("Auto collect")
 local TabCredits = Window:CreateTab("Credits")
+TabCredits:CreateLabel("Created by Ali_hhjjj")
+TabCredits:CreateLabel("Tester: GoodJOBS3")
+TabCredits:CreateLabel("Thanks to Olivia (creator of Riddance Hub) and shelly (Riddance manager) for Rayfield idea")
+
 local SupportTab = Window:CreateTab("Support", 4483362458)
 
 TabMain:CreateButton({ Name = "Teleport: Nearest Machine", Callback = teleportToNearestMachine })
