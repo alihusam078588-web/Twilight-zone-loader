@@ -1213,6 +1213,8 @@ TabMain:CreateToggle({
         end)
     end
 })
+-- Player Tab
+local TabPlayer = Window:CreateTab("Player")
 
 -- Jump Height Slider
 local jumpHeight = 50 -- default jump power
@@ -1277,8 +1279,6 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
     end
 end)
 
--- Player Tab
-local TabPlayer = Window:CreateTab("Player")
 
 -- Noclip
 local noclipEnabled = false
