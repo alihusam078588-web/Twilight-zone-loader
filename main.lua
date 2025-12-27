@@ -1116,7 +1116,7 @@ task.spawn(function()
     end
 end)
 -- ESP Tab toggle
-EspTab:CreateToggle({
+ESPTab:CreateToggle({
     Name = "Item ESP",
     CurrentValue = false,
     Callback = function(v)
