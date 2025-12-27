@@ -1304,3 +1304,67 @@ TabPlayer:CreateToggle({
         end)
     end
 })
+-- Walk Fly
+local flyEnabled = false
+local flySpeed = 50
+
+TabPlayer:CreateToggle({
+    Name = "Fly",
+    CurrentValue = false,
+    Callback = function(state)
+        flyEnabled = state
+        local player = game.Players.LocalPlayer
+
+        task.spawn(function()
+            while flyEnabled do
+                local char = player.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+
+                if hrp and humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+
+                    local cam = workspace.CurrentCamera
+                    local moveDir = humanoid.MoveDirection
+
+                    if moveDir.Magnitude > 0 then
+                        hrp.Velocity =
+                            (cam.CFrame.LookVector * moveDir.Z +
+                            cam.CFrame.RightVector * moveDir.X) * flySpeed
+                    else
+                        hrp.Velocity = Vector3.zero
+                    end
+                end
+
+                task.wait()
+            end
+
+            -- Restore gravity
+            local char = player.Character
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end)
+    end
+})
+-- Infinite Jump
+local infiniteJumpEnabled = false
+
+TabPlayer:CreateToggle({
+    Name = "Infinite Jump",
+    CurrentValue = false,
+    Callback = function(state)
+        infiniteJumpEnabled = state
+    end
+})
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if infiniteJumpEnabled then
+        local char = game.Players.LocalPlayer.Character
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
