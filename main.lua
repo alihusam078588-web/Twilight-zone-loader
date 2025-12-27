@@ -1214,10 +1214,30 @@ TabMain:CreateToggle({
     end
 })
 -- Player Tab
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
 local TabPlayer = Window:CreateTab("Player")
 
--- Jump Height Slider
-local jumpHeight = 50 -- default jump power
+-- SETTINGS
+local jumpEnabled = true
+local jumpHeight = 50
+local walkSpeed = 16
+local noclipEnabled = false
+
+-- APPLY SETTINGS FUNCTION
+local function applyCharacterSettings(char)
+    local humanoid = char:WaitForChild("Humanoid")
+
+    humanoid.UseJumpPower = true
+    humanoid.JumpPower = jumpEnabled and jumpHeight or 0
+    humanoid.WalkSpeed = walkSpeed
+end
+
+-- APPLY ON RESPAWN
+player.CharacterAdded:Connect(applyCharacterSettings)
+
+-- JUMP HEIGHT SLIDER
 TabPlayer:CreateSlider({
     Name = "Jump Height",
     Min = 10,
@@ -1227,68 +1247,49 @@ TabPlayer:CreateSlider({
     Suffix = "Studs",
     Callback = function(value)
         jumpHeight = value
-        local player = game.Players.LocalPlayer
         local char = player.Character
         if char then
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.JumpPower = jumpHeight
-                humanoid.UseJumpPower = true
-            end
+            char.Humanoid.JumpPower = jumpEnabled and jumpHeight or 0
         end
     end
 })
 
--- Apply jump height automatically if Jump Toggle is on and player respawns
-game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    humanoid.JumpPower = jumpHeight
-    humanoid.UseJumpPower = true
-end)
-
--- Jump Toggle
-local jumpEnabled = false
+-- JUMP TOGGLE
 TabPlayer:CreateToggle({
     Name = "Enable Jump",
-    CurrentValue = false,
+    CurrentValue = true,
     Callback = function(state)
         jumpEnabled = state
-        local player = game.Players.LocalPlayer
-        task.spawn(function()
-            while jumpEnabled do
-                local char = player.Character
-                if char then
-                    local humanoid = char:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid.JumpPower = 50 -- default jump power, can adjust
-                        humanoid.UseJumpPower = true
-                    end
-                end
-                task.wait(0.5) -- continuously enforce jump power
-            end
-        end)
+        local char = player.Character
+        if char then
+            char.Humanoid.JumpPower = jumpEnabled and jumpHeight or 0
+        end
     end
 })
 
--- Optional: Apply jump on respawn
-game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    if jumpEnabled then
-        humanoid.JumpPower = 50
-        humanoid.UseJumpPower = true
+-- CUSTOM SPEED SLIDER
+TabPlayer:CreateSlider({
+    Name = "Custom Speed",
+    Range = {16, 500},
+    Increment = 1,
+    Suffix = "Studs",
+    CurrentValue = 16,
+    Callback = function(value)
+        walkSpeed = value
+        local char = player.Character
+        if char then
+            char.Humanoid.WalkSpeed = walkSpeed
+        end
     end
-end)
+})
 
-
--- Noclip
-local noclipEnabled = false
+-- NOCLIP TOGGLE
 TabPlayer:CreateToggle({
     Name = "Noclip",
     CurrentValue = false,
     Callback = function(state)
         noclipEnabled = state
         task.spawn(function()
-            local player = game.Players.LocalPlayer
             while noclipEnabled do
                 local char = player.Character
                 if char then
@@ -1303,29 +1304,3 @@ TabPlayer:CreateToggle({
         end)
     end
 })
-
--- Custom Speed
-local walkSpeed = 16 -- default
-TabPlayer:CreateSlider({
-    Name = "Custom Speed",
-    Range = {16, 500}, -- Roblox default is 16
-    Increment = 1,
-    Suffix = "Studs",
-    CurrentValue = 16,
-    Flag = "WalkSpeed",
-    Callback = function(value)
-        walkSpeed = value
-        local player = game.Players.LocalPlayer
-        local char = player.Character
-        if char and char:FindFirstChild("Humanoid") then
-            char.Humanoid.WalkSpeed = walkSpeed
-        end
-    end
-})
-
--- Optional: Make speed update constantly if character respawns
-game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    humanoid.WalkSpeed = walkSpeed
-end)
-
