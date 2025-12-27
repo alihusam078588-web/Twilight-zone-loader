@@ -1064,69 +1064,68 @@ TabESP:CreateToggle({
 })
 
 -- // Item ESP Variables
-local espItemsOn = false
-local itemESPMap = {}
+local ItemsESPEnabled = false
+local ItemHighlights = {}
 
--- Create highlight for an item
-local function createItemESP(item)
-    if not item or not item.Parent or itemESPMap[item] then return end
-    local hl = Instance.new("Highlight")
-    hl.Name = "TZ_ItemHighlight"
-    hl.Adornee = item
-    hl.FillColor = Color3.fromRGB(0, 255, 0)
-    hl.OutlineColor = Color3.fromRGB(0, 255, 0)
-    hl.FillTransparency = 0.7
-    hl.Parent = workspace
-    itemESPMap[item] = hl
-end
-
--- Remove highlight for an item
-local function removeItemESP(item)
-    if itemESPMap[item] then
-        pcall(function() itemESPMap[item]:Destroy() end)
-        itemESPMap[item] = nil
-    end
-end
-
--- Cleanup dead item highlights
-local function cleanupDeadItemHighlights()
-    for item, hl in pairs(itemESPMap) do
-        if not item or not item.Parent then
-            removeItemESP(item)
+local function clearItemESP()
+    for _, h in pairs(ItemHighlights) do
+        if h and h.Parent then
+            h:Destroy()
         end
     end
+    table.clear(ItemHighlights)
 end
 
--- Item ESP loop
+local function createItemESP(obj)
+    if ItemHighlights[obj] then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.FillColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineColor = Color3.fromRGB(0, 180, 0)
+    highlight.FillTransparency = 0.5
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee = obj
+    highlight.Parent = obj
+
+    ItemHighlights[obj] = highlight
+end
+
 task.spawn(function()
-    while true do
-        cleanupDeadItemHighlights()
-        if espItemsOn then
-            if workspace:FindFirstChild("Floor") and workspace.Floor:FindFirstChild("Items") then
-                for _, category in ipairs(workspace.Floor.Items:GetChildren()) do
-                    for _, item in ipairs(category:GetChildren()) do
-                        createItemESP(item)
+    while task.wait(0.5) do
+        if not ItemsESPEnabled then
+            clearItemESP()
+            continue
+        end
+
+        local itemsFolder = workspace:FindFirstChild("Floor")
+            and workspace.Floor:FindFirstChild("Items")
+            and workspace.Floor.Items:FindFirstChild("Items")
+
+        if not itemsFolder then continue end
+
+        for _, item in ipairs(itemsFolder:GetChildren()) do
+            local spawnFolder = item:FindFirstChild("Spawn")
+            if spawnFolder then
+                for _, realItem in ipairs(spawnFolder:GetChildren()) do
+                    if realItem:IsA("BasePart") or realItem:IsA("Model") then
+                        createItemESP(realItem)
                     end
                 end
             end
-        else
-            for item, _ in pairs(itemESPMap) do
-                removeItemESP(item)
-            end
         end
-        task.wait(1)
     end
 end)
-
 -- ESP Tab toggle
-TabESP:CreateToggle({
-    Name = "ESP Items",
+EspTab:CreateToggle({
+    Name = "Item ESP",
     CurrentValue = false,
-    Callback = function(state)
-        espItemsOn = state
+    Callback = function(v)
+        ItemsESPEnabled = v
+        if not v then
+            clearItemESP()
+        end
     end
 })
-
 local autoSnowmapEnabled = false
 
 TabMain:CreateToggle({
