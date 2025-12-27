@@ -1309,7 +1309,7 @@ local flyEnabled = false
 local flySpeed = 50
 
 TabPlayer:CreateToggle({
-    Name = "Fly",
+    Name = "Fly (Walk Style)",
     CurrentValue = false,
     Callback = function(state)
         flyEnabled = state
@@ -1339,13 +1339,24 @@ TabPlayer:CreateToggle({
                 task.wait()
             end
 
-            -- Restore gravity
             local char = player.Character
             local humanoid = char and char:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid:ChangeState(Enum.HumanoidStateType.Running)
             end
         end)
+    end
+})
+
+TabPlayer:CreateSlider({
+    Name = "Fly Speed",
+    Min = 10,
+    Max = 500,
+    Default = 50,
+    Increment = 5,
+    Suffix = "Studs",
+    Callback = function(value)
+        flySpeed = value
     end
 })
 -- Infinite Jump
