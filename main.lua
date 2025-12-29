@@ -1270,15 +1270,16 @@ TabPlayer:CreateToggle({
 -- CUSTOM SPEED SLIDER
 TabPlayer:CreateSlider({
     Name = "Custom Speed",
-    Range = {16, 500},
+    Min = 16,
+    Max = 500,
+    Default = 16,
     Increment = 1,
     Suffix = "Studs",
-    CurrentValue = 16,
     Callback = function(value)
         walkSpeed = value
-        local char = player.Character
-        if char then
-            char.Humanoid.WalkSpeed = walkSpeed
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = value
         end
     end
 })
@@ -1309,7 +1310,7 @@ local flyEnabled = false
 local flySpeed = 50
 
 TabPlayer:CreateToggle({
-    Name = "Fly (Walk Style)",
+    Name = "fly",
     CurrentValue = false,
     Callback = function(state)
         flyEnabled = state
