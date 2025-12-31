@@ -344,7 +344,7 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
-local SettingsTab = Window:CreateTab("Settings", 4483362458)
+local TabSettings = Window:CreateTab("Settings", 4483362458)
 
 -- Rayfield built-in theme identifiers
 local RayfieldThemes = {
@@ -360,7 +360,7 @@ local RayfieldThemes = {
 }
 
 -- Theme dropdown
-SettingsTabCreateDropdown({
+TabSettings:CreateDropdown({
     Name = "Theme",
     Options = RayfieldThemes,
     CurrentOption = {"Default"},
@@ -375,7 +375,7 @@ SettingsTabCreateDropdown({
     end
 })
 
-SettingsTab:CreateButton({
+TabSettings:CreateButton({
     Name = "Save Config",
     Callback = function()
         Rayfield:SaveConfiguration()
@@ -387,7 +387,7 @@ SettingsTab:CreateButton({
     end
 })
 
-SettingsTab:CreateButton({
+TabSettings:CreateButton({
     Name = "Load Config",
     Callback = function()
         Rayfield:LoadConfiguration()
