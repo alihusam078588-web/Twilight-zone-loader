@@ -1359,7 +1359,7 @@ task.wait(8)
 
 Rayfield:Notify({
    Title = "TZ announcement",
-   Content = Hi guys!
+   Content = "Hi guys!
 I won’t be able to update or fix bugs for now because my midterm exams are coming up and I don’t have much free time.
 I need to focus on studying over the next few days so I can do well on my exams.
 I know it’s going to be a bit hard, but I really hope you guys enjoyed the script so far.
