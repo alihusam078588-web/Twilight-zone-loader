@@ -1187,7 +1187,264 @@ TabMain:CreateToggle({
         end)
     end
 })
--- VARIABLES
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local AutoFarm = false
+local TP_DELAY = 0.2
+
+-- Safe teleport
+local function teleport(part, offsetY)
+    offsetY = offsetY or 3
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp and part and part:IsA("BasePart") then
+        hrp.CFrame = part.CFrame + Vector3.new(0, offsetY, 0)
+    end
+end
+
+-- Fire all prompts inside a model
+local function firePrompts(obj)
+    for _, v in ipairs(obj:GetDescendants()) do
+        if v:IsA("ProximityPrompt") then
+            pcall(function() fireproximityprompt(v) end)
+        end
+    end
+end
+
+-- Get current floor reference dynamically
+local function getFloor()
+    return workspace:FindFirstChild("Floor")
+end
+
+-- Collect items in a folder
+local function collectFolder(folderName)
+    local floor = getFloor()
+    if not floor then return end
+    local folder = floor.Items:FindFirstChild(folderName)
+    if not folder then return end
+
+    for _, item in ipairs(folder:GetChildren()) do
+        if not AutoFarm then return end
+        local part = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
+        if part then
+            teleport(part)
+            task.wait(TP_DELAY)
+            firePrompts(item)
+            task.wait(TP_DELAY)
+        end
+    end
+end
+
+-- Check if player is repairing
+local function isRepairing()
+    return player.PlayerGui.main.Bottom:FindFirstChild("StopRepairing") ~= nil
+end
+
+-- Get all incomplete machines
+local function getIncompleteMachines()
+    local floor = getFloor()
+    if not floor then return {} end
+    local machines = {}
+    for _, machine in ipairs(floor.Machines:GetChildren()) do
+        if machine.Name ~= "FuseBox" then
+            local completed = machine:FindFirstChild("Completed")
+            if completed and completed.Value == false then
+                table.insert(machines, machine)
+            end
+        end
+    end
+    return machines
+end
+
+-- Work on a single machine
+local function workMachine(machine)
+    local part = machine:FindFirstChildWhichIsA("BasePart", true)
+    if part then
+        teleport(part)
+        task.wait(TP_DELAY)
+        firePrompts(machine)
+        -- Wait until StopRepair appears (machine is being worked)
+        repeat task.wait(0.2) until isRepairing()
+        -- Wait until machine is done
+        repeat task.wait(0.3) until not isRepairing() or (machine:FindFirstChild("Completed") and machine.Completed.Value == true)
+    end
+end
+
+-- Teleport to elevator if Arrow exists
+local function teleportElevatorIfArrow()
+    local arrow = workspace.Elevator.TeleportExit.Message:FindFirstChild("Arrow")
+    if arrow then
+        local elevatorPart = workspace.Elevator.ElevatorModel:GetChildren()[3]:GetChildren()[5].Union
+        if elevatorPart then
+            teleport(elevatorPart, 5)
+            -- Wait for new floor to load
+            repeat task.wait(0.5) until workspace:FindFirstChild("Floor")
+            task.wait(1) -- extra delay for Android lag
+        end
+    end
+end
+
+-- Restart farming when floor changes
+local function watchFloorChanges()
+    local gameInfo = workspace:FindFirstChild("GameInformation")
+    if not gameInfo then return end
+    local floorVal = gameInfo:FindFirstChild("Floor")
+    if not floorVal then return end
+
+    floorVal:GetPropertyChangedSignal("Value"):Connect(function()
+        if AutoFarm then
+            -- New floor detected, restart farming loop
+            task.spawn(function()
+                collectFolder("Capsules")
+                collectFolder("Currencies")
+                local incompleteMachines = getIncompleteMachines()
+                while #incompleteMachines > 0 and AutoFarm do
+                    workMachine(incompleteMachines[1])
+                    incompleteMachines = getIncompleteMachines()
+                end
+            end)
+        end
+    end)
+end
+
+-- Fire machine prompts when EyeIcon appears
+local function watchEyeIcon()
+    local topGui = player.PlayerGui.main.Top
+    topGui.ChildAdded:Connect(function(child)
+        if child.Name == "EyeIcon" and AutoFarm then
+            local incompleteMachines = getIncompleteMachines()
+            for _, machine in ipairs(incompleteMachines) do
+                firePrompts(machine)
+            end
+        end
+    end)
+end
+
+-- Main loop
+TabMain:CreateToggle({
+    Name = "Auto Farm",
+    CurrentValue = false,
+    Callback = function(state)
+        AutoFarm = state
+        if AutoFarm then
+            watchFloorChanges()
+            watchEyeIcon()
+            task.spawn(function()
+                while AutoFarm do
+                    -- Step 1: Collect all items
+                    collectFolder("Capsules")
+                    collectFolder("Currencies")
+
+                    -- Step 2: Handle machines
+                    local incompleteMachines = getIncompleteMachines()
+                    while #incompleteMachines > 0 and AutoFarm do
+                        local machine = incompleteMachines[math.random(1, #incompleteMachines)]
+                        workMachine(machine)
+                        incompleteMachines = getIncompleteMachines()
+                        task.wait(0.2)
+                    end
+
+                    -- Step 3: Teleport elevator if Arrow exists
+                    teleportElevatorIfArrow()
+
+                    task.wait(0.2)
+                end
+            end)
+        end
+    end
+})
+
+local Label = TabMain:CreateLabel("This auto farm only for machines and normal floors (doesn't work with spirit traps", "triangle-alert")
+
+-- Player Tab
+local PlayerTab = Window:CreateTab("Player")
+
+-- Noclip toggle
+local noclipEnabled = false
+PlayerTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Callback = function(state)
+        noclipEnabled = state
+        game:GetService("RunService").Stepped:Connect(function()
+            if noclipEnabled and player.Character then
+                for _, part in ipairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+})
+
+-- Fly toggle (fixed)
+local flyEnabled = false
+local flySpeed = 50
+local flyConnection -- store the RenderStepped connection
+
+PlayerTab:CreateToggle({
+    Name = "Fly",
+    CurrentValue = false,
+    Callback = function(state)
+        flyEnabled = state
+
+        -- Turn ON fly
+        if flyEnabled then
+            local runService = game:GetService("RunService")
+            flyConnection = runService.RenderStepped:Connect(function()
+                if flyEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = player.Character.HumanoidRootPart
+                    local cam = workspace.CurrentCamera
+                    local moveDir = player.Character.Humanoid.MoveDirection
+
+                    -- Move in camera direction with WASD
+                    if moveDir.Magnitude > 0 then
+                        hrp.Velocity = (cam.CFrame.LookVector * moveDir.Magnitude) * flySpeed
+                    else
+                        hrp.Velocity = Vector3.new(0,0,0)
+                    end
+                end
+            end)
+
+        -- Turn OFF fly
+        else
+            if flyConnection then
+                flyConnection:Disconnect()
+                flyConnection = nil
+            end
+            -- Reset velocity when fly is off
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+            end
+        end
+    end
+})
+
+-- Fly Speed slider
+PlayerTab:CreateSlider({
+    Name = "Fly Speed",
+    Range = {20, 200},
+    Increment = 5,
+    CurrentValue = 50,
+    Callback = function(value)
+        flySpeed = value
+    end
+})
+
+-- Walk Speed slider
+PlayerTab:CreateSlider({
+    Name = "Walk Speed",
+    Range = {16, 200}, -- default Roblox walk speed is 16
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(value)
+        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+            player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = value
+        end
+    end
+})
 
 -- FINAL NOTIFICATION
 Rayfield:Notify({
