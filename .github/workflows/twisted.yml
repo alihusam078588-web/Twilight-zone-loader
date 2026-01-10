@@ -1,0 +1,29 @@
+name: Twisted of the Day
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # Runs daily (UTC)
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send webhook
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{
+            "username": "Dandy'\''s World",
+            "embeds": [
+              {
+                "title": "🌀 Twisted of the Day",
+                "description": "**Twisted Shelly**\n\nA fast and dangerous twisted that punishes careless players.",
+                "color": 10181046,
+                "footer": {
+                  "text": "Daily Twisted Board • Dandy'\''s World"
+                }
+              }
+            ]
+          }' \
+          https://discord.com/api/webhooks/1449788203082191100/E6NMZ-b7wc-PHLS4lRY0E6ZV4Yas5IXLLHOIP8iN-8fn5L1KNkcBUhWsQytL2T9BVLpK
