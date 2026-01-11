@@ -1,4 +1,4 @@
-name: Twisted of the Day (Auto)
+name: Twisted of the Day (Auto Wiki)
 
 on:
   schedule:
@@ -10,36 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch Daily Twisted from Wiki
+      - name: Fetch Twisted from Wiki and send webhook
         run: |
           python3 << 'EOF'
           import requests
           import re
-          import json
           from datetime import datetime
 
           WIKI_URL = "https://dandys-world-robloxhorror.fandom.com/wiki/Daily_Twisted_Board"
           WEBHOOK_URL = "https://discord.com/api/webhooks/1459847207497896058/icUXwM2bg0wYP_BQ7IpD2-zerq19z_rdyL8Zj2K1g6_e_Zv6KOLuxlHVs3vVySs3rPdW"
 
-          html = requests.get(WIKI_URL).text
+          # Get wiki page
+          response = requests.get(WIKI_URL, timeout=15)
+          html = response.text
 
-          match = re.search(r"Currently, the board is occupied by\\s*<b>(.*?)</b>", html)
+          # Extract twisted name
+          match = re.search(
+              r"Currently, the board is occupied by\s*([A-Za-z\s]+)\.",
+              html
+          )
 
-          twisted = match.group(1) if match else "Unknown Twisted"
+          twisted = match.group(1).strip() if match else "Unknown Twisted"
 
           payload = {
-            "username": "Dandy's World",
-            "embeds": [
-              {
-                "title": "🌀 Twisted of the Day",
-                "description": f"**{twisted}**\n\n(Automatically fetched from the Daily Twisted Board)",
-                "color": 10181046,
-                "footer": {
-                  "text": "Daily Twisted Board • Auto Wiki Fetch"
-                },
-                "timestamp": datetime.utcnow().isoformat()
-              }
-            ]
+              "username": "Dandy's World",
+              "embeds": [
+                  {
+                      "title": "🌀 Twisted of the Day",
+                      "description": f"**{twisted}**\n\n(Auto-fetched from the Daily Twisted Board)",
+                      "color": 10181046,
+                      "footer": {
+                          "text": "Daily Twisted Board • GitHub Auto"
+                      },
+                      "timestamp": datetime.utcnow().isoformat()
+                  }
+              ]
           }
 
           requests.post(WEBHOOK_URL, json=payload)
