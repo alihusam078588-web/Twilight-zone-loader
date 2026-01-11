@@ -1,29 +1,46 @@
-name: Twisted of the Day
+name: Twisted of the Day (Auto)
 
 on:
   schedule:
-    - cron: '0 9 * * *' # Runs daily (UTC)
+    - cron: '0 22 * * *' # 01:00 AM Iraq time
   workflow_dispatch:
 
 jobs:
   send:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Send webhook
+      - name: Fetch Daily Twisted from Wiki
         run: |
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -d '{
-            "username": "Dandy'\''s World",
+          python3 << 'EOF'
+          import requests
+          import re
+          import json
+          from datetime import datetime
+
+          WIKI_URL = "https://dandys-world-robloxhorror.fandom.com/wiki/Daily_Twisted_Board"
+          WEBHOOK_URL = "https://discord.com/api/webhooks/1459847207497896058/icUXwM2bg0wYP_BQ7IpD2-zerq19z_rdyL8Zj2K1g6_e_Zv6KOLuxlHVs3vVySs3rPdW"
+
+          html = requests.get(WIKI_URL).text
+
+          match = re.search(r"Currently, the board is occupied by\\s*<b>(.*?)</b>", html)
+
+          twisted = match.group(1) if match else "Unknown Twisted"
+
+          payload = {
+            "username": "Dandy's World",
             "embeds": [
               {
                 "title": "🌀 Twisted of the Day",
-                "description": "**Twisted Shelly**\n\nA fast and dangerous twisted that punishes careless players.",
+                "description": f"**{twisted}**\n\n(Automatically fetched from the Daily Twisted Board)",
                 "color": 10181046,
                 "footer": {
-                  "text": "Daily Twisted Board • Dandy'\''s World"
-                }
+                  "text": "Daily Twisted Board • Auto Wiki Fetch"
+                },
+                "timestamp": datetime.utcnow().isoformat()
               }
             ]
-          }' \
-          https://discord.com/api/webhooks/1459847207497896058/icUXwM2bg0wYP_BQ7IpD2-zerq19z_rdyL8Zj2K1g6_e_Zv6KOLuxlHVs3vVySs3rPdW
+          }
+
+          requests.post(WEBHOOK_URL, json=payload)
+          EOF
