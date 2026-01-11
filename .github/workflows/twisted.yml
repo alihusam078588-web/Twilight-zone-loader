@@ -2,7 +2,7 @@ name: Twisted of the Day (Auto Wiki)
 
 on:
   schedule:
-    - cron: '0 22 * * *' # 01:00 AM Iraq time
+    - cron: '0 22 * * *' # Runs daily at 22:00 UTC (≈ 1:00 AM Iraq time)
   workflow_dispatch:
 
 jobs:
@@ -20,11 +20,9 @@ jobs:
           WIKI_URL = "https://dandys-world-robloxhorror.fandom.com/wiki/Daily_Twisted_Board"
           WEBHOOK_URL = "https://discord.com/api/webhooks/1459847207497896058/icUXwM2bg0wYP_BQ7IpD2-zerq19z_rdyL8Zj2K1g6_e_Zv6KOLuxlHVs3vVySs3rPdW"
 
-          # Get wiki page
           response = requests.get(WIKI_URL, timeout=15)
           html = response.text
 
-          # Extract twisted name
           match = re.search(
               r"Currently, the board is occupied by\s*([A-Za-z\s]+)\.",
               html
@@ -37,10 +35,10 @@ jobs:
               "embeds": [
                   {
                       "title": "🌀 Twisted of the Day",
-                      "description": f"**{twisted}**\n\n(Auto-fetched from the Daily Twisted Board)",
+                      "description": f"**{twisted}**",
                       "color": 10181046,
                       "footer": {
-                          "text": "Daily Twisted Board • GitHub Auto"
+                          "text": "Daily Twisted Board"
                       },
                       "timestamp": datetime.utcnow().isoformat()
                   }
