@@ -1,4 +1,4 @@
-name: Twisted of the Day
+name: Twisted of the Day (Tumblr FINAL)
 
 on:
   schedule:
@@ -10,32 +10,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Detect Today's Twisted and send webhook
+      - name: Get Today's Twisted and send webhook
         run: |
           python3 << 'EOF'
           import requests
           import xml.etree.ElementTree as ET
           import re
+          import html
           from datetime import datetime
 
           RSS_URL = "https://twisted-of-the-day.tumblr.com/rss"
           WEBHOOK_URL = "https://discord.com/api/webhooks/1449788203082191100/E6NMZ-b7wc-PHLS4lRY0E6ZV4Yas5IXLLHOIP8iN-8fn5L1KNkcBUhWsQytL2T9BVLpK"
 
-          rss = requests.get(RSS_URL, timeout=15).text
-          root = ET.fromstring(rss)
+          rss_text = requests.get(RSS_URL, timeout=20).text
+          root = ET.fromstring(rss_text)
 
           twisted = "Unknown Twisted"
 
           for item in root.findall(".//item"):
-              desc = item.find("description")
-              if desc is None or not desc.text:
+              desc_el = item.find("description")
+              if desc_el is None or not desc_el.text:
                   continue
 
-              text = desc.text
+              # Decode HTML entities
+              text = html.unescape(desc_el.text)
 
-              # Look for: Today's twisted is… NAME
+              # Remove ALL html tags
+              text = re.sub(r"<[^>]+>", "", text)
+
+              # Normalize dots
+              text = text.replace("…", "...")
+
+              # Look for: Today's twisted is...
               match = re.search(
-                  r"Today.?s twisted is…?\s*<[^>]*>\s*([^<]+)",
+                  r"Today.?s twisted is\.{3}\s*([A-Za-z\s]+)!?",
                   text,
                   re.IGNORECASE
               )
