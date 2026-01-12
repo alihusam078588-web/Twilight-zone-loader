@@ -2,7 +2,7 @@ name: Twisted of the Day
 
 on:
   schedule:
-    - cron: '0 22 * * *' # Runs daily at 22:00 UTC (≈ 1:00 AM Iraq time)
+    - cron: '0 22 * * *' # 22:00 UTC ≈ 1:00 AM Iraq time
   workflow_dispatch:
 
 jobs:
@@ -10,31 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch Twisted from Tumblr and send webhook
+      - name: Fetch Twisted from Tumblr RSS and send webhook
         run: |
           python3 << 'EOF'
           import requests
+          import xml.etree.ElementTree as ET
           import re
           from datetime import datetime
 
-          TUMBLR_URL = "https://www.tumblr.com/twisted-of-the-day/tagged/dandy%E2%80%99s%20world"
+          RSS_URL = "https://twisted-of-the-day.tumblr.com/rss"
           WEBHOOK_URL = "https://discord.com/api/webhooks/1449788203082191100/E6NMZ-b7wc-PHLS4lRY0E6ZV4Yas5IXLLHOIP8iN-8fn5L1KNkcBUhWsQytL2T9BVLpK"
 
-          headers = {
-              "User-Agent": "Mozilla/5.0"
-          }
+          rss = requests.get(RSS_URL, timeout=15).text
+          root = ET.fromstring(rss)
 
-          response = requests.get(TUMBLR_URL, headers=headers, timeout=15)
-          html = response.text
+          # Get latest post title
+          title = root.find(".//item/title").text
 
-          # Extract "Twisted of the Day: NAME"
+          # Extract name from "Twisted of the Day: NAME"
           match = re.search(
-              r"Twisted of the Day[:\-]\s*([A-Za-z\s]+)",
-              html,
+              r"Twisted of the Day[:\-]\s*(.+)",
+              title,
               re.IGNORECASE
           )
 
-          twisted = match.group(1).strip() if match else "Unknown Twisted"
+          twisted = match.group(1).strip() if match else title.strip()
 
           payload = {
               "username": "Dandy's World",
