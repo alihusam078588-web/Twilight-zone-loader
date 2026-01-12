@@ -1,4 +1,4 @@
-name: Twisted of the Day (Auto Wiki)
+name: Twisted of the Day
 
 on:
   schedule:
@@ -10,22 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch Twisted from Wiki and send webhook
+      - name: Fetch Twisted from Tumblr and send webhook
         run: |
           python3 << 'EOF'
           import requests
           import re
           from datetime import datetime
 
-          WIKI_URL = "https://dandys-world-robloxhorror.fandom.com/wiki/Daily_Twisted_Board"
+          TUMBLR_URL = "https://www.tumblr.com/twisted-of-the-day/tagged/dandy%E2%80%99s%20world"
           WEBHOOK_URL = "https://discord.com/api/webhooks/1449788203082191100/E6NMZ-b7wc-PHLS4lRY0E6ZV4Yas5IXLLHOIP8iN-8fn5L1KNkcBUhWsQytL2T9BVLpK"
 
-          response = requests.get(WIKI_URL, timeout=15)
+          headers = {
+              "User-Agent": "Mozilla/5.0"
+          }
+
+          response = requests.get(TUMBLR_URL, headers=headers, timeout=15)
           html = response.text
 
+          # Extract "Twisted of the Day: NAME"
           match = re.search(
-              r"Currently, the board is occupied by\s*([A-Za-z\s]+)\.",
-              html
+              r"Twisted of the Day[:\-]\s*([A-Za-z\s]+)",
+              html,
+              re.IGNORECASE
           )
 
           twisted = match.group(1).strip() if match else "Unknown Twisted"
@@ -38,7 +44,7 @@ jobs:
                       "description": f"**{twisted}**",
                       "color": 10181046,
                       "footer": {
-                          "text": "Daily Twisted Board"
+                          "text": "Twisted of the Day"
                       },
                       "timestamp": datetime.utcnow().isoformat()
                   }
