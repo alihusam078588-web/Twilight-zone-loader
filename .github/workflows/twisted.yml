@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch Twisted from Tumblr RSS and send webhook
+      - name: Detect Today's Twisted and send webhook
         run: |
           python3 << 'EOF'
           import requests
@@ -24,17 +24,25 @@ jobs:
           rss = requests.get(RSS_URL, timeout=15).text
           root = ET.fromstring(rss)
 
-          # Get latest post title
-          title = root.find(".//item/title").text
+          twisted = "Unknown Twisted"
 
-          # Extract name from "Twisted of the Day: NAME"
-          match = re.search(
-              r"Twisted of the Day[:\-]\s*(.+)",
-              title,
-              re.IGNORECASE
-          )
+          for item in root.findall(".//item"):
+              desc = item.find("description")
+              if desc is None or not desc.text:
+                  continue
 
-          twisted = match.group(1).strip() if match else title.strip()
+              text = desc.text
+
+              # Look for: Today's twisted is… NAME
+              match = re.search(
+                  r"Today.?s twisted is…?\s*<[^>]*>\s*([^<]+)",
+                  text,
+                  re.IGNORECASE
+              )
+
+              if match:
+                  twisted = match.group(1).strip()
+                  break
 
           payload = {
               "username": "Dandy's World",
