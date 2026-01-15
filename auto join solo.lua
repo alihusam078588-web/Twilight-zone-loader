@@ -20,7 +20,6 @@ local savedCFrame = nil
 
 -- ==================== STOP IF CurrentRoom EXISTS ====================
 if workspace:FindFirstChild("CurrentRoom") then
-    running = false
     return
 end
 
@@ -41,10 +40,8 @@ local function leaveButtonExists()
     return mainGui:FindFirstChild("leaveButton") ~= nil
 end
 
--- ==================== Main Logic (Auto Execute) ====================
+-- ==================== Main Logic (Teleport every 10s) ====================
 task.spawn(function()
-    if not running then return end
-
     local hrp = getHRP()
     local gate = workspace
         :WaitForChild("Elevators")
@@ -54,15 +51,19 @@ task.spawn(function()
     savedCFrame = hrp.CFrame
 
     while running do
-        -- EXTRA SAFETY CHECK
+        -- Stop if CurrentRoom appears
         if workspace:FindFirstChild("CurrentRoom") then
             running = false
             break
         end
 
+        -- Teleport to elevator
         hrp.CFrame = gate.CFrame
-        task.wait(0.2)
 
+        -- Wait 10 seconds
+        task.wait(10)
+
+        -- If leaveButton appears → teleport back & stop
         if leaveButtonExists() then
             hrp.CFrame = savedCFrame
             running = false
