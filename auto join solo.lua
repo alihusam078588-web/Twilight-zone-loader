@@ -18,6 +18,12 @@ local LocalPlayer = Players.LocalPlayer
 local running = true
 local savedCFrame = nil
 
+-- ==================== STOP IF CurrentRoom EXISTS ====================
+if workspace:FindFirstChild("CurrentRoom") then
+    running = false
+    return
+end
+
 -- ==================== Get HumanoidRootPart ====================
 local function getHRP()
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -37,6 +43,8 @@ end
 
 -- ==================== Main Logic (Auto Execute) ====================
 task.spawn(function()
+    if not running then return end
+
     local hrp = getHRP()
     local gate = workspace
         :WaitForChild("Elevators")
@@ -46,6 +54,12 @@ task.spawn(function()
     savedCFrame = hrp.CFrame
 
     while running do
+        -- EXTRA SAFETY CHECK
+        if workspace:FindFirstChild("CurrentRoom") then
+            running = false
+            break
+        end
+
         hrp.CFrame = gate.CFrame
         task.wait(0.2)
 
