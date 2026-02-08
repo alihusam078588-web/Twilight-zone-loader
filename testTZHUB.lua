@@ -1255,8 +1255,11 @@ MainTab:Toggle({
     end
 })
 
--- Auto Stuffing (add to your script where MainTab exists)
--- Paste this block after MainTab is defined.
+-- Auto Stuffing (fixed, add to your script where MainTab exists)
+-- Paste this block after MainTab is defined. It creates a MainTab toggle "Auto Stuffing".
+-- This version avoids syntax errors (no `continue`), uses table refs for thread/flag mutation,
+-- checks inventory slots, teleports to Pickup.Stuffing items, fires prompts, avoids enemies,
+-- restores position when stopping, and notifies when inventory is full.
 
 -- State
 local _autoStuffingEnabled = false
@@ -1266,13 +1269,13 @@ local _autoStuffingThread = nil
 local STUFF_TELEPORT_OFFSET_Y = 3
 local STUFF_FIRE_DELAY = 0.14
 local STUFF_SCAN_DELAY = 0.12
-local STUFF_PROMPT_COOLDOWN = 0.6
 local ENEMY_SAFE_DISTANCE = 20
 local SAFE_WAIT_TIME = 6
 
 -- Services / locals
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local Workspace = workspace
 
 -- Helpers
 local function safeGetHRP()
@@ -1304,11 +1307,11 @@ local function teleportToPart(part)
 end
 
 local function findNearestBasePartFromInstance(inst)
-    if not inst or not inst.Parent then return nil end
+    if not inst then return nil end
     if inst:IsA("BasePart") then return inst end
     if inst.Parent and inst.Parent:IsA("BasePart") then return inst.Parent end
     local ancestor = inst.Parent
-    while ancestor and ancestor ~= workspace do
+    while ancestor and ancestor ~= Workspace do
         if ancestor:IsA("BasePart") then return ancestor end
         ancestor = ancestor.Parent
     end
@@ -1319,18 +1322,19 @@ local function findNearestBasePartFromInstance(inst)
 end
 
 local function getStuffingFolder()
-    local pickup = workspace:FindFirstChild("Pickup")
+    local pickup = Workspace:FindFirstChild("Pickup")
     return pickup and pickup:FindFirstChild("Stuffing")
 end
 
 local function getSafeZone()
-    return workspace:FindFirstChild("Persistent")
-        and workspace.Persistent:FindFirstChild("Zones")
-        and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+    return Workspace:FindFirstChild("Persistent")
+        and Workspace.Persistent:FindFirstChild("Zones")
+        and Workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
 end
 
 local function isEnemyNearby(pos, radius)
-    local enemies = workspace:FindFirstChild("Enemies")
+    if not pos then return false end
+    local enemies = Workspace:FindFirstChild("Enemies")
     if not enemies then return false end
     for _, enemy in ipairs(enemies:GetChildren()) do
         if enemy and enemy:IsA("Model") then
@@ -1383,11 +1387,10 @@ local function notify(title, content, icon)
     end)
 end
 
--- Core loop
+-- Core loop (enabledRef and threadRef are tables: { flag } and { threadVar })
 local function runStuffingLoop(enabledRef, threadRef)
     if threadRef[1] then return end
     threadRef[1] = task.spawn(function()
-        local lastFired = setmetatable({}, { __mode = "k" })
         local savedPos = nil
 
         while enabledRef[1] do
@@ -1401,83 +1404,85 @@ local function runStuffingLoop(enabledRef, threadRef)
                 break
             end
 
-            local stuffing = nil
-            pcall(function() stuffing = getStuffingFolder() end)
+            local stuffing = getStuffingFolder()
             if stuffing and stuffing.Parent then
                 local items = stuffing:GetChildren()
-                for _, item in ipairs(items) do
+                for i = 1, #items do
                     if not enabledRef[1] then break end
-                    if not item or not item.Parent then continue end
-                    if item:IsA("Model") or item:IsA("BasePart") then
-                        -- compute bounding box or part cframe
-                        local ok, cf, size = pcall(function()
-                            if item:IsA("Model") then return item:GetBoundingBox() end
-                            if item:IsA("BasePart") then return item.CFrame, item.Size end
-                            return nil
-                        end)
-                        if not ok or not cf then continue end
+                    local item = items[i]
+                    if not item or not item.Parent then
+                        -- skip invalid item
+                    else
+                        if item:IsA("Model") or item:IsA("BasePart") then
+                            -- compute bounding box or part cframe
+                            local ok, cf, size = pcall(function()
+                                if item:IsA("Model") then return item:GetBoundingBox() end
+                                if item:IsA("BasePart") then return item.CFrame, item.Size end
+                                return nil
+                            end)
+                            if not ok or not cf then
+                                -- skip if we couldn't get a cframe
+                            else
+                                -- enemy check
+                                local danger = isEnemyNearby(cf.Position, ENEMY_SAFE_DISTANCE)
+                                local safeZone = getSafeZone()
 
-                        -- enemy check
-                        local danger = isEnemyNearby(cf.Position, ENEMY_SAFE_DISTANCE)
-                        local safeZone = getSafeZone()
+                                if danger and safeZone then
+                                    local hrp = safeGetHRP()
+                                    if hrp then
+                                        local original = hrp.CFrame
+                                        pcall(function() hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end)
+                                        task.wait(SAFE_WAIT_TIME)
+                                        pcall(function() hrp.CFrame = original end)
+                                    end
+                                    task.wait(0.2)
+                                else
+                                    -- save current position before teleporting
+                                    if not savedPos then
+                                        local hrp = safeGetHRP()
+                                        if hrp then savedPos = hrp.CFrame end
+                                    end
 
-                        if danger and safeZone then
-                            -- teleport to safe zone briefly
-                            local hrp = safeGetHRP()
-                            if hrp then
-                                local original = hrp.CFrame
-                                pcall(function() hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end)
-                                task.wait(SAFE_WAIT_TIME)
-                                pcall(function() hrp.CFrame = original end)
-                            end
-                            task.wait(0.2)
-                            continue
-                        end
+                                    -- teleport near item
+                                    local targetPart = nil
+                                    if item:IsA("BasePart") then
+                                        targetPart = item
+                                    else
+                                        targetPart = item:FindFirstChildWhichIsA("BasePart", true)
+                                    end
 
-                        -- save current position before teleporting
-                        if not savedPos then
-                            local hrp = safeGetHRP()
-                            if hrp then savedPos = hrp.CFrame end
-                        end
-
-                        -- teleport near item
-                        local targetPart = nil
-                        if item:IsA("BasePart") then
-                            targetPart = item
-                        else
-                            targetPart = item:FindFirstChildWhichIsA("BasePart", true)
-                        end
-
-                        if targetPart then
-                            local oktp = teleportToPart(targetPart)
-                            if oktp then
-                                task.wait(STUFF_FIRE_DELAY)
-                                -- loop fire prompts until item disappears or inventory full or toggled off
-                                while enabledRef[1] and item.Parent == stuffing and not isInventoryFull() do
-                                    local firedAny = false
-                                    for _, desc in ipairs(item:GetDescendants()) do
-                                        if desc:IsA("ProximityPrompt") then
-                                            safeFirePrompt(desc)
-                                            firedAny = true
-                                            task.wait(0.04)
+                                    if targetPart then
+                                        local oktp = teleportToPart(targetPart)
+                                        if oktp then
+                                            task.wait(STUFF_FIRE_DELAY)
+                                            -- loop fire prompts until item disappears or inventory full or toggled off
+                                            while enabledRef[1] and item.Parent == stuffing and not isInventoryFull() do
+                                                local firedAny = false
+                                                for _, desc in ipairs(item:GetDescendants()) do
+                                                    if desc:IsA("ProximityPrompt") then
+                                                        safeFirePrompt(desc)
+                                                        firedAny = true
+                                                        task.wait(0.04)
+                                                    end
+                                                end
+                                                if not firedAny then break end
+                                                task.wait(0.18)
+                                            end
+                                        end
+                                    else
+                                        -- fallback: fire any prompts under item (no teleport)
+                                        for _, desc in ipairs(item:GetDescendants()) do
+                                            if desc:IsA("ProximityPrompt") then
+                                                safeFirePrompt(desc)
+                                                task.wait(0.04)
+                                            end
                                         end
                                     end
-                                    if not firedAny then break end
-                                    task.wait(0.18)
-                                end
-                            end
-                        else
-                            -- fallback: fire any prompts under item (no teleport)
-                            for _, desc in ipairs(item:GetDescendants()) do
-                                if desc:IsA("ProximityPrompt") then
-                                    safeFirePrompt(desc)
-                                    task.wait(0.04)
                                 end
                             end
                         end
-
-                        task.wait(0.12)
                     end
+                    task.wait(0.12)
                 end
             end
 
@@ -1506,7 +1511,7 @@ local function stopAutoStuffing()
     notify("Auto Stuffing", "Stopped", "close")
 end
 
--- Add toggle to MainTab
+-- Add toggle to MainTab (named as requested)
 MainTab:Toggle({
     Title = "Auto Stuffing",
     Desc = "Auto-collect items from Pickup.Stuffing (checks inventory and avoids enemies)",
