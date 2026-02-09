@@ -1036,175 +1036,77 @@ MainTab:Toggle({
     Callback = function(state) if state then startAutoFarm() else stopAutoFarm() end end
 })
 
--- Auto collect Stuffing (improved)
--- Paste this where MainTab is available.
+-- AUTO COLLECT STUFFING TOGGLE SCRIPT
 
 local Players = game:GetService("Players")
-local Workspace = workspace
-local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+local char = lp.Character or lp.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
 
--- State (table refs so the loop can stop cleanly)
-local _autoCollectStuffing = { false }
-local _autoCollectStuffingThread = { nil }
+local AutoStuffing = false
+local StuffingThread
 
--- Config
-local TELEPORT_OFFSET_UNDER = 2        -- how far under the item to teleport
-local PROMPT_INNER_DELAY = 0.04
-local PROMPT_LOOP_DELAY = 0.18
-local ITEM_LOOP_DELAY = 0.12
-local SCAN_DELAY = 0.25
-local ITEM_TIMEOUT = 30                -- seconds to give up on a single item (prevents infinite loops)
-
--- Helpers
-local function safeGetHRP()
-    local char = player.Character or player.CharacterAdded:Wait()
-    return char and char:FindFirstChild("HumanoidRootPart")
+-- safer teleport
+local function tp(cf)
+    hrp.CFrame = cf
 end
 
-local function firePromptUsingHoldZero(prompt)
-    if not prompt or not prompt:IsA("ProximityPrompt") then return end
-    pcall(function()
-        local ok, old = pcall(function() return prompt.HoldDuration end)
-        if ok then
-            prompt.HoldDuration = 0
-        end
-
-        local hasBegin = pcall(function() return typeof(prompt.InputHoldBegin) == "function" end)
-        if hasBegin then
-            pcall(function() prompt:InputHoldBegin() end)
-            task.wait()
-            pcall(function() prompt:InputHoldEnd() end)
-        else
-            pcall(function() fireproximityprompt(prompt, 0) end)
-        end
-
-        if ok then
-            pcall(function() prompt.HoldDuration = old end)
-        end
-    end)
-end
-
-local function fireAllPromptsUnder(instance)
-    if not instance then return end
-    for _, v in ipairs(instance:GetDescendants()) do
-        if v:IsA("ProximityPrompt") then
-            firePromptUsingHoldZero(v)
-            task.wait(PROMPT_INNER_DELAY)
-        end
+-- fire prompt safely
+local function firePrompt(obj)
+    local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+    if prompt then
+        fireproximityprompt(prompt)
+        return true
     end
+    return false
 end
 
-local function getStuffingFolder()
-    local pickup = Workspace:FindFirstChild("Pickup")
-    return pickup and pickup:FindFirstChild("Stuffing")
-end
+-- MAIN LOOP
+local function startAutoStuffing()
+    StuffingThread = task.spawn(function()
+        while AutoStuffing do
+            local stuffingFolder = workspace:FindFirstChild("Pickup")
+                and workspace.Pickup:FindFirstChild("Stuffing")
 
--- Returns a CFrame positioned under the item (best-effort). If item is a Model, uses bounding box.
-local function computeUnderCFrame(item)
-    if not item then return nil end
-    local ok, cf, size = pcall(function()
-        if item:IsA("Model") then
-            return item:GetBoundingBox()
-        elseif item:IsA("BasePart") then
-            return item.CFrame, item.Size
-        end
-        return nil
-    end)
-    if not ok or not cf then return nil end
+            if stuffingFolder then
+                for _, item in ipairs(stuffingFolder:GetChildren()) do
+                    if not AutoStuffing then break end
+                    if item:IsA("BasePart") or item:IsA("Model") then
+                        local part = item:IsA("Model") and item:FindFirstChildWhichIsA("BasePart") or item
+                        if part then
+                            -- loop until item disappears
+                            while AutoStuffing and part.Parent do
+                                -- teleport UNDER item
+                                tp(part.CFrame * CFrame.new(0, -3, 0))
+                                task.wait(0.15)
 
-    local yOffset = TELEPORT_OFFSET_UNDER
-    if size and typeof(size) == "Vector3" then
-        yOffset = (size.Y / 2) + TELEPORT_OFFSET_UNDER
-    end
+                                -- teleport ON item
+                                tp(part.CFrame)
+                                task.wait(0.15)
 
-    return cf - Vector3.new(0, yOffset, 0)
-end
-
-local function teleportHRPTo(cframe)
-    local hrp = safeGetHRP()
-    if not hrp or not cframe then return false end
-    pcall(function()
-        hrp.CFrame = cframe
-    end)
-    return true
-end
-
--- Main worker: loops items, teleports under each item repeatedly until it disappears
-local function runAutoCollectStuffing(enabledRef, threadRef)
-    if threadRef[1] then return end
-    threadRef[1] = task.spawn(function()
-        local savedPos = nil
-
-        while enabledRef[1] do
-            local stuffing = getStuffingFolder()
-            if stuffing and stuffing.Parent then
-                -- snapshot children to iterate; we'll still check item.Parent inside loop
-                local items = stuffing:GetChildren()
-                for i = 1, #items do
-                    if not enabledRef[1] then break end
-                    local item = items[i]
-                    if not item or not item.Parent then
-                        -- skip invalid
-                    else
-                        -- save original position once per session
-                        if not savedPos then
-                            local hrp = safeGetHRP()
-                            if hrp then savedPos = hrp.CFrame end
-                        end
-
-                        -- per-item loop: keep teleporting under the item until it disappears or timeout
-                        local startTime = tick()
-                        while enabledRef[1] and item.Parent == stuffing and (tick() - startTime) < ITEM_TIMEOUT do
-                            -- recompute target each iteration in case item moves
-                            local targetCFrame = computeUnderCFrame(item)
-                            if targetCFrame then
-                                teleportHRPTo(targetCFrame)
-                                task.wait(0.06) -- small pause to ensure server registers position
+                                -- fire prompt
+                                firePrompt(item)
+                                task.wait(0.2)
                             end
-
-                            -- fire prompts under the item
-                            fireAllPromptsUnder(item)
-
-                            -- short wait before repeating for the same item
-                            task.wait(PROMPT_LOOP_DELAY)
                         end
-
-                        -- if item still exists after timeout, move on to next item to avoid lockups
-                        task.wait(ITEM_LOOP_DELAY)
                     end
                 end
             end
-
-            task.wait(SCAN_DELAY)
+            task.wait(0.5)
         end
-
-        -- restore saved position if available
-        if savedPos and safeGetHRP() then
-            pcall(function() safeGetHRP().CFrame = savedPos end)
-        end
-
-        threadRef[1] = nil
     end)
 end
 
--- Start/stop helpers
-local function startAutoCollectStuffing()
-    if _autoCollectStuffing[1] then return end
-    _autoCollectStuffing[1] = true
-    runAutoCollectStuffing(_autoCollectStuffing, _autoCollectStuffingThread)
-end
-
-local function stopAutoCollectStuffing()
-    _autoCollectStuffing[1] = false
-end
-
--- Add toggle to MainTab (requires MainTab to exist)
-MainTab:Toggle({
-    Title = "Auto collect Stuffing",
-    Desc = "Teleport under items in Pickup.Stuffing and fire prompts until collected",
-    Value = false,
-    Callback = function(state)
-        if state then startAutoCollectStuffing() else stopAutoCollectStuffing() end
+-- 🔘 TOGGLE (PASTE INSIDE MainTab)
+MainTab:AddToggle({
+    Name = "Auto Collect Stuffing",
+    Default = false,
+    Callback = function(Value)
+        AutoStuffing = Value
+        if Value then
+            startAutoStuffing()
+        end
     end
 })
 
