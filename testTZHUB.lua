@@ -1036,10 +1036,8 @@ MainTab:Toggle({
     Callback = function(state) if state then startAutoFarm() else stopAutoFarm() end end
 })
 
--- AUTO COLLECT STUFFING TOGGLE SCRIPT
-
+-- AUTO STUFFING LOGIC
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 local char = lp.Character or lp.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
@@ -1047,64 +1045,76 @@ local hrp = char:WaitForChild("HumanoidRootPart")
 local AutoStuffing = false
 local StuffingThread
 
--- safer teleport
+local function getPart(item)
+    if item:IsA("BasePart") then
+        return item
+    elseif item:IsA("Model") then
+        return item:FindFirstChildWhichIsA("BasePart")
+    end
+end
+
+local function getPrompt(obj)
+    return obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+end
+
 local function tp(cf)
     hrp.CFrame = cf
 end
 
--- fire prompt safely
-local function firePrompt(obj)
-    local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-    if prompt then
-        fireproximityprompt(prompt)
-        return true
-    end
-    return false
-end
-
--- MAIN LOOP
 local function startAutoStuffing()
+    if StuffingThread then return end
+
     StuffingThread = task.spawn(function()
         while AutoStuffing do
-            local stuffingFolder = workspace:FindFirstChild("Pickup")
-                and workspace.Pickup:FindFirstChild("Stuffing")
+            local pickup = workspace:FindFirstChild("Pickup")
+            local folder = pickup and pickup:FindFirstChild("Stuffing")
 
-            if stuffingFolder then
-                for _, item in ipairs(stuffingFolder:GetChildren()) do
-                    if not AutoStuffing then break end
-                    if item:IsA("BasePart") or item:IsA("Model") then
-                        local part = item:IsA("Model") and item:FindFirstChildWhichIsA("BasePart") or item
-                        if part then
-                            -- loop until item disappears
-                            while AutoStuffing and part.Parent do
-                                -- teleport UNDER item
-                                tp(part.CFrame * CFrame.new(0, -3, 0))
-                                task.wait(0.15)
+            if not folder then
+                task.wait(0.25)
+                continue
+            end
 
-                                -- teleport ON item
-                                tp(part.CFrame)
-                                task.wait(0.15)
+            for _, item in ipairs(folder:GetChildren()) do
+                if not AutoStuffing then break end
 
-                                -- fire prompt
-                                firePrompt(item)
-                                task.wait(0.2)
-                            end
-                        end
+                local part = getPart(item)
+                local prompt = part and getPrompt(item)
+
+                if part and prompt and part.Parent then
+                    local originalCF = hrp.CFrame
+                    local attempts = 0
+
+                    while AutoStuffing and part.Parent and attempts < 8 do
+                        attempts += 1
+
+                        tp(part.CFrame * CFrame.new(0, -2.5, 0))
+                        task.wait(0.04)
+
+                        tp(part.CFrame)
+                        fireproximityprompt(prompt)
+                        task.wait(0.04)
                     end
+
+                    -- return to exact position
+                    tp(originalCF)
+                    task.wait(0.05)
                 end
             end
-            task.wait(0.5)
+
+            task.wait(0.12)
         end
+
+        StuffingThread = nil
     end)
 end
+ToggleTab:Toggle({
+    Title = "Auto Collect Stuffing",
+    Desc = "Auto teleport & collect stuffing",
+    Icon = "solar:check-square-bold",
+    Callback = function(state)
+        AutoStuffing = state
 
--- 🔘 TOGGLE (PASTE INSIDE MainTab)
-MainTab:AddToggle({
-    Name = "Auto Collect Stuffing",
-    Default = false,
-    Callback = function(Value)
-        AutoStuffing = Value
-        if Value then
+        if state then
             startAutoStuffing()
         end
     end
