@@ -1,3 +1,5 @@
+local player = game:GetService("Players").LocalPlayer or game:GetService("Players"):GetPropertyChangedSignal("LocalPlayer"):Wait()
+
 --// WindUI Setup
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
