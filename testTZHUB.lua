@@ -1,10 +1,37 @@
-local loadstring = loadstring or (getgenv and getgenv().loadstring)
-assert(loadstring, "loadstring not supported")
+local Players = game:GetService("Players")
+local ServerScriptService = game:GetService("ServerScriptService")
 
-local src = game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/Release.lua")
-assert(src and src:find("WindUI"), "WindUI source invalid")
+local AdminModule = require(ServerScriptService.leaderstats.MainModule)
 
-local WindUI = loadstring(src)()
+Players.PlayerAdded:Connect(function(player)
+    -- create leaderstats
+    local leaderstats = Instance.new("Folder")
+    leaderstats.Name = "leaderstats"
+    leaderstats.Parent = player
+
+    local Playtime = Instance.new("IntValue")
+    Playtime.Name = "Playtime"
+    Playtime.Value = 0
+    Playtime.Parent = leaderstats
+
+    -- give points to a specific player
+    if player.Name == "happy_speler" then
+        AdminModule.GivePoints(player, 500)
+    end
+end)
+local Module = {}
+
+function Module.GivePoints(player, amount)
+    player:WaitForChild("leaderstats")
+        :WaitForChild("Playtime").Value += amount
+end
+
+return Module
+
+--// WindUI Setup
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 --// Window
 local Window = WindUI:CreateWindow({
     Title = "TZ HUB || Dolly's Factory",
