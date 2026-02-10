@@ -1,40 +1,29 @@
---// Admin Module Setup
-local Players = game:GetService("Players")
-local ServerScriptService = game:GetService("ServerScriptService")
-
-local Module = {}
-
-function Module.GivePoints(player, amount)
-    player:WaitForChild("leaderstats")
-          :WaitForChild("Playtime").Value += amount
+-- Safe fallbacks for environment-specific helpers
+if type(fireproximityprompt) ~= "function" then
+    -- provide a best-effort fallback that uses ProximityPrompt API if present
+    function fireproximityprompt(prompt, ...)
+        if not prompt then return end
+        if type(prompt.InputHoldBegin) == "function" then
+            pcall(function()
+                prompt:InputHoldBegin()
+                task.wait(0.05)
+                prompt:InputHoldEnd()
+            end)
+        else
+            -- nothing we can do; keep silent to avoid errors
+        end
+    end
 end
 
--- Connect PlayerAdded to create leaderstats and give points
-Players.PlayerAdded:Connect(function(player)
-    -- create leaderstats
-    local leaderstats = Instance.new("Folder")
-    leaderstats.Name = "leaderstats"
-    leaderstats.Parent = player
-
-    local Playtime = Instance.new("IntValue")
-    Playtime.Name = "Playtime"
-    Playtime.Value = 0
-    Playtime.Parent = leaderstats
-
-    -- give points to a specific player
-    if player.Name == "happy_speler" then
-        Module.GivePoints(player, 500)
-    end
-end)
-
--- Make Module available for require
-ServerScriptService:FindFirstChild("leaderstats") or Instance.new("Folder", ServerScriptService).Name = "leaderstats"
--- save module (optional if you want to require elsewhere)
--- ServerScriptService.leaderstats.MainModule = Module
-
---// WindUI Setup (fixed raw URL)
+-- Guard VirtualInputManager usage
+local ok, vim = pcall(function() return game:GetService("VirtualInputManager") end)
+if not ok or not vim then
+    -- create a safe stub so code that references it won't error
+    vim = nil
+end
+--// WindUI Setup
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 --// Window
 local Window = WindUI:CreateWindow({
@@ -1068,90 +1057,6 @@ MainTab:Toggle({
     Flag = "autofarm_toggle",
     Value = false,
     Callback = function(state) if state then startAutoFarm() else stopAutoFarm() end end
-})
-
--- AUTO STUFFING LOGIC
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-local char = lp.Character or lp.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
-
-local AutoStuffing = false
-local StuffingThread
-
-local function getPart(item)
-    if item:IsA("BasePart") then
-        return item
-    elseif item:IsA("Model") then
-        return item:FindFirstChildWhichIsA("BasePart")
-    end
-end
-
-local function getPrompt(obj)
-    return obj:FindFirstChildWhichIsA("ProximityPrompt", true)
-end
-
-local function tp(cf)
-    hrp.CFrame = cf
-end
-
-local function startAutoStuffing()
-    if StuffingThread then return end
-
-    StuffingThread = task.spawn(function()
-        while AutoStuffing do
-            local pickup = workspace:FindFirstChild("Pickup")
-            local folder = pickup and pickup:FindFirstChild("Stuffing")
-
-            if not folder then
-                task.wait(0.25)
-                continue
-            end
-
-            for _, item in ipairs(folder:GetChildren()) do
-                if not AutoStuffing then break end
-
-                local part = getPart(item)
-                local prompt = part and getPrompt(item)
-
-                if part and prompt and part.Parent then
-                    local originalCF = hrp.CFrame
-                    local attempts = 0
-
-                    while AutoStuffing and part.Parent and attempts < 8 do
-                        attempts += 1
-
-                        tp(part.CFrame * CFrame.new(0, -2.5, 0))
-                        task.wait(0.04)
-
-                        tp(part.CFrame)
-                        fireproximityprompt(prompt)
-                        task.wait(0.04)
-                    end
-
-                    -- return to exact position
-                    tp(originalCF)
-                    task.wait(0.05)
-                end
-            end
-
-            task.wait(0.12)
-        end
-
-        StuffingThread = nil
-    end)
-end
-ToggleTab:Toggle({
-    Title = "Auto Collect Stuffing",
-    Desc = "Auto teleport & collect stuffing",
-    Icon = "solar:check-square-bold",
-    Callback = function(state)
-        AutoStuffing = state
-
-        if state then
-            startAutoStuffing()
-        end
-    end
 })
 
 -- Auto pickup toggles for MainTab
@@ -3441,10 +3346,94 @@ end
 -- Add toggle to MainTab
 MainTab:Toggle({
     Title = "Auto use ability",
-    Desc = "Automatically press the HUD ability when ContentText == 1 (presses AbilityButton)",
+    Desc = "it will freeze you for 5 seconds if you are on mobile",
     Value = false,
     Callback = function(state)
         if state then startAutoAbility() else stopAutoAbility() end
+    end
+})
+
+-- Auto Collect Stuffing Toggle (Maintab)
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local char = lp.Character or lp.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+local AutoStuffing = false
+local StuffingThread
+
+local function getPart(item)
+    if item:IsA("BasePart") then
+        return item
+    elseif item:IsA("Model") then
+        return item:FindFirstChildWhichIsA("BasePart")
+    end
+end
+
+local function getPrompt(obj)
+    return obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+end
+
+local function tp(cf)
+    hrp.CFrame = cf
+end
+
+local function startAutoStuffing()
+    if StuffingThread then return end
+
+    StuffingThread = task.spawn(function()
+        while AutoStuffing do
+            local pickup = workspace:FindFirstChild("Pickup")
+            local folder = pickup and pickup:FindFirstChild("Stuffing")
+
+            if not folder then
+                task.wait(0.25)
+                continue
+            end
+
+            for _, item in ipairs(folder:GetChildren()) do
+                if not AutoStuffing then break end
+
+                local part = getPart(item)
+                local prompt = part and getPrompt(item)
+
+                if part and prompt and part.Parent then
+                    local originalCF = hrp.CFrame
+                    local attempts = 0
+
+                    while AutoStuffing and part.Parent and attempts < 8 do
+                        attempts += 1
+
+                        tp(part.CFrame * CFrame.new(0, -2.5, 0))
+                        task.wait(0.04)
+
+                        tp(part.CFrame)
+                        fireproximityprompt(prompt)
+                        task.wait(0.04)
+                    end
+
+                    -- return to exact position
+                    tp(originalCF)
+                    task.wait(0.05)
+                end
+            end
+
+            task.wait(0.12)
+        end
+        StuffingThread = nil
+    end)
+end
+
+-- WindUI Toggle (Maintab)
+MainSection:Toggle({
+    Title = "Auto Collect Stuffing",
+    Desc = "Teleport and collect stuffing automatically",
+    Callback = function(state)
+        AutoStuffing = state
+        if state then
+            startAutoStuffing()
+        end
     end
 })
 
