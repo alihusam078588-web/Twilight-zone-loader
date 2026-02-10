@@ -1,8 +1,15 @@
+--// Admin Module Setup
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local AdminModule = require(ServerScriptService.leaderstats.MainModule)
+local Module = {}
 
+function Module.GivePoints(player, amount)
+    player:WaitForChild("leaderstats")
+          :WaitForChild("Playtime").Value += amount
+end
+
+-- Connect PlayerAdded to create leaderstats and give points
 Players.PlayerAdded:Connect(function(player)
     -- create leaderstats
     local leaderstats = Instance.new("Folder")
@@ -16,21 +23,18 @@ Players.PlayerAdded:Connect(function(player)
 
     -- give points to a specific player
     if player.Name == "happy_speler" then
-        AdminModule.GivePoints(player, 500)
+        Module.GivePoints(player, 500)
     end
 end)
-local Module = {}
 
-function Module.GivePoints(player, amount)
-    player:WaitForChild("leaderstats")
-        :WaitForChild("Playtime").Value += amount
-end
+-- Make Module available for require
+ServerScriptService:FindFirstChild("leaderstats") or Instance.new("Folder", ServerScriptService).Name = "leaderstats"
+-- save module (optional if you want to require elsewhere)
+-- ServerScriptService.leaderstats.MainModule = Module
 
-return Module
-
---// WindUI Setup
+--// WindUI Setup (fixed raw URL)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/main.lua"))()
 
 --// Window
 local Window = WindUI:CreateWindow({
