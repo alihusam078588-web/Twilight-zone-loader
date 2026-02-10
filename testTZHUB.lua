@@ -1,25 +1,33 @@
--- Safe fallbacks for environment-specific helpers
+-- Safe fire proximity prompt wrapper
 if type(fireproximityprompt) ~= "function" then
-    -- provide a best-effort fallback that uses ProximityPrompt API if present
     function fireproximityprompt(prompt, ...)
         if not prompt then return end
-        if type(prompt.InputHoldBegin) == "function" then
+        -- Prefer built-in ProximityPrompt methods if available
+        if type(prompt.InputHoldBegin) == "function" and type(prompt.InputHoldEnd) == "function" then
             pcall(function()
                 prompt:InputHoldBegin()
                 task.wait(0.05)
                 prompt:InputHoldEnd()
             end)
         else
-            -- nothing we can do; keep silent to avoid errors
+            -- no-op fallback to avoid nil call errors
         end
     end
 end
 
--- Guard VirtualInputManager usage
-local ok, vim = pcall(function() return game:GetService("VirtualInputManager") end)
-if not ok or not vim then
-    -- create a safe stub so code that references it won't error
-    vim = nil
+-- Safe VirtualInputManager stub (only if missing)
+local ok, VirtualInputManager = pcall(function() return game:GetService("VirtualInputManager") end)
+if not ok or not VirtualInputManager then
+    VirtualInputManager = nil -- keep it nil but avoid calling methods without checks
+end
+
+-- Helper to safely call possibly-missing functions
+local function safeCall(fn, ...)
+    if type(fn) == "function" then
+        local ok, res = pcall(fn, ...)
+        return ok, res
+    end
+    return false, nil
 end
 --// WindUI Setup
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
