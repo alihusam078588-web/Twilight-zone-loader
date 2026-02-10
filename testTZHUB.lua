@@ -1,17 +1,10 @@
--- safe loadstring fallback
 local loadstring = loadstring or (getgenv and getgenv().loadstring)
-if not loadstring then
-    error("Your executor does not support loadstring")
-end
+assert(loadstring, "loadstring not supported")
 
--- load WindUI
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local windui_src = game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua")
-if not windui_src or #windui_src < 10 then
-    error("Failed to download WindUI")
-end
+local src = game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/Release.lua")
+assert(src and src:find("WindUI"), "WindUI source invalid")
 
-local WindUI = loadstring(windui_src)()
+local WindUI = loadstring(src)()
 --// Window
 local Window = WindUI:CreateWindow({
     Title = "TZ HUB || Dolly's Factory",
