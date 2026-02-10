@@ -1,4 +1,7 @@
-
+local loadstring = loadstring or (getgenv and getgenv().loadstring)
+if not loadstring then
+    error("Your executor does not support loadstring")
+end
 --// WindUI Setup
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
