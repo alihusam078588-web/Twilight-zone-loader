@@ -1,3 +1,55 @@
+-- Defensive header: paste this at the very top of the LocalScript
+
+-- Safe fire proximity prompt fallback
+if type(fireproximityprompt) ~= "function" then
+    function fireproximityprompt(prompt, ...)
+        if not prompt then return end
+        if type(prompt.InputHoldBegin) == "function" and type(prompt.InputHoldEnd) == "function" then
+            pcall(function()
+                prompt:InputHoldBegin()
+                task.wait(0.05)
+                prompt:InputHoldEnd()
+            end)
+        end
+    end
+end
+
+-- Safe VirtualInputManager getter (may be nil in some executors)
+local ok_vim, _VirtualInputManager = pcall(function() return game:GetService("VirtualInputManager") end)
+local VirtualInputManager = ok_vim and _VirtualInputManager or nil
+
+-- Safe loader wrapper for loadstring/httpGet that returns nil-safe object
+local function safeLoad(url)
+    if type(url) ~= "string" then return nil end
+    local ok, res = pcall(function()
+        local s = game:HttpGet(url)
+        if not s or s == "" then return nil end
+        local fn = loadstring(s)
+        if type(fn) ~= "function" then return nil end
+        return fn()
+    end)
+    return ok and res or nil
+end
+
+-- Safe require wrapper: returns module or nil without error
+local function safeRequire(obj)
+    if type(obj) == "table" then return obj end
+    if type(obj) == "Instance" and obj:IsA("ModuleScript") then
+        local ok, res = pcall(require, obj)
+        return ok and res or nil
+    end
+    return nil
+end
+
+-- Helper to call functions only if they exist
+local function callIfFunction(fn, ...)
+    if type(fn) == "function" then
+        local ok, res = pcall(fn, ...)
+        if not ok then warn("callIfFunction error:", res) end
+        return ok, res
+    end
+    return false, nil
+end
 -- Safe fire proximity prompt wrapper
 if type(fireproximityprompt) ~= "function" then
     function fireproximityprompt(prompt, ...)
