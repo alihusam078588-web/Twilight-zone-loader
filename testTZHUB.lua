@@ -12,7 +12,7 @@ local Window = WindUI:CreateWindow({
 })
 Window:EditOpenButton({
     Title = "TZ HUB || Dolly's Factory",
-    Icon = "solar:compass-big-bold", -- matches your main window icon
+    Icon = "solar:compass-big-bold", -- matches your main window 
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
     Color = ColorSequence.new( -- gradient theme
