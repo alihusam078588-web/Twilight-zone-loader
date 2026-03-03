@@ -1,3 +1,33 @@
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local function scanAndDelete()
+    local currentRoom = Workspace:FindFirstChild("CurrentRoom")
+    if not currentRoom then return end
+    for _, map in pairs(currentRoom:GetChildren()) do
+        local monstersFolder = map:FindFirstChild("Monsters")
+        if monstersFolder then
+            for _, monster in pairs(monstersFolder:GetChildren()) do
+                if monster.Name == "SquirmMonster" then
+                    monster:Destroy()
+                end
+            end
+            monstersFolder.ChildAdded:Connect(function(child)
+                if child.Name == "SquirmMonster" then
+                    child:Destroy()
+                end
+            end)
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(scanAndDelete)
+
+Workspace.ChildAdded:Connect(function(child)
+    if child.Name == "CurrentRoom" then
+        child.ChildAdded:Connect(scanAndDelete)
+    end
+end)
 local Players = game:GetService("Players")
 local task = task
 local VIM = game:GetService("VirtualInputManager")
