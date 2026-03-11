@@ -4,47 +4,25 @@ local VIM = game:GetService("VirtualInputManager")
 
 local player = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
-local function handleMonsters(folder)
-    for _, monster in ipairs(folder:GetChildren()) do
-        if monster.Name == "SquirmMonster" then
-            monster:Destroy()
-        end
+local function deleteIfMonster(obj)
+    if obj.Name == "SquirmMonster" then
+        pcall(function()
+            obj:Destroy()
+        end)
     end
-
-    folder.ChildAdded:Connect(function(child)
-        if child.Name == "SquirmMonster" then
-            child:Destroy()
-        end
-    end)
 end
 
-local function scanRoom(room)
-    for _, map in ipairs(room:GetChildren()) do
-        local monsters = map:FindFirstChild("Monsters")
-        if monsters then
-            handleMonsters(monsters)
-        end
-    end
-
-    room.ChildAdded:Connect(function(map)
-        local monsters = map:FindFirstChild("Monsters")
-        if monsters then
-            handleMonsters(monsters)
-        end
-    end)
+-- Delete already existing monsters
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    deleteIfMonster(obj)
 end
 
-local currentRoom = Workspace:FindFirstChild("CurrentRoom")
-if currentRoom then
-    scanRoom(currentRoom)
-end
-
-Workspace.ChildAdded:Connect(function(child)
-    if child.Name == "CurrentRoom" then
-        scanRoom(child)
-    end
+-- Delete future monsters instantly
+Workspace.DescendantAdded:Connect(function(obj)
+    deleteIfMonster(obj)
 end)
 
+-- UI auto tap system
 local gui = player:WaitForChild("PlayerGui")
 local ui = gui:WaitForChild("TwistedSquirmEscapeUI")
 
@@ -75,19 +53,19 @@ task.spawn(function()
         while zonesVisible() do
             tap(LEFT1_X, LEFT1_Y)
             if not zonesVisible() then break end
-            task.wait(0.07)
+            task.wait(0.06)
 
             tap(LEFT2_X, LEFT2_Y)
             if not zonesVisible() then break end
-            task.wait(0.07)
+            task.wait(0.06)
 
             tap(RIGHT1_X, RIGHT1_Y)
             if not zonesVisible() then break end
-            task.wait(0.07)
+            task.wait(0.06)
 
             tap(RIGHT2_X, RIGHT2_Y)
             if not zonesVisible() then break end
-            task.wait(0.07)
+            task.wait(0.06)
         end
     end
 end)
