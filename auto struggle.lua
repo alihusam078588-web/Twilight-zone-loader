@@ -1,49 +1,43 @@
 local Players = game:GetService("Players")
-local task = task
 local VIM = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
 
-local player = Players.LocalPlayer or Players.PlayerAdded:Wait()
+local player = Players.LocalPlayer
 local gui = player:WaitForChild("PlayerGui")
-local ui = gui:WaitForChild("TwistedSquirmEscapeUI")
-
-local leftZone = ui:WaitForChild("LeftTouchZone")
-local rightZone = ui:WaitForChild("RightTouchZone")
 
 local function tap(x, y)
-    if not VIM then return end
-    local ok, err = pcall(function()
-        VIM:SendMouseButtonEvent(x, y, 0, true, game, 1)
-        task.wait(0.02)
-        VIM:SendMouseButtonEvent(x, y, 0, false, game, 1)
+    pcall(function()
+        VIM:SendMouseButtonEvent(x, y, 0, true, game, 0)
+        VIM:SendMouseButtonEvent(x, y, 0, false, game, 0)
     end)
-    if not ok then
-        warn("tap error:", err)
-    end
 end
 
-local LEFT1_X, LEFT1_Y = 80, 171
-local LEFT2_X, LEFT2_Y = 76, 179
-local RIGHT1_X, RIGHT1_Y = 669, 174
-local RIGHT2_X, RIGHT2_Y = 673, 178
+local function getCenter(guiObject)
+    local pos = guiObject.AbsolutePosition
+    local size = guiObject.AbsoluteSize
+    return pos.X + size.X/2, pos.Y + size.Y/2
+end
 
 task.spawn(function()
     while true do
-        repeat
-            task.wait(0.05)
-        until (leftZone and rightZone and leftZone.Visible and rightZone.Visible)
+        local ui = gui:FindFirstChild("TwistedSquirmEscapeUI")
 
-        while leftZone and rightZone and leftZone.Visible and rightZone.Visible do
-            tap(LEFT1_X, LEFT1_Y)
-            task.wait(0.08)
-            tap(LEFT2_X, LEFT2_Y)
-            task.wait(0.08)
+        if ui then
+            local left = ui:FindFirstChild("LeftTouchZone")
+            local right = ui:FindFirstChild("RightTouchZone")
 
-            tap(RIGHT1_X, RIGHT1_Y)
-            task.wait(0.08)
-            tap(RIGHT2_X, RIGHT2_Y)
-            task.wait(0.08)
+            if left and right and left.Visible and right.Visible then
+                while left.Visible and right.Visible do
+                    
+                    local lx, ly = getCenter(left)
+                    local rx, ry = getCenter(right)
 
-            task.wait(0.05)
+                    tap(lx, ly)
+                    tap(rx, ry)
+
+                    task.wait(0.03)
+                end
+            end
         end
 
         task.wait(0.1)
