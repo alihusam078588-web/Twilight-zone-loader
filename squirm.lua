@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local VIM = game:GetService("VirtualInputManager")
+local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
@@ -33,6 +34,14 @@ local function tap(x,y)
     end)
 end
 
+local function pressKey(key)
+    pcall(function()
+        VIM:SendKeyEvent(true,key,false,game)
+        task.wait(0.02)
+        VIM:SendKeyEvent(false,key,false,game)
+    end)
+end
+
 local LEFT1_X, LEFT1_Y = 80,171
 local LEFT2_X, LEFT2_Y = 76,179
 local RIGHT1_X, RIGHT1_Y = 669,174
@@ -49,17 +58,27 @@ task.spawn(function()
 
                 if leftZone and rightZone and leftZone.Visible and rightZone.Visible then
                     while leftZone.Visible and rightZone.Visible do
-                        tap(LEFT1_X, LEFT1_Y)
-                        task.wait(0.06)
 
-                        tap(LEFT2_X, LEFT2_Y)
-                        task.wait(0.06)
+                        if UIS.TouchEnabled then
+                            tap(LEFT1_X, LEFT1_Y)
+                            task.wait(0.05)
 
-                        tap(RIGHT1_X, RIGHT1_Y)
-                        task.wait(0.06)
+                            tap(LEFT2_X, LEFT2_Y)
+                            task.wait(0.05)
 
-                        tap(RIGHT2_X, RIGHT2_Y)
-                        task.wait(0.06)
+                            tap(RIGHT1_X, RIGHT1_Y)
+                            task.wait(0.05)
+
+                            tap(RIGHT2_X, RIGHT2_Y)
+                            task.wait(0.05)
+                        else
+                            pressKey(Enum.KeyCode.A)
+                            task.wait(0.05)
+
+                            pressKey(Enum.KeyCode.D)
+                            task.wait(0.05)
+                        end
+
                     end
                 end
             end
