@@ -55,30 +55,37 @@ task.spawn(function()
             if ui then
                 local leftZone = ui:FindFirstChild("LeftTouchZone")
                 local rightZone = ui:FindFirstChild("RightTouchZone")
-
-                if leftZone and rightZone and leftZone.Visible and rightZone.Visible then
-                    while leftZone.Visible and rightZone.Visible do
-
+                local squirmExists = false
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj.Name == "SquirmMonster" then
+                        squirmExists = true
+                        break
+                    end
+                end
+                if leftZone and rightZone and leftZone.Visible and rightZone.Visible and squirmExists then
+                    while leftZone.Visible and rightZone.Visible and squirmExists do
                         if UIS.TouchEnabled then
                             tap(LEFT1_X, LEFT1_Y)
                             task.wait(0.05)
-
                             tap(LEFT2_X, LEFT2_Y)
                             task.wait(0.05)
-
                             tap(RIGHT1_X, RIGHT1_Y)
                             task.wait(0.05)
-
                             tap(RIGHT2_X, RIGHT2_Y)
                             task.wait(0.05)
                         else
                             pressKey(Enum.KeyCode.A)
                             task.wait(0.05)
-
                             pressKey(Enum.KeyCode.D)
                             task.wait(0.05)
                         end
-
+                        squirmExists = false
+                        for _, obj in ipairs(Workspace:GetDescendants()) do
+                            if obj.Name == "SquirmMonster" then
+                                squirmExists = true
+                                break
+                            end
+                        end
                     end
                 end
             end
