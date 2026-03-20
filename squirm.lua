@@ -6,24 +6,16 @@ local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 task.spawn(function()
-    while true do
-        local obj = Workspace:FindFirstChild("SquirmMonster", true)
-        if obj then
-            pcall(function()
-                if obj.Parent then
-                    obj:Destroy()
-                end
-            end)
+    while task.wait(0.05) do
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if typeof(obj) == "Instance" and obj.Name and obj.Name:find("SquirmMonster") then
+                pcall(function()
+                    if obj.Parent then
+                        obj:Destroy()
+                    end
+                end)
+            end
         end
-        task.wait(0.05)
-    end
-end)
-
-Workspace.DescendantAdded:Connect(function(obj)
-    if string.find(obj.Name, "SquirmMonster") then
-        pcall(function()
-            obj:Destroy()
-        end)
     end
 end)
 
@@ -48,7 +40,7 @@ local function pressKey(key)
 end
 
 task.spawn(function()
-    while true do
+    while task.wait(0.1) do
         local gui = player:FindFirstChild("PlayerGui")
         if gui then
             local ui = gui:FindFirstChild("TwistedSquirmEscapeUI")
@@ -73,6 +65,5 @@ task.spawn(function()
                 end
             end
         end
-        task.wait(0.1)
     end
 end)
