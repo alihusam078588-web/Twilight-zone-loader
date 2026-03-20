@@ -7,45 +7,45 @@ local player = Players.LocalPlayer
 
 task.spawn(function()
     while true do
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "SquirmMonster" then
-                pcall(function()
+        local obj = Workspace:FindFirstChild("SquirmMonster", true)
+        if obj then
+            pcall(function()
+                if obj.Parent then
                     obj:Destroy()
-                end)
-            end
+                end
+            end)
         end
-        task.wait(0.3)
+        task.wait(0.05)
     end
 end)
 
 Workspace.DescendantAdded:Connect(function(obj)
-    if obj.Name == "SquirmMonster" then
+    if string.find(obj.Name, "SquirmMonster") then
         pcall(function()
             obj:Destroy()
         end)
     end
 end)
 
-local function tap(x,y)
-    pcall(function()
-        VIM:SendMouseButtonEvent(x,y,0,true,game,1)
-        task.wait(0.015)
-        VIM:SendMouseButtonEvent(x,y,0,false,game,1)
-    end)
+local function tapGui(guiObject)
+    if not guiObject then return end
+    
+    local absPos = guiObject.AbsolutePosition
+    local absSize = guiObject.AbsoluteSize
+    
+    local x = absPos.X + absSize.X / 2
+    local y = absPos.Y + absSize.Y / 2
+
+    VIM:SendMouseButtonEvent(x, y, 0, true, game, 1)
+    task.wait(0.01)
+    VIM:SendMouseButtonEvent(x, y, 0, false, game, 1)
 end
 
 local function pressKey(key)
-    pcall(function()
-        VIM:SendKeyEvent(true,key,false,game)
-        task.wait(0.02)
-        VIM:SendKeyEvent(false,key,false,game)
-    end)
+    VIM:SendKeyEvent(true, key, false, game)
+    task.wait(0.02)
+    VIM:SendKeyEvent(false, key, false, game)
 end
-
-local LEFT1_X, LEFT1_Y = 80,171
-local LEFT2_X, LEFT2_Y = 76,179
-local RIGHT1_X, RIGHT1_Y = 669,174
-local RIGHT2_X, RIGHT2_Y = 673,178
 
 task.spawn(function()
     while true do
@@ -53,38 +53,21 @@ task.spawn(function()
         if gui then
             local ui = gui:FindFirstChild("TwistedSquirmEscapeUI")
             if ui then
-                local leftZone = ui:FindFirstChild("LeftTouchZone")
-                local rightZone = ui:FindFirstChild("RightTouchZone")
-                local squirmExists = false
-                for _, obj in ipairs(Workspace:GetDescendants()) do
-                    if obj.Name == "SquirmMonster" then
-                        squirmExists = true
-                        break
-                    end
-                end
-                if leftZone and rightZone and leftZone.Visible and rightZone.Visible and squirmExists then
-                    while leftZone.Visible and rightZone.Visible and squirmExists do
+                local left = ui:FindFirstChild("LeftTouchZone")
+                local right = ui:FindFirstChild("RightTouchZone")
+
+                if left and right and left.Visible and right.Visible then
+                    while left.Visible and right.Visible do
                         if UIS.TouchEnabled then
-                            tap(LEFT1_X, LEFT1_Y)
+                            tapGui(left)
                             task.wait(0.05)
-                            tap(LEFT2_X, LEFT2_Y)
-                            task.wait(0.05)
-                            tap(RIGHT1_X, RIGHT1_Y)
-                            task.wait(0.05)
-                            tap(RIGHT2_X, RIGHT2_Y)
+                            tapGui(right)
                             task.wait(0.05)
                         else
                             pressKey(Enum.KeyCode.A)
                             task.wait(0.05)
                             pressKey(Enum.KeyCode.D)
                             task.wait(0.05)
-                        end
-                        squirmExists = false
-                        for _, obj in ipairs(Workspace:GetDescendants()) do
-                            if obj.Name == "SquirmMonster" then
-                                squirmExists = true
-                                break
-                            end
                         end
                     end
                 end
