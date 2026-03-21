@@ -1,69 +1,66 @@
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local VIM = game:GetService("VirtualInputManager")
 local UIS = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
 
-local player = Players.LocalPlayer
+local remote = RS:WaitForChild("Events"):WaitForChild("TwistedSquirmGrab")
+
+local running = false
+local dir = "left"
+
+remote.OnClientEvent:Connect(function(action)
+    if action == "GrabStart" then
+        running = true
+    elseif action == "GrabEnd" then
+        running = false
+    end
+end)
 
 task.spawn(function()
-    while task.wait(0.05) do
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if typeof(obj) == "Instance" and obj.Name and obj.Name:find("SquirmMonster") then
-                pcall(function()
-                    if obj.Parent then
-                        obj:Destroy()
-                    end
-                end)
+    while true do
+        task.wait(0.06)
+
+        if running then
+            if dir == "left" then
+                remote:FireServer("Struggle", "left")
+                dir = "right"
+            else
+                remote:FireServer("Struggle", "right")
+                dir = "left"
             end
         end
     end
 end)
+local Workspace = game:GetService("Workspace")
 
-local function tapGui(guiObject)
-    if not guiObject then return end
-    
-    local absPos = guiObject.AbsolutePosition
-    local absSize = guiObject.AbsoluteSize
-    
-    local x = absPos.X + absSize.X / 2
-    local y = absPos.Y + absSize.Y / 2
+local currentRoom = Workspace:WaitForChild("CurrentRoom")
+local map = currentRoom:GetChildren()[1]
 
-    VIM:SendMouseButtonEvent(x, y, 0, true, game, 1)
-    task.wait(0.01)
-    VIM:SendMouseButtonEvent(x, y, 0, false, game, 1)
+local function deleteMonsters()
+    local monstersFolder = map:FindFirstChild("Monsters")
+    if monstersFolder then
+        for _, obj in ipairs(monstersFolder:GetChildren()) do
+            if obj.Name == "SquirmMonster" then
+                pcall(function()
+                    obj:Destroy()
+                end)
+            end
+        end
+    end
 end
 
-local function pressKey(key)
-    VIM:SendKeyEvent(true, key, false, game)
-    task.wait(0.02)
-    VIM:SendKeyEvent(false, key, false, game)
+deleteMonsters()
+
+if map:FindFirstChild("Monsters") then
+    map.Monsters.DescendantAdded:Connect(function(obj)
+        if obj.Name == "SquirmMonster" then
+            pcall(function()
+                obj:Destroy()
+            end)
+        end
+    end)
 end
 
 task.spawn(function()
-    while task.wait(0.1) do
-        local gui = player:FindFirstChild("PlayerGui")
-        if gui then
-            local ui = gui:FindFirstChild("TwistedSquirmEscapeUI")
-            if ui then
-                local left = ui:FindFirstChild("LeftTouchZone")
-                local right = ui:FindFirstChild("RightTouchZone")
-
-                if left and right and left.Visible and right.Visible then
-                    while left.Visible and right.Visible do
-                        if UIS.TouchEnabled then
-                            tapGui(left)
-                            task.wait(0.05)
-                            tapGui(right)
-                            task.wait(0.05)
-                        else
-                            pressKey(Enum.KeyCode.A)
-                            task.wait(0.05)
-                            pressKey(Enum.KeyCode.D)
-                            task.wait(0.05)
-                        end
-                    end
-                end
-            end
-        end
+    while task.wait(0.5) do
+        deleteMonsters()
     end
 end)
