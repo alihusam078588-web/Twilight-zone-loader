@@ -342,7 +342,7 @@ end
 -- MACHINE HANDLER
 -- =========================
 local function HandleMachine(machine)
-    -- Support Golden Machine: check if ToughMachine exists
+    -- Golden machine support
     local tough = machine:FindFirstChild("ToughMachine")
     if tough then
         local golden = tough:FindFirstChild("Golden_Machine")
@@ -353,7 +353,7 @@ local function HandleMachine(machine)
         machine = machine.Golden_Machine
     end
 
-    -- Check for enabled prompt
+    -- Ignore machines with no enabled prompts
     local hasPrompt = false
     for _, v in pairs(machine:GetDescendants()) do
         if v:IsA("ProximityPrompt") and v.Enabled then
@@ -492,7 +492,7 @@ local thread
 
 MainTab:Toggle({
 	Title = "Auto Farm",
-	Desc = "Test 3 AHHHHHHH",
+	Desc = "Test 3 oo",
 	Flag = "Autofarm_toggle",
 	Icon = "",
 	Value = false,
