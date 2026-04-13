@@ -342,19 +342,20 @@ end
 -- MACHINE HANDLER
 -- =========================
 local function HandleMachine(machine)
-    -- Detect Golden Machine by checking for ToughMachine
+    -- Support Golden Machine: check if ToughMachine exists
     local tough = machine:FindFirstChild("ToughMachine")
     if tough then
-        -- Golden machine is inside ToughMachine
         local golden = tough:FindFirstChild("Golden_Machine")
         if golden then
             machine = golden
         end
+    elseif machine:FindFirstChild("Golden_Machine") then
+        machine = machine.Golden_Machine
     end
 
-    -- Check if machine has any enabled prompt
+    -- Check for enabled prompt
     local hasPrompt = false
-    for _, v in ipairs(machine:GetDescendants()) do
+    for _, v in pairs(machine:GetDescendants()) do
         if v:IsA("ProximityPrompt") and v.Enabled then
             hasPrompt = true
             break
@@ -362,11 +363,11 @@ local function HandleMachine(machine)
     end
     if not hasPrompt then return end
 
-    -- Machine must have VFX running
+    -- Must have VFX running
     local vfx = machine:FindFirstChild("VFX")
     if not vfx or #vfx:GetChildren() == 0 then return end
 
-    -- Find cylinder / base part to stand under
+    -- Find cylinder/base part
     local base = machine:FindFirstChild("BaseMachine")
     local cylinder =
         (base and (base:FindFirstChild("Cylinder.270") or base:FindFirstChildWhichIsA("BasePart"))) or
@@ -491,7 +492,7 @@ local thread
 
 MainTab:Toggle({
 	Title = "Auto Farm",
-	Desc = "test 2 new fix",
+	Desc = "Test 3 AHHHHHHH",
 	Flag = "Autofarm_toggle",
 	Icon = "",
 	Value = false,
