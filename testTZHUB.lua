@@ -342,55 +342,51 @@ end
 -- MACHINE HANDLER
 -- =========================
 local function HandleMachine(machine)
-    -- Golden machine support
-    local tough = machine:FindFirstChild("ToughMachine")
-    if tough then
-        local golden = tough:FindFirstChild("Golden_Machine")
-        if golden then
-            machine = golden
-        end
-    elseif machine:FindFirstChild("Golden_Machine") then
-        machine = machine.Golden_Machine
-    end
+	-- Resolve golden machine through ToughMachine if present
+	local tough = machine:FindFirstChild("ToughMachine")
+	if tough then
+		local golden = tough:FindFirstChild("Golden_Machine")
+		if golden then
+			machine = golden
+		else
+			machine = tough
+		end
+	elseif machine:FindFirstChild("Golden_Machine") then
+		machine = machine:FindFirstChild("Golden_Machine")
+	end
 
-    -- Ignore machines with no enabled prompts
-    local hasPrompt = false
-    for _, v in pairs(machine:GetDescendants()) do
-        if v:IsA("ProximityPrompt") and v.Enabled then
-            hasPrompt = true
-            break
-        end
-    end
-    if not hasPrompt then return end
+	local hasPrompt = false
+	for _, v in pairs(machine:GetDescendants()) do
+		if v:IsA("ProximityPrompt") and v.Enabled then
+			hasPrompt = true
+			break
+		end
+	end
+	if not hasPrompt then return end
 
-    -- Must have VFX running
-    local vfx = machine:FindFirstChild("VFX")
-    if not vfx or #vfx:GetChildren() == 0 then return end
+	local vfx = machine:FindFirstChild("VFX")
+	if not vfx or #vfx:GetChildren() == 0 then return end
 
-    -- Find cylinder/base part
-    local base = machine:FindFirstChild("BaseMachine")
-    local cylinder =
-        (base and (base:FindFirstChild("Cylinder.270") or base:FindFirstChildWhichIsA("BasePart"))) or
-        machine:FindFirstChild("Cylinder.270", true) or
-        machine:FindFirstChildWhichIsA("BasePart", true)
+	local base = machine:FindFirstChild("BaseMachine")
+	local cylinder = (base and (base:FindFirstChild("Cylinder.270") or base:FindFirstChildWhichIsA("BasePart")))
+		or machine:FindFirstChild("Cylinder.270", true)
+		or machine:FindFirstChildWhichIsA("BasePart", true)
 
-    if not cylinder then return end
+	if not cylinder then return end
 
-    -- Main loop
-    while Enabled and vfx and vfx.Parent and #vfx:GetChildren() > 0 do
-        WaitIfAvoiding()
+	while Enabled and vfx and vfx.Parent and #vfx:GetChildren() > 0 do
+		WaitIfAvoiding()
+		if HRP then
+			HRP.CFrame = cylinder.CFrame * CFrame.new(0, -2, 0)
+		end
 
-        if HRP then
-            HRP.CFrame = cylinder.CFrame * CFrame.new(0, -2, 0)
-        end
+		Freeze(true)
+		FirePrompts(machine)
 
-        Freeze(true)
-        FirePrompts(machine)
+		task.wait(0.001)
+	end
 
-        task.wait(0.001)
-    end
-
-    Freeze(false)
+	Freeze(false)
 end
 -- =========================
 -- REJECT MEISTRO TRACKER
@@ -492,7 +488,7 @@ local thread
 
 MainTab:Toggle({
 	Title = "Auto Farm",
-	Desc = "Test 3 oo",
+	Desc = "Test attempt 5",
 	Flag = "Autofarm_toggle",
 	Icon = "",
 	Value = false,
