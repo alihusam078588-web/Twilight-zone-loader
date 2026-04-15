@@ -461,7 +461,7 @@ local function GetClosestMachine()
         if pos then
             local dist = (HRP.Position - pos).Magnitude
 
-            if dist < shortest and dist < 150 then
+            if dist < shortest and dist < 400 then
                 shortest = dist
                 closest = machine
             end
@@ -550,7 +550,7 @@ local thread
 
 MainTab:Toggle({
 	Title = "Auto Farm",
-	Desc = "test 5",
+	Desc = "test 6",
 	Flag = "Autofarm_toggle",
 	Icon = "",
 	Value = false,
