@@ -164,34 +164,44 @@ local function HandleMachine(machine)
     local connection
     
     -- Listen for the completion remote to break the loop instantly
-    connection = MachineRemote.OnClientEvent:Connect(function()
+    connection = MachineRemote.OnClientEvent:Connect(function(finishedMachine)
+    if finishedMachine == machine then
         done = true
-    end)
+    end
+end)
 
     while Enabled and not done and getProgress() < 1 do
-        WaitIfAvoiding()
-        
-        local targetCFrame
-        if isGolden and targetPivot then
-            targetCFrame = targetPivot.CFrame
-        else
-            -- Normal machine logic using Controller
-            local ok, side = pcall(function() return MachineController:_getClosestLever(player, machine) end)
-            if ok and (side == 1 or side == 2) then
-                local pivot = machine:FindFirstChild("Player" .. tostring(side) .. "Pivot")
-                targetCFrame = pivot and pivot.CFrame or fallback.CFrame * CFrame.new(0, -4, 0)
-            else
-                targetCFrame = fallback.CFrame * CFrame.new(0, -4, 0)
-            end
-        end
+    WaitIfAvoiding()
 
-        HRP.CFrame = targetCFrame
-        FirePrompts(machine)
-        Freeze(true)
-        task.wait(0.01)
-        
-        if not machine.Parent then break end
+    -- 🔥 FIX: stop if golden becomes normal
+    if isGolden and not machine:HasTag("ToughMachine") then
+        break
     end
+
+    local targetCFrame
+    if isGolden and targetPivot then
+        targetCFrame = targetPivot.CFrame
+    else
+        local ok, side = pcall(function()
+            return MachineController:_getClosestLever(player, machine)
+        end)
+
+        if ok and (side == 1 or side == 2) then
+            local pivot = machine:FindFirstChild("Player" .. tostring(side) .. "Pivot")
+            targetCFrame = pivot and pivot.CFrame or fallback.CFrame * CFrame.new(0, -4, 0)
+        else
+            targetCFrame = fallback.CFrame * CFrame.new(0, -4, 0)
+        end
+    end
+
+    HRP.CFrame = targetCFrame
+    FirePrompts(machine)
+    Freeze(true)
+
+    task.wait(0.01)
+
+    if not machine.Parent then break end
+end
     
     if connection then connection:Disconnect() end
     Freeze(false)
