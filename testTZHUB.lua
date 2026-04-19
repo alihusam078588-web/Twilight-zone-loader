@@ -30,8 +30,6 @@ local MainTab = Window:Tab({
     Title = "Main",
     Icon = "solar:home-bold",
 })
-local MachineMinigame = require(player.PlayerScripts.Client.Interface.UIController.GameUI.MachineMinigame)
-local MachineController = MachineMinigame.MachineController
 
 --auto farm
 
@@ -526,7 +524,7 @@ local thread
 
 MainTab:Toggle({
     Title = "Auto Farm",
-    Desc = "Test 7",
+    Desc = "Auto-disables conflicting features when enabled.",
     Flag = "Autofarm_toggle",
     Callback = function(state)
         Enabled = state
