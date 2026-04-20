@@ -30,8 +30,6 @@ local MainTab = Window:Tab({
     Title = "Main",
     Icon = "solar:home-bold",
 })
-local MachineMinigame = require(player.PlayerScripts.Client.Interface.UIController.GameUI.MachineMinigame)
-local MachineController = MachineMinigame.MachineController
 
 --auto farm
 
