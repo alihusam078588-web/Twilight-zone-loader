@@ -30,7 +30,6 @@ local MainTab = Window:Tab({
     Title = "Main",
     Icon = "solar:home-bold",
 })
-
 --auto farm
 
 local Players = game:GetService("Players")
@@ -355,24 +354,16 @@ local function GetAllMachines()
 
     for _, machine in pairs(CollectionService:GetTagged("PlushieMachine")) do
         local progress = machine:GetAttribute("Progress") or 0
-        local isTough = CollectionService:HasTag(machine, "ToughMachine")
-
-        if isTough then
-            -- Golden phase: progress 0 → 1
-            if progress < 1 then
+        if progress < 1 then
+            if CollectionService:HasTag(machine, "ToughMachine") then
                 table.insert(goldenMachines, machine)
-            end
-        else
-            -- Normal machine: fresh (0→1) OR post-golden (1→2)
-            -- After golden completes, ToughMachine tag is removed and progress
-            -- continues from 1.0 up to 2.0 (NOT reset to 0).
-            -- _animateMachineProgress subtracts 1 for display when progress > 1.
-            if progress < 2 then
+            else
                 table.insert(normalMachines, machine)
             end
         end
     end
 
+    -- Combine them: Golden machines first, then normal ones
     for _, machine in ipairs(normalMachines) do
         table.insert(goldenMachines, machine)
     end
@@ -380,27 +371,28 @@ local function GetAllMachines()
     return goldenMachines
 end
 
+
+-- Replace HandleMachine with this ultra-aggressive teleport version (0.001s reapply)
 local function HandleMachine(machine)
     if not HRP or not machine then return end
 
-    local function getProgress() return machine:GetAttribute("Progress") or 0 end
-
-    -- Determine target progress for this phase:
-    -- Fresh golden or fresh normal → target 1
-    -- Post-golden normal (progress already ≥ 1, no ToughMachine tag) → target 2
-    local initialProgress = getProgress()
-    local isTough = CollectionService:HasTag(machine, "ToughMachine")
-    local targetProgress = (not isTough and initialProgress >= 1) and 2 or 1
-
-    if initialProgress >= targetProgress then return end
+    local function getProgress() 
+        return machine:GetAttribute("Progress") or 0 
+    end
+    
+    -- If already done, exit immediately to trigger next scan
+    if getProgress() >= 1 then return end
 
     local cylinder = machine:FindFirstChild("Cylinder.270", true)
         or machine:FindFirstChildWhichIsA("BasePart", true)
+    
     if not cylinder then return end
 
-    while Enabled and getProgress() < targetProgress do
+    -- Main interaction loop for this specific machine
+    while Enabled and getProgress() < 1 and machine.Parent do
         WaitIfAvoiding()
 
+        -- Get the lever side from the game's MachineController
         local ok, side = pcall(function()
             return MachineController:_getClosestLever(player, machine)
         end)
@@ -416,107 +408,112 @@ local function HandleMachine(machine)
             end
         end
 
-        if not targetCFrame then
-            targetCFrame = cylinder.CFrame * CFrame.new(0, -4, 0)
-        end
+        -- Fallback to machine center if pivot isn't found
+        targetCFrame = targetCFrame or (cylinder.CFrame * CFrame.new(0, -4, 0))
 
-        local burstDuration = 0.25
+        -- Aggressive burst interaction
         local burstStart = tick()
-        while Enabled and getProgress() < targetProgress and tick() - burstStart < burstDuration do
-            if HRP then
-                HRP.CFrame = targetCFrame
-            end
-
+        while Enabled and getProgress() < 1 and (tick() - burstStart < 0.3) do
+            if HRP then HRP.CFrame = targetCFrame end
+            
             FirePrompts(machine)
             if machine.Parent then FirePrompts(machine.Parent) end
-
+            
             Freeze(true)
-
             task.wait(0.001)
-            if not machine.Parent then break end
         end
-
-        task.wait(0.001)
-
-        if not machine.Parent then break end
+        
+        task.wait(0.01)
     end
 
     Freeze(false)
 end
 
+
 local function run()
-  
-ScanRejectMeistro()
-if RejectFound then
-	BurstTeleportToSafeZone()
-end
-	StartRejectWatcher()
+    ScanRejectMeistro()
+    if RejectFound then BurstTeleportToSafeZone() end
+    StartRejectWatcher()
 
-	task.spawn(function()
-		local last = false
-		while Enabled do
-			WaitIfAvoiding()
-			if TimerUI.Visible then
-				if not last then
-					for i = 1, 3 do
-						if HRP then
-							HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
-						end
-						task.wait(0.05)
-					end
-				end
-				last = true
-			else
-				last = false
-			end
-			task.wait(0.1)
-		end
-	end)
+    -- [Background Task] Anti-Timer / SafeZone logic
+    task.spawn(function()
+        local lastVisible = false
+        while Enabled do
+            WaitIfAvoiding()
+            if TimerUI.Visible then
+                if not lastVisible then
+                    for i = 1, 3 do
+                        if HRP then HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0) end
+                        task.wait(0.05)
+                    end
+                end
+                lastVisible = true
+            else
+                lastVisible = false
+            end
+            task.wait(0.1)
+        end
+    end)
 
-	task.spawn(function()
-		offset = -4
-		for _, v in pairs(StuffingFolder:GetChildren()) do
-			if not Enabled then break end
-			WaitIfAvoiding()
-			local part = GetPart(v)
-			if part then
-				repeat
-					WaitIfAvoiding()
-					TPUnder(part)
-					FirePrompts(v)
-					task.wait(0.001)
-				until not v.Parent or not Enabled
-			end
-		end
-	end)
+    -- [Background Task] Stuffing Collector
+    task.spawn(function()
+        while Enabled do
+            WaitIfAvoiding()
+            local items = StuffingFolder:GetChildren()
+            if #items > 0 then
+                local item = items[1]
+                local part = GetPart(item)
+                if part then
+                    repeat
+                        WaitIfAvoiding()
+                        TPUnder(part)
+                        FirePrompts(item)
+                        task.wait(0.005)
+                    until not item.Parent or not Enabled
+                end
+            end
+            task.wait(0.1)
+        end
+    end)
 
-	while Enabled do
-		WaitIfAvoiding()
-
-		if CollectTrainParts() then
-			task.wait(0.05)
-			continue
-		end
-
-		local didCoil = DoCoils()
-
-		if not didCoil then
-    for _, machine in ipairs(GetAllMachines()) do
-        if not Enabled then break end
+    -- [Main Control Loop] This handles the re-scanning
+    while Enabled do
         WaitIfAvoiding()
-        HandleMachine(machine)
+
+        -- Priority 1: Train Parts (Re-scans after every delivery)
+        if CollectTrainParts() then
+            task.wait(0.1)
+            continue 
+        end
+
+        -- Priority 2: Coils
+        local didCoil = DoCoils()
+
+        -- Priority 3: Machines (The Re-Scan)
+        if not didCoil then
+            local machines = GetAllMachines() -- This is the fresh scan
+            if #machines > 0 then
+                HandleMachine(machines[1]) -- Work on the highest priority machine
+                -- After HandleMachine finishes, the loop 'continues' to re-scan
+                task.wait(0.1)
+                continue 
+            end
+        end
+
+        -- Priority 4: Idle / SafeZone
+        if not didCoil and HRP then
+            WaitIfAvoiding()
+            -- Only go to safezone if absolutely no machines are left
+            local checkAgain = GetAllMachines()
+            if #checkAgain == 0 then
+                HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
+            end
+        end
+
+        task.wait(0.1)
     end
 end
 
-if not didCoil and HRP then
-			WaitIfAvoiding()
-			HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
-		end
-
-		task.wait(0.001)
-	end
-
-end
 
 -- =========================
 -- UI
