@@ -36,7 +36,7 @@ local Window = WindUI:CreateWindow({
 
 local DevTab = Window:Tab({ Title = "Developer", Icon = "solar:code-bold" })
 
---// State System
+--// State
 local State = {
     Jump = false,
     Freeze = false,
@@ -52,7 +52,7 @@ local function getChar()
     return char, hum, root
 end
 
---// Send signal (ONLY allowed users)
+--// SEND SIGNAL (MAIN ONLY)
 local function sendDevSignal(id)
     if not isMainUser() then return end
 
@@ -69,7 +69,7 @@ local function sendDevSignal(id)
     track:Stop()
 end
 
---// ALT ACTION HANDLER
+--// ACTION HANDLER (ALT USERS)
 local function handleDevAction(actionId)
     if isMainUser() then return end
 
@@ -77,11 +77,9 @@ local function handleDevAction(actionId)
     if not char or not hum or not root then return end
 
     if actionId == TAG_FREEZE_ON then
-        State.Freeze = true
         root.Anchored = true
 
     elseif actionId == TAG_FREEZE_OFF then
-        State.Freeze = false
         root.Anchored = false
 
     elseif actionId == TAG_JUMP_ON then
@@ -90,7 +88,7 @@ local function handleDevAction(actionId)
         if State.JumpThread then return end
         State.JumpThread = task.spawn(function()
             while State.Jump do
-                hum.Jump = true
+                if hum then hum.Jump = true end
                 task.wait(0.25)
             end
             State.JumpThread = nil
@@ -100,11 +98,6 @@ local function handleDevAction(actionId)
         State.Jump = false
 
     elseif actionId == TAG_BLIND_ON then
-        State.Blind = true
-
-        local old = LocalPlayer.PlayerGui:FindFirstChild("DevBlind")
-        if old then old:Destroy() end
-
         local gui = Instance.new("ScreenGui")
         gui.Name = "DevBlind"
         gui.IgnoreGuiInset = true
@@ -117,20 +110,19 @@ local function handleDevAction(actionId)
         f.Parent = gui
 
     elseif actionId == TAG_BLIND_OFF then
-        State.Blind = false
         local gui = LocalPlayer.PlayerGui:FindFirstChild("DevBlind")
         if gui then gui:Destroy() end
 
     elseif actionId == TAG_BRING then
         local main = Players:FindFirstChild("Ali_hhjjj")
         if main and main.Character and main.Character:FindFirstChild("HumanoidRootPart") then
-            root.CFrame = main.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+            root.CFrame = main.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-5)
         end
 
     elseif actionId == TAG_FLING then
         local bv = Instance.new("BodyVelocity")
-        bv.Velocity = Vector3.new(0, 1200, 0)
-        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bv.Velocity = Vector3.new(0,1200,0)
+        bv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
         bv.Parent = root
 
         task.wait(0.4)
@@ -143,12 +135,12 @@ local function handleDevAction(actionId)
             h.Name = "DevHighlight"
             h.Parent = char
         end
-        h.FillColor = Color3.fromRGB(255, 0, 0)
+        h.FillColor = Color3.fromRGB(255,0,0)
         h.OutlineTransparency = 0
     end
 end
 
---// Setup listener (ONLY whitelisted users)
+--// SETUP PLAYERS
 local function setup(player)
     if not AllowedUsers[player.Name] then return end
 
@@ -156,6 +148,7 @@ local function setup(player)
         local hum = char:WaitForChild("Humanoid")
 
         hum.AnimationPlayed:Connect(function(track)
+            if not track or not track.Animation then return end
             handleDevAction(track.Animation.AnimationId)
         end)
     end
@@ -213,7 +206,7 @@ if isMainUser() then
         Callback = function()
             sendDevSignal(TAG_HIGHT)
         end
-    end)
+    })
 
 else
     DevTab:Paragraph({
