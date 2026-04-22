@@ -1,36 +1,3 @@
---// WindUI Setup
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
---// Window
-local Window = WindUI:CreateWindow({
-    Title = "TZ HUB || Dolly's Factory",
-    Folder = "TZHub",
-    Icon = "solar:compass-big-bold",
-    Theme = "Crimson",
-    NewElements = true,
-    HideSearchBar = false,
-})
-Window:EditOpenButton({
-    Title = "TZ HUB || Dolly's Factory",
-    Icon = "solar:compass-big-bold", -- matches your main window icon
-    CornerRadius = UDim.new(0,16),
-    StrokeThickness = 2,
-    Color = ColorSequence.new( -- gradient theme
-        Color3.fromHex("DC143C"), -- Crimson start
-        Color3.fromHex("8B0000")  -- Darker Crimson end
-    ),
-    OnlyMobile = false,
-    Enabled = true,
-    Draggable = true,
-})
-
---// Main Tab
-local MainTab = Window:Tab({
-    Title = "Main",
-    Icon = "solar:home-bold",
-})
---auto farm
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -347,6 +314,13 @@ end
 -- MACHINE HANDLER (Controller Method)
 -- =========================
 local CollectionService = game:GetService("CollectionService")
+local function GetMaxProgress(machine)
+    if CollectionService:HasTag(machine, "ToughMachine") then
+        return 2
+    else
+        return 1
+    end
+end
 
 local function GetAllMachines()
     local goldenMachines = {}
@@ -354,7 +328,9 @@ local function GetAllMachines()
 
     for _, machine in pairs(CollectionService:GetTagged("PlushieMachine")) do
         local progress = machine:GetAttribute("Progress") or 0
-        if progress < 1 then
+        local max = GetMaxProgress(machine)
+
+        if progress < max then
             if CollectionService:HasTag(machine, "ToughMachine") then
                 table.insert(goldenMachines, machine)
             else
@@ -363,7 +339,6 @@ local function GetAllMachines()
         end
     end
 
-    -- Combine them: Golden machines first, then normal ones
     for _, machine in ipairs(normalMachines) do
         table.insert(goldenMachines, machine)
     end
@@ -376,144 +351,179 @@ end
 local function HandleMachine(machine)
     if not HRP or not machine then return end
 
-    local function getProgress() 
-        return machine:GetAttribute("Progress") or 0 
+    local function getProgress()
+        return machine:GetAttribute("Progress") or 0
     end
-    
-    -- If already done, exit immediately to trigger next scan
-    if getProgress() >= 1 then return end
 
-    local cylinder = machine:FindFirstChild("Cylinder.270", true)
-        or machine:FindFirstChildWhichIsA("BasePart", true)
-    
-    if not cylinder then return end
+    local max = GetMaxProgress(machine)
+    if getProgress() >= max then return end
 
-    -- Main interaction loop for this specific machine
-    while Enabled and getProgress() < 1 and machine.Parent do
+    -- ✅ FIXED: target part function
+    local function getMachineTargetPart()
+        local goldenPart = machine:FindFirstChild("Golden_Machine", true)
+        if goldenPart and goldenPart:IsA("BasePart") then
+            return goldenPart
+        end
+
+        local cylinder = machine:FindFirstChild("Cylinder.270", true)
+        if cylinder and cylinder:IsA("BasePart") then
+            return cylinder
+        end
+
+        return machine:FindFirstChildWhichIsA("BasePart", true)
+    end
+
+    local part = getMachineTargetPart()
+    if not part then return end
+
+    while Enabled and getProgress() < max do
         WaitIfAvoiding()
 
-        -- Get the lever side from the game's MachineController
         local ok, side = pcall(function()
             return MachineController:_getClosestLever(player, machine)
         end)
 
         local targetCFrame = nil
+
         if ok and (side == 1 or side == 2) then
             local pivot = machine:FindFirstChild("Player" .. tostring(side) .. "Pivot")
             if pivot and pivot.GetPivot then
-                local s, pivotCFrame = pcall(function() return pivot:GetPivot() end)
+                local s, pivotCFrame = pcall(function()
+                    return pivot:GetPivot()
+                end)
+
                 if s and pivotCFrame then
                     targetCFrame = pivotCFrame * CFrame.new(0, -4, 0)
                 end
             end
         end
 
-        -- Fallback to machine center if pivot isn't found
-        targetCFrame = targetCFrame or (cylinder.CFrame * CFrame.new(0, -4, 0))
+        -- ✅ FIXED fallback uses correct part
+        if not targetCFrame then
+            targetCFrame = part.CFrame * CFrame.new(0, -4, 0)
+        end
 
-        -- Aggressive burst interaction
+        local burstDuration = 0.25
         local burstStart = tick()
-        while Enabled and getProgress() < 1 and (tick() - burstStart < 0.3) do
-            if HRP then HRP.CFrame = targetCFrame end
-            
+
+        while Enabled and getProgress() < max and tick() - burstStart < burstDuration do
+            if HRP then
+                HRP.CFrame = targetCFrame
+            end
+
             FirePrompts(machine)
             if machine.Parent then FirePrompts(machine.Parent) end
-            
+
             Freeze(true)
+
             task.wait(0.001)
+            if not machine.Parent then break end
         end
-        
-        task.wait(0.01)
+
+        task.wait(0.001)
+
+        if not machine.Parent then break end
     end
 
     Freeze(false)
 end
 
-
 local function run()
-    ScanRejectMeistro()
-    if RejectFound then BurstTeleportToSafeZone() end
-    StartRejectWatcher()
+  
+ScanRejectMeistro()
+if RejectFound then
+	BurstTeleportToSafeZone()
+end
+	StartRejectWatcher()
 
-    -- [Background Task] Anti-Timer / SafeZone logic
-    task.spawn(function()
-        local lastVisible = false
-        while Enabled do
-            WaitIfAvoiding()
-            if TimerUI.Visible then
-                if not lastVisible then
-                    for i = 1, 3 do
-                        if HRP then HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0) end
-                        task.wait(0.05)
-                    end
-                end
-                lastVisible = true
-            else
-                lastVisible = false
-            end
-            task.wait(0.1)
-        end
-    end)
+	task.spawn(function()
+		local last = false
+		while Enabled do
+			WaitIfAvoiding()
+			if TimerUI.Visible then
+				if not last then
+					for i = 1, 3 do
+						if HRP then
+							HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
+						end
+						task.wait(0.05)
+					end
+				end
+				last = true
+			else
+				last = false
+			end
+			task.wait(0.1)
+		end
+	end)
 
-    -- [Background Task] Stuffing Collector
-    task.spawn(function()
-        while Enabled do
-            WaitIfAvoiding()
-            local items = StuffingFolder:GetChildren()
-            if #items > 0 then
-                local item = items[1]
-                local part = GetPart(item)
-                if part then
-                    repeat
-                        WaitIfAvoiding()
-                        TPUnder(part)
-                        FirePrompts(item)
-                        task.wait(0.005)
-                    until not item.Parent or not Enabled
-                end
-            end
-            task.wait(0.1)
-        end
-    end)
+	task.spawn(function()
+	offset = -4
+	while Enabled do
+		WaitIfAvoiding()
 
-    -- [Main Control Loop] This handles the re-scanning
-    while Enabled do
+		local items = StuffingFolder:GetChildren()
+
+		if #items == 0 then
+			task.wait(0.5)
+			continue
+		end
+
+		local originCFrame = HRP and HRP.CFrame
+
+		for _, v in ipairs(items) do
+			if not Enabled then break end
+			WaitIfAvoiding()
+
+			local part = GetPart(v)
+			if not part then continue end
+
+			repeat
+				WaitIfAvoiding()
+				if HRP then
+					HRP.CFrame = part.CFrame * CFrame.new(0, offset, 0)
+				end
+				FirePrompts(v)
+				task.wait(0.001)
+			until not v.Parent or not Enabled
+		end
+
+		-- return to original position after clearing all stuffing
+		if Enabled and HRP and originCFrame then
+			HRP.CFrame = originCFrame
+		end
+
+		task.wait(0.2)
+	end
+end)
+
+	while Enabled do
+		WaitIfAvoiding()
+
+		if CollectTrainParts() then
+			task.wait(0.05)
+			continue
+		end
+
+		local didCoil = DoCoils()
+
+		if not didCoil then
+    for _, machine in ipairs(GetAllMachines()) do
+        if not Enabled then break end
         WaitIfAvoiding()
-
-        -- Priority 1: Train Parts (Re-scans after every delivery)
-        if CollectTrainParts() then
-            task.wait(0.1)
-            continue 
-        end
-
-        -- Priority 2: Coils
-        local didCoil = DoCoils()
-
-        -- Priority 3: Machines (The Re-Scan)
-        if not didCoil then
-            local machines = GetAllMachines() -- This is the fresh scan
-            if #machines > 0 then
-                HandleMachine(machines[1]) -- Work on the highest priority machine
-                -- After HandleMachine finishes, the loop 'continues' to re-scan
-                task.wait(0.1)
-                continue 
-            end
-        end
-
-        -- Priority 4: Idle / SafeZone
-        if not didCoil and HRP then
-            WaitIfAvoiding()
-            -- Only go to safezone if absolutely no machines are left
-            local checkAgain = GetAllMachines()
-            if #checkAgain == 0 then
-                HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
-            end
-        end
-
-        task.wait(0.1)
+        HandleMachine(machine)
     end
 end
 
+if not didCoil and HRP then
+			WaitIfAvoiding()
+			HRP.CFrame = SafeZone.CFrame * CFrame.new(0, 3, 0)
+		end
+
+		task.wait(0.001)
+	end
+
+end
 
 -- =========================
 -- UI
@@ -539,60 +549,5 @@ MainTab:Toggle({
 				end)
 			end
 		end
-	end
-})
-local RejectSlider = MainTab:Slider({
-	Title = "Reject Hide Delay",
-	Desc = "Time spent hiding when RejectMeistro appears",
-	Step = 0.1,
-	Value = {
-		Min = 0.1,
-		Max = 5,
-		Default = 0.2
-	},
-	Callback = function(value)
-		hideWaitTime = value
-	end
-})
-
-MainTab:Toggle({
-	Title = "Reject Escape",
-	Flag = "rejectEscape_toggle",
-	Desc = "Make the autofarm avoid rejects when close",
-	Icon = "shield",
-	Value = false,
-	Callback = function(state)
-		rejectEscapeEnabled = state
-	end
-})
-
-MainTab:Slider({
-	Title = "Reject Detection Distance",
-	Desc = "How close a Reject must be to trigger escape",
-	Icon = "",
-	Step = 1,
-	Value = {
-		Min = 5,
-		Max = 100,
-		Default = 25,
-	},
-	Callback = function(val)
-		rejectDistance = val
-	end
-})
-
-MainTab:Slider({
-	Title = "SafeZone Wait Time",
-	Flag = "safezonewait_slider",
-	Desc = "How many seconds to stay in SafeZone before returning",
-	Icon = "",
-	Step = 1,
-	Value = {
-		Min = 1,
-		Max = 100,
-		Default = 5,
-	},
-	Callback = function(val)
-		rejectWaitTime = val
 	end
 })
