@@ -1,4 +1,14 @@
-
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Window = WindUI:CreateWindow({
+    Title = "I mustn't forget this next time",
+    Icon = "door-open", -- lucide icon. optional
+    Author = "by .ftgs and .ftgs", -- optional
+})
+local MainTab = Window:Tab({
+    Title = "Tab Title",
+    Icon = "bird", -- optional
+    Locked = false,
+})
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
