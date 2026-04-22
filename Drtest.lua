@@ -3,10 +3,18 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
---// Config
-local MainAccountName = "Ali_hhjjj"
+--// ✅ WHITELIST (ADD USERS HERE)
+local AllowedUsers = {
+    ["Ali_hhjjj"] = true,
+    ["ananana_201601"] = true,
+    ["ayllaaa_718474"] = true
+}
 
---// Tags (still kept for compatibility with your system)
+local function isMainUser()
+    return AllowedUsers[LocalPlayer.Name] == true
+end
+
+--// Tags
 local TAG_FREEZE_ON  = "rbxassetid://0_FRZ_ON"
 local TAG_FREEZE_OFF = "rbxassetid://0_FRZ_OFF"
 local TAG_JUMP_ON    = "rbxassetid://0_JMP_ON"
@@ -28,7 +36,7 @@ local Window = WindUI:CreateWindow({
 
 local DevTab = Window:Tab({ Title = "Developer", Icon = "solar:code-bold" })
 
---// State System (FIX: prevents one-time bug)
+--// State System
 local State = {
     Jump = false,
     Freeze = false,
@@ -44,9 +52,9 @@ local function getChar()
     return char, hum, root
 end
 
---// Send signal (Main only)
+--// Send signal (ONLY allowed users)
 local function sendDevSignal(id)
-    if LocalPlayer.Name ~= MainAccountName then return end
+    if not isMainUser() then return end
 
     local char, hum = getChar()
     if not hum then return end
@@ -61,14 +69,13 @@ local function sendDevSignal(id)
     track:Stop()
 end
 
---// FIXED ALT ACTION HANDLER
+--// ALT ACTION HANDLER
 local function handleDevAction(actionId)
-    if LocalPlayer.Name == MainAccountName then return end
+    if isMainUser() then return end
 
     local char, hum, root = getChar()
     if not char or not hum or not root then return end
 
-    -- Freeze FIX
     if actionId == TAG_FREEZE_ON then
         State.Freeze = true
         root.Anchored = true
@@ -77,16 +84,13 @@ local function handleDevAction(actionId)
         State.Freeze = false
         root.Anchored = false
 
-    -- Jump FIX (no stacking loops)
     elseif actionId == TAG_JUMP_ON then
         State.Jump = true
 
         if State.JumpThread then return end
         State.JumpThread = task.spawn(function()
             while State.Jump do
-                if hum then
-                    hum.Jump = true
-                end
+                hum.Jump = true
                 task.wait(0.25)
             end
             State.JumpThread = nil
@@ -95,7 +99,6 @@ local function handleDevAction(actionId)
     elseif actionId == TAG_JUMP_OFF then
         State.Jump = false
 
-    -- Blind FIX (no duplicates)
     elseif actionId == TAG_BLIND_ON then
         State.Blind = true
 
@@ -118,14 +121,12 @@ local function handleDevAction(actionId)
         local gui = LocalPlayer.PlayerGui:FindFirstChild("DevBlind")
         if gui then gui:Destroy() end
 
-    -- Bring
     elseif actionId == TAG_BRING then
-        local main = Players:FindFirstChild(MainAccountName)
+        local main = Players:FindFirstChild("Ali_hhjjj")
         if main and main.Character and main.Character:FindFirstChild("HumanoidRootPart") then
             root.CFrame = main.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
         end
 
-    -- Fling FIX (stable force)
     elseif actionId == TAG_FLING then
         local bv = Instance.new("BodyVelocity")
         bv.Velocity = Vector3.new(0, 1200, 0)
@@ -135,7 +136,6 @@ local function handleDevAction(actionId)
         task.wait(0.4)
         bv:Destroy()
 
-    -- Highlight FIX
     elseif actionId == TAG_HIGHT then
         local h = char:FindFirstChild("DevHighlight")
         if not h then
@@ -148,9 +148,9 @@ local function handleDevAction(actionId)
     end
 end
 
---// Setup listener
+--// Setup listener (ONLY whitelisted users)
 local function setup(player)
-    if player.Name ~= MainAccountName then return end
+    if not AllowedUsers[player.Name] then return end
 
     local function listen(char)
         local hum = char:WaitForChild("Humanoid")
@@ -170,51 +170,54 @@ end
 
 Players.PlayerAdded:Connect(setup)
 
---// UI (Main only)
-if LocalPlayer.Name == MainAccountName then
+--// UI
+if isMainUser() then
 
     DevTab:Toggle({
         Title = "Freeze User",
         Callback = function(state)
-            if state then sendDevSignal(TAG_FREEZE_ON)
-            else sendDevSignal(TAG_FREEZE_OFF) end
+            sendDevSignal(state and TAG_FREEZE_ON or TAG_FREEZE_OFF)
         end
     })
 
     DevTab:Toggle({
         Title = "Force Jump",
         Callback = function(state)
-            if state then sendDevSignal(TAG_JUMP_ON)
-            else sendDevSignal(TAG_JUMP_OFF) end
+            sendDevSignal(state and TAG_JUMP_ON or TAG_JUMP_OFF)
         end
     })
 
     DevTab:Toggle({
         Title = "Black Screen",
         Callback = function(state)
-            if state then sendDevSignal(TAG_BLIND_ON)
-            else sendDevSignal(TAG_BLIND_OFF) end
+            sendDevSignal(state and TAG_BLIND_ON or TAG_BLIND_OFF)
         end
     })
 
     DevTab:Button({
         Title = "Bring User",
-        Callback = function() sendDevSignal(TAG_BRING) end
+        Callback = function()
+            sendDevSignal(TAG_BRING)
+        end
     })
 
     DevTab:Button({
         Title = "Fling User",
-        Callback = function() sendDevSignal(TAG_FLING) end
+        Callback = function()
+            sendDevSignal(TAG_FLING)
+        end
     })
 
     DevTab:Button({
         Title = "Highlight User",
-        Callback = function() sendDevSignal(TAG_HIGHT) end
-    })
+        Callback = function()
+            sendDevSignal(TAG_HIGHT)
+        end
+    end)
 
 else
     DevTab:Paragraph({
         Title = "Status",
-        Desc = "Connected as Alt to: " .. MainAccountName
+        Desc = "You are not authorized for main controls."
     })
 end
