@@ -1,14 +1,23 @@
+--// WindUI Setup
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+--// Window
 local Window = WindUI:CreateWindow({
-    Title = "I mustn't forget this next time",
-    Icon = "door-open", -- lucide icon. optional
-    Author = "by .ftgs and .ftgs", -- optional
+    Title = "TZ HUB || Dolly's Factory",
+    Folder = "TZHub",
+    Icon = "solar:compass-big-bold",
+    Theme = "Crimson",
+    NewElements = true,
+    HideSearchBar = false,
 })
 local MainTab = Window:Tab({
-    Title = "Tab Title",
+    Title = "Test",
     Icon = "bird", -- optional
     Locked = false,
 })
+--auto farm
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -30,9 +39,7 @@ local StuffingFolder = workspace:WaitForChild("Pickup"):WaitForChild("Stuffing")
 local TimerUI        = player:WaitForChild("PlayerGui"):WaitForChild("GameUI"):WaitForChild("HUD"):WaitForChild("Timer")
 local SafeZone       = workspace:WaitForChild("Persistent"):WaitForChild("Zones"):WaitForChild("TrainSafeZone")
 
--- =========================
--- SETTINGS
--- =========================
+-- settings
 local offset  = -5
 local Enabled = false
 
@@ -43,9 +50,7 @@ local rejectWaitTime      = 5
 local avoidingReject = false
 local RejectFound = false
 local hideWaitTime = 0.2 
--- =========================
--- HELPERS
--- =========================
+-- helpers
 local function Freeze(state)
 	local char = workspace:FindFirstChild("Characters")
 		and workspace.Characters:FindFirstChild(tostring(player.UserId))
@@ -82,9 +87,7 @@ local function WaitIfAvoiding()
 	end
 end
 
--- =========================
--- REJECT ESCAPE WATCHER
--- =========================
+-- reject escape
 local function StartRejectWatcher()
 	task.spawn(function()
 		while Enabled do
@@ -123,9 +126,7 @@ local function StartRejectWatcher()
 	end)
 end
 
--- =========================
--- TRAIN PARTS
--- =========================
+-- train parts 
 local function CollectTrainParts()
     local delivery = workspace:FindFirstChild("Map")
         and workspace.Map:FindFirstChild("DeliveryPoint")
@@ -145,7 +146,7 @@ local function CollectTrainParts()
 
     local target = nil
 
-    -- find ONLY Train Part (same as your working script)
+    
     for _, obj in ipairs(folder:GetChildren()) do
         if obj:IsA("MeshPart") and obj.Name == "Train Part" then
             target = obj
@@ -153,19 +154,18 @@ local function CollectTrainParts()
         end
     end
 
-    -- no train part → go safe zone
-    if not target then
+        if not target then
         if safeZone then
             HRP.CFrame = safeZone.CFrame * CFrame.new(0, 3, 0)
         end
         return false
     end
 
-    -- move to train part
+    
     HRP.CFrame = target.CFrame
     HRP.CFrame = target.CFrame - Vector3.new(0, 4, 0)
 
-    -- fire prompt
+    
     for _, v in ipairs(target:GetDescendants()) do
         if v:IsA("ProximityPrompt") then
             pcall(function()
@@ -174,7 +174,7 @@ local function CollectTrainParts()
         end
     end
 
-    -- deliver if collected
+    
     if target:FindFirstChild("AlignOrientation") then
         HRP.CFrame = delivery.CFrame * CFrame.new(0, 3, 0)
     end
@@ -228,9 +228,8 @@ local function BurstTeleportToSafeZone()
 		end
 	end)
 end
--- =========================
--- COILS
--- =========================
+
+-- coils
 local firedCoils = {}
 
 local function DoCoils()
@@ -316,13 +315,7 @@ local function DoCoils()
 
 	return true
 end
-
--- =========================
--- MACHINE HANDLER
--- =========================
--- =========================
--- MACHINE HANDLER (Controller Method)
--- =========================
+--machine handler
 local CollectionService = game:GetService("CollectionService")
 local function GetMaxProgress(machine)
     if CollectionService:HasTag(machine, "ToughMachine") then
@@ -357,7 +350,7 @@ local function GetAllMachines()
 end
 
 
--- Replace HandleMachine with this ultra-aggressive teleport version (0.001s reapply)
+
 local function HandleMachine(machine)
     if not HRP or not machine then return end
 
@@ -368,20 +361,29 @@ local function HandleMachine(machine)
     local max = GetMaxProgress(machine)
     if getProgress() >= max then return end
 
-    -- ✅ FIXED: target part function
-    local function getMachineTargetPart()
-        local goldenPart = machine:FindFirstChild("Golden_Machine", true)
-        if goldenPart and goldenPart:IsA("BasePart") then
-            return goldenPart
-        end
-
-        local cylinder = machine:FindFirstChild("Cylinder.270", true)
-        if cylinder and cylinder:IsA("BasePart") then
-            return cylinder
-        end
-
-        return machine:FindFirstChildWhichIsA("BasePart", true)
+        local function getMachineTargetPart()
+    -- Drone machine
+    local machineType = machine:GetAttribute("MachineType")
+    if machineType == "Drone" then
+        local base = machine:FindFirstChild("Base")
+        if base and base:IsA("BasePart") then return base end
+        local pump = machine:FindFirstChild("Pump")
+        if pump and pump:IsA("BasePart") then return pump end
     end
+
+    -- Plushie / Golden machine
+    local goldenPart = machine:FindFirstChild("Golden_Machine", true)
+    if goldenPart and goldenPart:IsA("BasePart") then
+        return goldenPart
+    end
+
+    local cylinder = machine:FindFirstChild("Cylinder.270", true)
+    if cylinder and cylinder:IsA("BasePart") then
+        return cylinder
+    end
+
+    return machine:FindFirstChildWhichIsA("BasePart", true)
+end
 
     local part = getMachineTargetPart()
     if not part then return end
@@ -408,7 +410,7 @@ local function HandleMachine(machine)
             end
         end
 
-        -- ✅ FIXED fallback uses correct part
+        
         if not targetCFrame then
             targetCFrame = part.CFrame * CFrame.new(0, -4, 0)
         end
@@ -498,7 +500,7 @@ end
 			until not v.Parent or not Enabled
 		end
 
-		-- return to original position after clearing all stuffing
+		
 		if Enabled and HRP and originCFrame then
 			HRP.CFrame = originCFrame
 		end
@@ -535,9 +537,7 @@ if not didCoil and HRP then
 
 end
 
--- =========================
 -- UI
--- =========================
 local thread
 
 MainTab:Toggle({
@@ -560,4 +560,109 @@ MainTab:Toggle({
 			end
 		end
 	end
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local Sessions = require(
+    LocalPlayer.PlayerScripts.Client.Interface.UIController.GameUI.MinigameHandler.Sessions
+)
+
+local Broken = require(
+    LocalPlayer.PlayerScripts.Client.Interface.UIController.GameUI.MinigameHandler.Minigames.Broken
+)
+
+local Drone = require(
+    LocalPlayer.PlayerScripts.Client.Interface.UIController.GameUI.MinigameHandler.Minigames.Drone
+)
+
+local AutoPerfect = false
+
+-- Helper
+local function ForcePerfect(sessionId)
+    local result = {
+        success = true,
+        data = {
+            response = "Perfect",
+            endAngle = 0,
+            holdFraction = 1
+        }
+    }
+
+    pcall(function()
+        Sessions.Submit(sessionId, result)
+    end)
+
+    -- Optional UI update
+    local GameUI = LocalPlayer.PlayerGui:FindFirstChild("GameUI")
+    if GameUI then
+        for _, ui in ipairs({"PlushieMinigame", "DroneMinigame"}) do
+            local root = GameUI:FindFirstChild(ui)
+
+            if root and root:FindFirstChild("Root") then
+                local res =
+                    root.Root:FindFirstChild("ResultText")
+                    or root.Root:FindFirstChild("Result")
+
+                if res then
+                    res.Text = "PERFECT"
+                    res.TextColor3 = Color3.fromRGB(120,255,120)
+                    res.Visible = true
+                end
+            end
+        end
+    end
+end
+
+-- Hook once
+if not getgenv().TZ_AutoPerfectHooked then
+    getgenv().TZ_AutoPerfectHooked = true
+
+    local oldBrokenStart = Broken.Start
+    Broken.Start = function(session, ...)
+        local r = oldBrokenStart(session, ...)
+
+        if AutoPerfect then
+            task.delay(0.1, function()
+                ForcePerfect(session.sessionId)
+            end)
+        end
+
+        return r
+    end
+
+    local oldDroneStart = Drone.Start
+    Drone.Start = function(session, ...)
+        local r = oldDroneStart(session, ...)
+
+        if AutoPerfect then
+            task.delay(0.1, function()
+                ForcePerfect(session.sessionId)
+            end)
+        end
+
+        return r
+    end
+end
+
+-- Toggle
+MainTab:Toggle({
+    Title = "Auto Perfect",
+    Flag = "Skillcheck_Perfect",
+    Icon = "",
+    Value = false,
+    Type = "Toggle",
+    Color = Color3.fromRGB(100, 255, 100),
+    Flag = "auto_perfect_toggle",
+
+    Callback = function(state)
+        AutoPerfect = state
+
+        if state then
+            print("Auto Perfect Enabled")
+        else
+            print("Auto Perfect Disabled")
+        end
+    end
 })
