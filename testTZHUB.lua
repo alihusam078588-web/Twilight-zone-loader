@@ -587,3 +587,45 @@ MainTab:Slider({
 		rejectWaitTime = val
 	end
 })
+-- Anti-Poison Script (Executor-safe, LocalPlayer only)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- Force poison attributes to safe values
+LocalPlayer:SetAttribute("InPoison", false)
+LocalPlayer:SetAttribute("PoisonMeter", 0)
+LocalPlayer:SetAttribute("PoisonMeterMax", 0)
+
+-- Hook PoisonHandler if present
+local PoisonHandler = ReplicatedStorage:FindFirstChild("Shared")
+    and ReplicatedStorage.Shared.Modules:FindFirstChild("PoisonHandler")
+
+if PoisonHandler then
+    local module = require(PoisonHandler)
+    -- Override poison functions to no-op
+    module.ApplyPoison = function() end
+    module.TickPoison = function() end
+    module.RemovePoison = function() end
+end
+
+-- Hide poison UI overlays
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local PoisonUI = PlayerGui:FindFirstChild("GameUI")
+    and PlayerGui.GameUI:FindFirstChild("HUDComponents")
+    and PlayerGui.GameUI.HUDComponents:FindFirstChild("PoisonBarUI")
+
+if PoisonUI then
+    PoisonUI.Visible = false
+end
+
+-- Kill poison feedback loop
+local VFXController = LocalPlayer.PlayerScripts.Client.Game.VFXController
+local PoisonFeedback = VFXController:FindFirstChild("PoisonFeedback")
+if PoisonFeedback then
+    local feedbackModule = require(PoisonFeedback)
+    feedbackModule.OnAdded = function() end
+    feedbackModule.UpdatePoison = function() end
+end
+
+print("Anti-poison active")
