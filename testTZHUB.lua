@@ -227,7 +227,91 @@ local function BurstTeleportToSafeZone()
 		task.wait(0.02)
 	end
 end
+local firedCoils = {}
 
+local function DoCoils()
+	local map = workspace:FindFirstChild("Map")
+	if not map then return false end
+
+	local safeZone = workspace:FindFirstChild("Persistent")
+		and workspace.Persistent:FindFirstChild("Zones")
+		and workspace.Persistent.Zones:FindFirstChild("TrainSafeZone")
+
+	if not safeZone then return false end
+
+	local coilRoot = map:FindFirstChild("Interact", true)
+		and map.Interact:FindFirstChild("TeslaCoil", true)
+		and map.Interact.TeslaCoil:FindFirstChild("CoilActivators", true)
+
+	if not coilRoot then return false end
+
+	local function getCoilsWithPrompt()
+		local list = {}
+		for _, obj in ipairs(coilRoot:GetDescendants()) do
+			if obj.Name == "Coil" then
+				local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+				if prompt and prompt.Enabled and prompt.Parent then
+					local part = obj:IsA("BasePart") and obj
+						or obj:FindFirstChildWhichIsA("MeshPart", true)
+						or obj:FindFirstChildWhichIsA("BasePart", true)
+					if part then
+						table.insert(list, { obj = obj, part = part, prompt = prompt })
+					end
+				end
+			end
+		end
+		return list
+	end
+
+	while Enabled do
+		WaitIfAvoiding()
+		local coils = getCoilsWithPrompt()
+
+		if #coils == 0 then
+			WaitIfAvoiding()
+			if HRP then
+				HRP.CFrame = safeZone.CFrame * CFrame.new(0, 3, 0)
+			end
+			task.wait(0.3)
+
+			if not coilRoot or not coilRoot.Parent then
+				HRP.CFrame = safeZone.CFrame * CFrame.new(0, 3, 0)
+				return false
+			end
+
+			continue
+		end
+
+		for _, coil in ipairs(coils) do
+			if not Enabled then break end
+			WaitIfAvoiding()
+			if not coil.obj.Parent then continue end
+
+			local start = tick()
+
+			while Enabled and coil.obj.Parent and coil.prompt.Parent do
+				WaitIfAvoiding()
+				if HRP then
+					HRP.CFrame = coil.part.CFrame * CFrame.new(0, 3, 0)
+				end
+
+				pcall(function()
+					fireproximityprompt(coil.prompt, coil.prompt.HoldDuration or 0)
+				end)
+
+				task.wait(0.01)
+
+				if tick() - start > 2 then break end
+			end
+
+			task.wait(0.05)
+		end
+
+		task.wait(0.05)
+	end
+
+	return true
+end
 -- machine handler
 local function GetMaxProgress(machine)
     return CollectionService:HasTag(machine, "ToughMachine") and 2 or 1
