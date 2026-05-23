@@ -469,7 +469,7 @@ local thread
 
 MainTab:Toggle({
     Title    = "Auto Farm",
-    Desc     = "Automates stuffing, train parts, coils and machines. Safe to use alongside ESP and Reject Escape.",
+    Desc     = "hi",
     Flag     = "Autofarm_toggle",
     Icon     = "",
     Value    = false,
