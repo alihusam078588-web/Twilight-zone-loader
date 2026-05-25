@@ -4,7 +4,6 @@ local LocalPlayer = Players.LocalPlayer
 local inGamePlayers = workspace:WaitForChild("InGamePlayers")
 local elevatorModel = workspace:WaitForChild("Elevators"):WaitForChild("Elevator")
 
--- gets a valid part from the elevator model
 local elevatorPart =
 	elevatorModel.PrimaryPart
 	or elevatorModel:FindFirstChildWhichIsA("BasePart")
@@ -25,7 +24,7 @@ end
 
 local function checkPlayers()
 	for _, folder in ipairs(inGamePlayers:GetChildren()) do
-		-- ignore yourself
+		
 		if folder.Name ~= LocalPlayer.Name then
 			local stats = folder:FindFirstChild("Stats")
 
