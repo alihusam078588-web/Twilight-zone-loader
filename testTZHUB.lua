@@ -14,18 +14,20 @@ local function getHRP()
 end
 
 local function tweenStep(targetCFrame, speed)
-    speed = speed or 150
+    speed = speed or 60
     local hrp = getHRP()
     local distance = (hrp.CFrame.Position - targetCFrame.Position).Magnitude
-    local duration = math.clamp(distance / speed, 0.05, 3)
-    hrp.Anchored = true
+    local duration = math.clamp(distance / speed, 0.1, 6)
+    hrp.AssemblyLinearVelocity = Vector3.zero
+    hrp.AssemblyAngularVelocity = Vector3.zero
     local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), { CFrame = targetCFrame })
     tween:Play()
     tween.Completed:Wait()
-    hrp.Anchored = false
+    hrp.AssemblyLinearVelocity = Vector3.zero
+    hrp.AssemblyAngularVelocity = Vector3.zero
 end
 
-local UNDERGROUND_Y = -50
+local UNDERGROUND_Y = -30
 
 local function moveToModel(model)
     if not (model and model:IsA("Model")) then return end
@@ -36,9 +38,9 @@ local function moveToModel(model)
     local targetPos = part.Position
     local currentPos = hrp.Position
 
-    tweenStep(CFrame.new(currentPos.X, UNDERGROUND_Y, currentPos.Z), 200)
-    tweenStep(CFrame.new(targetPos.X, UNDERGROUND_Y, targetPos.Z), 200)
-    tweenStep(CFrame.new(targetPos.X, targetPos.Y + 3, targetPos.Z), 200)
+    tweenStep(CFrame.new(currentPos.X, UNDERGROUND_Y, currentPos.Z), 60)
+    tweenStep(CFrame.new(targetPos.X, UNDERGROUND_Y, targetPos.Z), 60)
+    tweenStep(CFrame.new(targetPos.X, targetPos.Y + 3, targetPos.Z), 60)
 end
 
 local function firePrompt(model)
