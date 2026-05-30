@@ -1,8 +1,9 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
-local panicValue = workspace.Info.Panic
+local panicMode = ReplicatedStorage.GameValues.PanicMode
 
 local function getCharacter()
     return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -12,11 +13,10 @@ local function getHRP()
     return getCharacter():WaitForChild("HumanoidRootPart")
 end
 
-local function tweenStep(targetCFrame, speed)
-    speed = speed or 35
+local function tweenTo(targetCFrame)
     local hrp = getHRP()
     local distance = (hrp.CFrame.Position - targetCFrame.Position).Magnitude
-    local duration = math.clamp(distance / speed, 0.1, 8)
+    local duration = math.clamp(distance / 16, 0.1, 12)
     hrp.AssemblyLinearVelocity = Vector3.zero
     hrp.AssemblyAngularVelocity = Vector3.zero
     local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), { CFrame = targetCFrame })
@@ -24,16 +24,6 @@ local function tweenStep(targetCFrame, speed)
     tween.Completed:Wait()
     hrp.AssemblyLinearVelocity = Vector3.zero
     hrp.AssemblyAngularVelocity = Vector3.zero
-end
-
-local UNDERGROUND_Y = -30
-
-local function moveToPosition(targetPos)
-    local hrp = getHRP()
-    local currentPos = hrp.Position
-    tweenStep(CFrame.new(currentPos.X, UNDERGROUND_Y, currentPos.Z), 35)
-    tweenStep(CFrame.new(targetPos.X, UNDERGROUND_Y, targetPos.Z), 35)
-    tweenStep(CFrame.new(targetPos.X, targetPos.Y + 3, targetPos.Z), 35)
 end
 
 local function getMachines()
@@ -54,6 +44,18 @@ local function findTargetMachine()
         local v = m.MachineCore.Values.Extracted
         if v and v.Value < 100 then
             return m
+        end
+    end
+end
+
+local function moveToMachine(machine)
+    local tpPart = machine:FindFirstChild("TPPart")
+    if tpPart then
+        tweenTo(tpPart.CFrame + Vector3.new(0, 3, 0))
+    else
+        local core = machine:FindFirstChild("MachineCore")
+        if core then
+            tweenTo(core.CFrame + Vector3.new(0, 3, 0))
         end
     end
 end
@@ -79,24 +81,22 @@ end
 local function goToElevator()
     local floorHitbox = workspace.Elevator:FindFirstChild("FloorHitbox")
     if floorHitbox then
-        moveToPosition(floorHitbox.Position)
+        tweenTo(floorHitbox.CFrame + Vector3.new(0, 3, 0))
     end
 end
 
-panicValue.Changed:Connect(function()
-    if panicValue.Value == true then
+panicMode.Changed:Connect(function()
+    if panicMode.Value == true then
         goToElevator()
     end
 end)
 
 task.spawn(function()
     while task.wait(0.5) do
-        if panicValue.Value == true then continue end
-
+        if panicMode.Value == true then continue end
         local target = findTargetMachine()
         if target then
-            local machinePos = target.MachineCore.Position
-            moveToPosition(machinePos)
+            moveToMachine(target)
             task.wait(0.2)
             fireMachinePrompt(target)
             waitForMachineDone(target)
