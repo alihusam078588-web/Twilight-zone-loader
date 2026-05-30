@@ -49,14 +49,9 @@ local function findTargetMachine()
 end
 
 local function moveToMachine(machine)
-    local tpPart = machine:FindFirstChild("TPPart")
-    if tpPart then
-        tweenTo(tpPart.CFrame + Vector3.new(0, 3, 0))
-    else
-        local core = machine:FindFirstChild("MachineCore")
-        if core then
-            tweenTo(core.CFrame + Vector3.new(0, 3, 0))
-        end
+    local core = machine:FindFirstChild("MachineCore")
+    if core then
+        tweenTo(core.CFrame + Vector3.new(0, 3, 0))
     end
 end
 
@@ -81,7 +76,8 @@ end
 local function goToElevator()
     local floorHitbox = workspace.Elevator:FindFirstChild("FloorHitbox")
     if floorHitbox then
-        tweenTo(floorHitbox.CFrame + Vector3.new(0, 3, 0))
+        local pos = floorHitbox.Position
+        tweenTo(CFrame.new(pos.X, pos.Y + 1, pos.Z))
     end
 end
 
