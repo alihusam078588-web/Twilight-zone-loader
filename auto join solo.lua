@@ -1,3 +1,4 @@
+print("loading")
 -- ==================== AntiCheat Removal (TOP) ====================
 pcall(function()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
