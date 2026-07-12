@@ -1,36 +1,59 @@
-- name: Send Discord Webhook
-  env:
-    WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-    FILE: ${{ steps.changed.outputs.file }}
-    MESSAGE: ${{ github.event.head_commit.message }}
-  run: |
-    FILE_NAME=$(basename "$FILE" .lua)
+name: Discord File Updates
 
-    PAYLOAD=$(cat <<EOF
-{
-  "content": "#  TZ HUB Updated! #",
-  "embeds": [
-    {
-      "color": 5814783,
-      "title": "📄 ${FILE_NAME}",
-      "fields": [
-        {
-          "name": "📝 Update",
-          "value": "${MESSAGE}",
-          "inline": false
-        }
-      ],
-      "footer": {
-        "text": "TZ HUB"
-      },
-      "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    }
-  ]
-}
-EOF
-)
+on:
+  push:
+    branches:
+      - main
 
-    curl \
-      -H "Content-Type: application/json" \
-      -d "$PAYLOAD" \
-      "$WEBHOOK"
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed file
+        id: changed
+        run: |
+          echo "file=$(git diff --name-only HEAD~1 HEAD | head -n 1)" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Webhook
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          FILE: ${{ steps.changed.outputs.file }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          FILE_NAME=$(basename "$FILE" .lua)
+
+          jq -n \
+            --arg content "# 🚀 TZ HUB Updated! #" \
+            --arg title "$FILE_NAME" \
+            --arg message "$MESSAGE" \
+            --arg time "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            '{
+              content: $content,
+              embeds: [
+                {
+                  color: 8388736,
+                  title: ("📄 " + $title),
+                  fields: [
+                    {
+                      name: "📝 Update",
+                      value: $message,
+                      inline: false
+                    }
+                  ],
+                  footer: {
+                    text: "TZ HUB"
+                  },
+                  timestamp: $time
+                }
+              ]
+            }' | curl \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d @- \
+              "$WEBHOOK"
