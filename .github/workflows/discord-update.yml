@@ -10,29 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Get changed files
-        id: changes
+      - name: Get changed file
+        id: changed
         run: |
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          git diff --name-only HEAD~1 HEAD >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "file=$(git diff --name-only HEAD~1 HEAD | head -n 1)" >> $GITHUB_OUTPUT
 
-      - name: Send to Discord
+      - name: Send Discord Webhook
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          FILES: ${{ steps.changes.outputs.files }}
+          FILE: ${{ steps.changed.outputs.file }}
           MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          CONTENT="${FILES}
-
-${MESSAGE}"
-
-          curl \
-            -H "Content-Type: application/json" \
-            -d "$(jq -n --arg content "$CONTENT" '{content: $content}')" \
-            "$WEBHOOK"
+          curl -H "Content-Type: application/json" \
+          -d "{\"content\":\"${FILE}\n\n${MESSAGE}\"}" \
+          "$WEBHOOK"
