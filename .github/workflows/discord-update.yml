@@ -29,7 +29,7 @@ jobs:
           FILE_NAME=$(basename "$FILE" .lua)
 
           jq -n \
-            --arg content "# 🚀 TZ HUB Updated! #" \
+            --arg content "#  TZ HUB Updated! #" \
             --arg title "$FILE_NAME" \
             --arg message "$MESSAGE" \
             --arg time "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
