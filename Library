@@ -1,0 +1,318 @@
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local Library = {}
+
+local Window = {}
+Window.__index = Window
+
+local Tab = {}
+Tab.__index = Tab
+
+local Toggle = {}
+Toggle.__index = Toggle
+
+local Theme = {
+    Background = Color3.fromRGB(15, 15, 15),
+    Sidebar = Color3.fromRGB(20, 20, 20),
+    Element = Color3.fromRGB(28, 28, 28),
+    Accent = Color3.fromRGB(99, 102, 241),
+    Off = Color3.fromRGB(50, 50, 50),
+    Text = Color3.fromRGB(240, 240, 240),
+    SubText = Color3.fromRGB(150, 150, 150),
+    Font = Enum.Font.GothamBold,
+    FontRegular = Enum.Font.Gotham,
+}
+
+local function corner(radius, parent)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius)
+    c.Parent = parent
+    return c
+end
+
+local function tween(obj, props, time)
+    TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
+end
+
+local function makeDraggable(dragHandle, frame)
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    dragHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    dragHandle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+function Library:CreateWindow(config)
+    config = config or {}
+    local title = config.Title or "Window"
+    local description = config.Description or ""
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "SimpleUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.IgnoreGuiInset = true
+    screenGui.DisplayOrder = 999
+    screenGui.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+
+    local main = Instance.new("Frame")
+    main.Name = "Main"
+    main.Size = UDim2.fromOffset(480, 320)
+    main.Position = UDim2.new(0.5, -240, 0.5, -160)
+    main.BackgroundColor3 = Theme.Background
+    main.BorderSizePixel = 0
+    main.ClipsDescendants = true
+    main.Parent = screenGui
+    corner(14, main)
+
+    local topBar = Instance.new("Frame")
+    topBar.Name = "TopBar"
+    topBar.Size = UDim2.new(1, 0, 0, 50)
+    topBar.BackgroundColor3 = Theme.Sidebar
+    topBar.BorderSizePixel = 0
+    topBar.Parent = main
+    corner(14, topBar)
+
+    local topBarFix = Instance.new("Frame")
+    topBarFix.BackgroundColor3 = Theme.Sidebar
+    topBarFix.BorderSizePixel = 0
+    topBarFix.Position = UDim2.new(0, 0, 1, -14)
+    topBarFix.Size = UDim2.new(1, 0, 0, 14)
+    topBarFix.Parent = topBar
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Position = UDim2.fromOffset(16, 6)
+    titleLabel.Size = UDim2.new(1, -32, 0, 20)
+    titleLabel.Font = Theme.Font
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Theme.Text
+    titleLabel.TextSize = 16
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = topBar
+
+    local descLabel = Instance.new("TextLabel")
+    descLabel.BackgroundTransparency = 1
+    descLabel.Position = UDim2.fromOffset(16, 26)
+    descLabel.Size = UDim2.new(1, -32, 0, 18)
+    descLabel.Font = Theme.FontRegular
+    descLabel.Text = description
+    descLabel.TextColor3 = Theme.SubText
+    descLabel.TextSize = 13
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    descLabel.Parent = topBar
+
+    makeDraggable(topBar, main)
+
+    local tabList = Instance.new("Frame")
+    tabList.Name = "TabList"
+    tabList.Size = UDim2.new(0, 130, 1, -50)
+    tabList.Position = UDim2.fromOffset(0, 50)
+    tabList.BackgroundColor3 = Theme.Sidebar
+    tabList.BorderSizePixel = 0
+    tabList.Parent = main
+
+    local tabListLayout = Instance.new("UIListLayout")
+    tabListLayout.Padding = UDim.new(0, 6)
+    tabListLayout.Parent = tabList
+
+    local tabListPadding = Instance.new("UIPadding")
+    tabListPadding.PaddingTop = UDim.new(0, 10)
+    tabListPadding.PaddingLeft = UDim.new(0, 8)
+    tabListPadding.PaddingRight = UDim.new(0, 8)
+    tabListPadding.Parent = tabList
+
+    local contentArea = Instance.new("Frame")
+    contentArea.Name = "ContentArea"
+    contentArea.Size = UDim2.new(1, -130, 1, -50)
+    contentArea.Position = UDim2.fromOffset(130, 50)
+    contentArea.BackgroundTransparency = 1
+    contentArea.Parent = main
+
+    local window = setmetatable({}, Window)
+    window.ScreenGui = screenGui
+    window.Main = main
+    window.TabList = tabList
+    window.ContentArea = contentArea
+    window.Tabs = {}
+
+    return window
+end
+
+function Window:CreateTab(config)
+    local title
+    if type(config) == "string" then
+        title = config
+    else
+        title = (config and config.Title) or "Tab"
+    end
+
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 32)
+    button.BackgroundColor3 = Theme.Element
+    button.AutoButtonColor = false
+    button.Text = title
+    button.Font = Theme.Font
+    button.TextSize = 13
+    button.TextColor3 = Theme.SubText
+    button.Parent = self.TabList
+    corner(10, button)
+
+    local page = Instance.new("ScrollingFrame")
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.BackgroundTransparency = 1
+    page.BorderSizePixel = 0
+    page.ScrollBarThickness = 3
+    page.ScrollBarImageColor3 = Theme.Accent
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    page.Visible = false
+    page.Parent = self.ContentArea
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 8)
+    layout.Parent = page
+
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 12)
+    padding.PaddingLeft = UDim.new(0, 12)
+    padding.PaddingRight = UDim.new(0, 12)
+    padding.PaddingBottom = UDim.new(0, 12)
+    padding.Parent = page
+
+    local tab = setmetatable({}, Tab)
+    tab.Page = page
+    tab.Button = button
+    tab.Window = self
+
+    button.MouseButton1Click:Connect(function()
+        for _, t in ipairs(self.Tabs) do
+            t.Page.Visible = false
+            t.Button.BackgroundColor3 = Theme.Element
+            t.Button.TextColor3 = Theme.SubText
+        end
+        page.Visible = true
+        button.BackgroundColor3 = Theme.Accent
+        button.TextColor3 = Theme.Text
+    end)
+
+    table.insert(self.Tabs, tab)
+
+    if #self.Tabs == 1 then
+        page.Visible = true
+        button.BackgroundColor3 = Theme.Accent
+        button.TextColor3 = Theme.Text
+    end
+
+    return tab
+end
+
+function Tab:CreateToggle(config)
+    config = config or {}
+    local title = config.Title or "Toggle"
+    local description = config.Description or ""
+    local default = config.Default == true
+    local callback = config.Callback or function() end
+
+    local hasDescription = description ~= ""
+    local holderHeight = hasDescription and 52 or 38
+
+    local holder = Instance.new("Frame")
+    holder.Size = UDim2.new(1, 0, 0, holderHeight)
+    holder.BackgroundColor3 = Theme.Element
+    holder.Parent = self.Page
+    corner(10, holder)
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Position = UDim2.fromOffset(12, hasDescription and 6 or 10)
+    titleLabel.Size = UDim2.new(1, -60, 0, 18)
+    titleLabel.Font = Theme.Font
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Theme.Text
+    titleLabel.TextSize = 13
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = holder
+
+    if hasDescription then
+        local descLabel = Instance.new("TextLabel")
+        descLabel.BackgroundTransparency = 1
+        descLabel.Position = UDim2.fromOffset(12, 26)
+        descLabel.Size = UDim2.new(1, -60, 0, 16)
+        descLabel.Font = Theme.FontRegular
+        descLabel.Text = description
+        descLabel.TextColor3 = Theme.SubText
+        descLabel.TextSize = 11
+        descLabel.TextXAlignment = Enum.TextXAlignment.Left
+        descLabel.Parent = holder
+    end
+
+    local switchBg = Instance.new("Frame")
+    switchBg.Size = UDim2.fromOffset(38, 20)
+    switchBg.Position = UDim2.new(1, -48, 0.5, -10)
+    switchBg.BackgroundColor3 = default and Theme.Accent or Theme.Off
+    switchBg.Parent = holder
+    corner(10, switchBg)
+
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.fromOffset(16, 16)
+    knob.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    knob.Parent = switchBg
+    corner(8, knob)
+
+    local clickButton = Instance.new("TextButton")
+    clickButton.Size = UDim2.new(1, 0, 1, 0)
+    clickButton.BackgroundTransparency = 1
+    clickButton.Text = ""
+    clickButton.Parent = holder
+
+    local toggle = setmetatable({}, Toggle)
+    toggle.Value = default
+
+    local function setState(state)
+        toggle.Value = state
+        tween(switchBg, {BackgroundColor3 = state and Theme.Accent or Theme.Off}, 0.15)
+        tween(knob, {Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}, 0.15)
+        callback(state)
+    end
+
+    clickButton.MouseButton1Click:Connect(function()
+        setState(not toggle.Value)
+    end)
+
+    function toggle:Set(state)
+        setState(state)
+    end
+
+    return toggle
+end
+
+return Library
