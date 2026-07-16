@@ -7,7 +7,6 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Library = {}
 Library.__index = Library
 
--- Helper function to make UI elements draggable
 local function makeDraggable(topBar, mainFrame)
 	local dragging, dragInput, dragStart, startPos
 
@@ -44,65 +43,123 @@ local function makeDraggable(topBar, mainFrame)
 	end)
 end
 
--- Initialize the Window
 function Library.new(windowTitle)
 	local self = setmetatable({}, Library)
 
-	-- ScreenGui
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "CustomUILibrary"
 	screenGui.ResetOnSpawn = false
 	screenGui.Parent = PlayerGui
 
-	-- Main Frame
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainFrame"
-	mainFrame.Size = UDim2.new(0, 500, 0, 350)
-	mainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
-	mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+	mainFrame.Size = UDim2.new(0, 0, 0, 0)
+	mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+	mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 	mainFrame.BorderSizePixel = 0
+	mainFrame.ClipsDescendants = true
 	mainFrame.Parent = screenGui
 
 	local mainCorner = Instance.new("UICorner")
-	mainCorner.CornerRadius = UDim.new(0, 8)
+	mainCorner.CornerRadius = UDim.new(0, 12)
 	mainCorner.Parent = mainFrame
 
-	-- Top Bar (Draggable Area)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(80, 100, 240)
+	stroke.Thickness = 1.5
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = mainFrame
+
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.Size = UDim2.new(1, 0, 0, 45)
-	topBar.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+	topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 	topBar.BorderSizePixel = 0
 	topBar.Parent = mainFrame
 
 	local topCorner = Instance.new("UICorner")
-	topCorner.CornerRadius = UDim.new(0, 8)
+	topCorner.CornerRadius = UDim.new(0, 12)
 	topCorner.Parent = topBar
 
-	-- Title
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(1, -20, 1, 0)
-	titleLabel.Position = UDim2.new(0, 15, 0, 0)
+	titleLabel.Size = UDim2.new(1, -120, 1, 0)
+	titleLabel.Position = UDim2.new(0, 100, 0, 0)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowTitle
-	titleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-	titleLabel.TextSize = 18
+	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	titleLabel.TextSize = 16
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.Parent = topBar
 
-	-- Navigation/Tab Bar
+	local buttonContainer = Instance.new("Frame")
+	buttonContainer.Size = UDim2.new(0, 80, 1, 0)
+	buttonContainer.Position = UDim2.new(0, 10, 0, 0)
+	buttonContainer.BackgroundTransparency = 1
+	buttonContainer.Parent = topBar
+
+	local buttonLayout = Instance.new("UIListLayout")
+	buttonLayout.FillDirection = Enum.FillDirection.Horizontal
+	buttonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	buttonLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	buttonLayout.Padding = UDim.new(0, 8)
+	buttonLayout.Parent = buttonContainer
+
+	local minimizeBtn = Instance.new("TextButton")
+	minimizeBtn.Size = UDim2.new(0, 14, 0, 14)
+	minimizeBtn.BackgroundColor3 = Color3.fromRGB(250, 180, 60)
+	minimizeBtn.Text = ""
+	minimizeBtn.AutoButtonColor = false
+	minimizeBtn.Parent = buttonContainer
+
+	local minCorner = Instance.new("UICorner")
+	minCorner.CornerRadius = UDim.new(1, 0)
+	minCorner.Parent = minimizeBtn
+
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Size = UDim2.new(0, 14, 0, 14)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(240, 90, 90)
+	closeBtn.Text = ""
+	closeBtn.AutoButtonColor = false
+	closeBtn.Parent = buttonContainer
+
+	local closeCorner = Instance.new("UICorner")
+	closeCorner.CornerRadius = UDim.new(1, 0)
+	closeCorner.Parent = closeBtn
+
+	local toggleBar = Instance.new("TextButton")
+	toggleBar.Name = "ToggleBar"
+	toggleBar.Size = UDim2.new(0, 120, 0, 30)
+	toggleBar.Position = UDim2.new(0.5, -60, 0, -50)
+	toggleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	toggleBar.BorderSizePixel = 0
+	toggleBar.Text = "Open Menu"
+	toggleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+	toggleBar.Font = Enum.Font.GothamBold
+	toggleBar.TextSize = 12
+	toggleBar.Parent = screenGui
+
+	local toggleCorner = Instance.new("UICorner")
+	toggleCorner.CornerRadius = UDim.new(1, 0)
+	toggleCorner.Parent = toggleBar
+
+	local toggleStroke = Instance.new("UIStroke")
+	toggleStroke.Color = Color3.fromRGB(80, 100, 240)
+	toggleStroke.Thickness = 1
+	toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	toggleStroke.Parent = toggleBar
+
 	local tabBar = Instance.new("Frame")
 	tabBar.Name = "TabBar"
 	tabBar.Size = UDim2.new(0, 140, 1, -45)
 	tabBar.Position = UDim2.new(0, 0, 0, 45)
-	tabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	tabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 	tabBar.BorderSizePixel = 0
 	tabBar.Parent = mainFrame
 
 	local tabLayout = Instance.new("UIListLayout")
-	tabLayout.Padding = UDim.new(0, 5)
+	tabLayout.Padding = UDim.new(0, 6)
 	tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	tabLayout.Parent = tabBar
@@ -111,7 +168,6 @@ function Library.new(windowTitle)
 	tabPadding.PaddingTop = UDim.new(0, 10)
 	tabPadding.Parent = tabBar
 
-	-- Container for Tab Contents
 	local container = Instance.new("Frame")
 	container.Name = "Container"
 	container.Size = UDim2.new(1, -140, 1, -45)
@@ -121,27 +177,78 @@ function Library.new(windowTitle)
 
 	makeDraggable(topBar, mainFrame)
 
+	self.ScreenGui = screenGui
+	self.MainFrame = mainFrame
 	self.Container = container
 	self.TabBar = tabBar
+	self.ToggleBar = toggleBar
 	self.Tabs = {}
 	self.ActiveTab = nil
+
+	local targetSize = UDim2.new(0, 500, 0, 350)
+	local targetPos = UDim2.new(0.5, -250, 0.5, -175)
+
+	TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = targetSize,
+		Position = targetPos
+	}):Play()
+
+	local isMinimized = false
+
+	local function minimize()
+		isMinimized = true
+		TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, 0, 0, 0),
+			Position = UDim2.new(0.5, 0, 0.5, 0)
+		}):Play()
+		task.wait(0.4)
+		TweenService:Create(toggleBar, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Position = UDim2.new(0.5, -60, 0, 20)
+		}):Play()
+	end
+
+	local function restore()
+		isMinimized = false
+		TweenService:Create(toggleBar, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, -60, 0, -50)
+		}):Play()
+		task.wait(0.3)
+		TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = targetSize,
+			Position = targetPos
+		}):Play()
+	end
+
+	local function destroyGui()
+		TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, 0, 0, 0),
+			Position = UDim2.new(0.5, 0, 0.5, 0)
+		}):Play()
+		TweenService:Create(toggleBar, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, -60, 0, -50)
+		}):Play()
+		task.wait(0.3)
+		screenGui:Destroy()
+	end
+
+	minimizeBtn.MouseButton1Click:Connect(minimize)
+	toggleBar.MouseButton1Click:Connect(restore)
+	closeBtn.MouseButton1Click:Connect(destroyGui)
 
 	return self
 end
 
--- Create a Tab
 function Library:CreateTab(tabTitle)
 	local tabObj = {}
 	
-	-- Tab Button
 	local tabButton = Instance.new("TextButton")
 	tabButton.Name = tabTitle .. "Tab"
 	tabButton.Size = UDim2.new(0.9, 0, 0, 35)
-	tabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+	tabButton.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 	tabButton.Text = tabTitle
-	tabButton.TextColor3 = Color3.fromRGB(180, 180, 180)
+	tabButton.TextColor3 = Color3.fromRGB(150, 150, 150)
 	tabButton.Font = Enum.Font.GothamSemibold
-	tabButton.TextSize = 14
+	tabButton.TextSize = 13
 	tabButton.BorderSizePixel = 0
 	tabButton.AutoButtonColor = false
 	tabButton.Parent = self.TabBar
@@ -150,7 +257,6 @@ function Library:CreateTab(tabTitle)
 	btnCorner.CornerRadius = UDim.new(0, 6)
 	btnCorner.Parent = tabButton
 
-	-- Tab Page (Scrolling Content area)
 	local tabPage = Instance.new("ScrollingFrame")
 	tabPage.Name = tabTitle .. "Page"
 	tabPage.Size = UDim2.new(1, 0, 1, 0)
@@ -158,8 +264,8 @@ function Library:CreateTab(tabTitle)
 	tabPage.BorderSizePixel = 0
 	tabPage.Visible = false
 	tabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
-	tabPage.ScrollBarThickness = 4
-	tabPage.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 85)
+	tabPage.ScrollBarThickness = 2
+	tabPage.ScrollBarImageColor3 = Color3.fromRGB(80, 100, 240)
 	tabPage.Parent = self.Container
 
 	local pageLayout = Instance.new("UIListLayout")
@@ -172,28 +278,29 @@ function Library:CreateTab(tabTitle)
 	pagePadding.PaddingTop = UDim.new(0, 10)
 	pagePadding.Parent = tabPage
 
-	-- Auto-canvas resizing
 	pageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		tabPage.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 20)
 	end)
 
-	-- Tab switching logic
 	local function activate()
 		if self.ActiveTab then
-			self.ActiveTab.Button.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-			self.ActiveTab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
+			TweenService:Create(self.ActiveTab.Button, TweenInfo.new(0.3), {
+				BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+				TextColor3 = Color3.fromRGB(150, 150, 150)
+			}):Play()
 			self.ActiveTab.Page.Visible = false
 		end
 		
-		tabButton.BackgroundColor3 = Color3.fromRGB(80, 100, 240) -- Highlight Color
-		tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TweenService:Create(tabButton, TweenInfo.new(0.3), {
+			BackgroundColor3 = Color3.fromRGB(80, 100, 240),
+			TextColor3 = Color3.fromRGB(255, 255, 255)
+		}):Play()
 		tabPage.Visible = true
 		self.ActiveTab = tabObj
 	end
 
 	tabButton.MouseButton1Click:Connect(activate)
 
-	-- Automatically activate the first tab created
 	if not self.ActiveTab then
 		activate()
 	end
@@ -201,52 +308,53 @@ function Library:CreateTab(tabTitle)
 	tabObj.Button = tabButton
 	tabObj.Page = tabPage
 	
-	-- Add Toggle method to the Tab
 	function tabObj:CreateToggle(toggleTitle, toggleDesc, callback)
 		local toggleActive = false
 		callback = callback or function() end
 
-		-- Main Toggle Frame
 		local toggleFrame = Instance.new("Frame")
 		toggleFrame.Name = toggleTitle .. "Toggle"
-		toggleFrame.Size = UDim2.new(0.92, 0, 0, 50)
-		toggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+		toggleFrame.Size = UDim2.new(0.92, 0, 0, 52)
+		toggleFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 		toggleFrame.BorderSizePixel = 0
 		toggleFrame.Parent = tabPage
 
 		local toggleCorner = Instance.new("UICorner")
-		toggleCorner.CornerRadius = UDim.new(0, 6)
+		toggleCorner.CornerRadius = UDim.new(0, 8)
 		toggleCorner.Parent = toggleFrame
 
-		-- Title Text
+		local tStroke = Instance.new("UIStroke")
+		tStroke.Color = Color3.fromRGB(35, 35, 45)
+		tStroke.Thickness = 1
+		tStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		tStroke.Parent = toggleFrame
+
 		local titleText = Instance.new("TextLabel")
 		titleText.Size = UDim2.new(0.7, 0, 0, 22)
 		titleText.Position = UDim2.new(0, 12, 0, 6)
 		titleText.BackgroundTransparency = 1
 		titleText.Text = toggleTitle
-		titleText.TextColor3 = Color3.fromRGB(240, 240, 240)
+		titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 		titleText.Font = Enum.Font.GothamBold
-		titleText.TextSize = 14
+		titleText.TextSize = 13
 		titleText.TextXAlignment = Enum.TextXAlignment.Left
 		titleText.Parent = toggleFrame
 
-		-- Description Text
 		local descText = Instance.new("TextLabel")
 		descText.Size = UDim2.new(0.7, 0, 0, 16)
 		descText.Position = UDim2.new(0, 12, 0, 26)
 		descText.BackgroundTransparency = 1
 		descText.Text = toggleDesc
-		descText.TextColor3 = Color3.fromRGB(150, 150, 150)
+		descText.TextColor3 = Color3.fromRGB(160, 160, 170)
 		descText.Font = Enum.Font.Gotham
-		descText.TextSize = 11
+		descText.TextSize = 10
 		descText.TextXAlignment = Enum.TextXAlignment.Left
 		descText.Parent = toggleFrame
 
-		-- Toggle Switch Button Outer Boundary
 		local switchBg = Instance.new("TextButton")
-		switchBg.Size = UDim2.new(0, 45, 0, 22)
-		switchBg.Position = UDim2.new(1, -57, 0.5, -11)
-		switchBg.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+		switchBg.Size = UDim2.new(0, 44, 0, 20)
+		switchBg.Position = UDim2.new(1, -56, 0.5, -10)
+		switchBg.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 		switchBg.Text = ""
 		switchBg.AutoButtonColor = false
 		switchBg.Parent = toggleFrame
@@ -255,11 +363,10 @@ function Library:CreateTab(tabTitle)
 		switchCorner.CornerRadius = UDim.new(1, 0)
 		switchCorner.Parent = switchBg
 
-		-- Switch Circle Indicator
 		local indicator = Instance.new("Frame")
-		indicator.Size = UDim2.new(0, 16, 0, 16)
-		indicator.Position = UDim2.new(0, 3, 0.5, -8)
-		indicator.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+		indicator.Size = UDim2.new(0, 14, 0, 14)
+		indicator.Position = UDim2.new(0, 3, 0.5, -7)
+		indicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		indicator.BorderSizePixel = 0
 		indicator.Parent = switchBg
 
@@ -267,15 +374,15 @@ function Library:CreateTab(tabTitle)
 		indCorner.CornerRadius = UDim.new(1, 0)
 		indCorner.Parent = indicator
 
-		-- Interactive Toggle Click
 		switchBg.MouseButton1Click:Connect(function()
 			toggleActive = not toggleActive
 			
-			local goalColor = toggleActive and Color3.fromRGB(80, 100, 240) or Color3.fromRGB(50, 50, 55)
-			local goalPos = toggleActive and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+			local goalColor = toggleActive and Color3.fromRGB(80, 100, 240) or Color3.fromRGB(45, 45, 55)
+			local goalPos = toggleActive and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
 
-			TweenService:Create(switchBg, TweenInfo.new(0.2), {BackgroundColor3 = goalColor}):Play()
-			TweenService:Create(indicator, TweenInfo.new(0.2), {Position = goalPos}):Play()
+			TweenService:Create(switchBg, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {BackgroundColor3 = goalColor}):Play()
+			TweenService:Create(indicator, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = goalPos}):Play()
+			TweenService:Create(tStroke, TweenInfo.new(0.25), {Color = toggleActive and Color3.fromRGB(80, 100, 240) or Color3.fromRGB(35, 35, 45)}):Play()
 
 			task.spawn(callback, toggleActive)
 		end)
