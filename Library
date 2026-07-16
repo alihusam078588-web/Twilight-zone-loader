@@ -1,318 +1,287 @@
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local Library = {}
+Library.__index = Library
 
-local Window = {}
-Window.__index = Window
+-- Helper function to make UI elements draggable
+local function makeDraggable(topBar, mainFrame)
+	local dragging, dragInput, dragStart, startPos
 
-local Tab = {}
-Tab.__index = Tab
+	topBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = mainFrame.Position
 
-local Toggle = {}
-Toggle.__index = Toggle
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
 
-local Theme = {
-    Background = Color3.fromRGB(15, 15, 15),
-    Sidebar = Color3.fromRGB(20, 20, 20),
-    Element = Color3.fromRGB(28, 28, 28),
-    Accent = Color3.fromRGB(99, 102, 241),
-    Off = Color3.fromRGB(50, 50, 50),
-    Text = Color3.fromRGB(240, 240, 240),
-    SubText = Color3.fromRGB(150, 150, 150),
-    Font = Enum.Font.GothamBold,
-    FontRegular = Enum.Font.Gotham,
-}
+	topBar.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
 
-local function corner(radius, parent)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, radius)
-    c.Parent = parent
-    return c
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			mainFrame.Position = UDim2.new(
+				startPos.X.Scale, 
+				startPos.X.Offset + delta.X, 
+				startPos.Y.Scale, 
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
 end
 
-local function tween(obj, props, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
+-- Initialize the Window
+function Library.new(windowTitle)
+	local self = setmetatable({}, Library)
+
+	-- ScreenGui
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "CustomUILibrary"
+	screenGui.ResetOnSpawn = false
+	screenGui.Parent = PlayerGui
+
+	-- Main Frame
+	local mainFrame = Instance.new("Frame")
+	mainFrame.Name = "MainFrame"
+	mainFrame.Size = UDim2.new(0, 500, 0, 350)
+	mainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
+	mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+	mainFrame.BorderSizePixel = 0
+	mainFrame.Parent = screenGui
+
+	local mainCorner = Instance.new("UICorner")
+	mainCorner.CornerRadius = UDim.new(0, 8)
+	mainCorner.Parent = mainFrame
+
+	-- Top Bar (Draggable Area)
+	local topBar = Instance.new("Frame")
+	topBar.Name = "TopBar"
+	topBar.Size = UDim2.new(1, 0, 0, 45)
+	topBar.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+	topBar.BorderSizePixel = 0
+	topBar.Parent = mainFrame
+
+	local topCorner = Instance.new("UICorner")
+	topCorner.CornerRadius = UDim.new(0, 8)
+	topCorner.Parent = topBar
+
+	-- Title
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Name = "Title"
+	titleLabel.Size = UDim2.new(1, -20, 1, 0)
+	titleLabel.Position = UDim2.new(0, 15, 0, 0)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Text = windowTitle
+	titleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+	titleLabel.TextSize = 18
+	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	titleLabel.Parent = topBar
+
+	-- Navigation/Tab Bar
+	local tabBar = Instance.new("Frame")
+	tabBar.Name = "TabBar"
+	tabBar.Size = UDim2.new(0, 140, 1, -45)
+	tabBar.Position = UDim2.new(0, 0, 0, 45)
+	tabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	tabBar.BorderSizePixel = 0
+	tabBar.Parent = mainFrame
+
+	local tabLayout = Instance.new("UIListLayout")
+	tabLayout.Padding = UDim.new(0, 5)
+	tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	tabLayout.Parent = tabBar
+
+	local tabPadding = Instance.new("UIPadding")
+	tabPadding.PaddingTop = UDim.new(0, 10)
+	tabPadding.Parent = tabBar
+
+	-- Container for Tab Contents
+	local container = Instance.new("Frame")
+	container.Name = "Container"
+	container.Size = UDim2.new(1, -140, 1, -45)
+	container.Position = UDim2.new(0, 140, 0, 45)
+	container.BackgroundTransparency = 1
+	container.Parent = mainFrame
+
+	makeDraggable(topBar, mainFrame)
+
+	self.Container = container
+	self.TabBar = tabBar
+	self.Tabs = {}
+	self.ActiveTab = nil
+
+	return self
 end
 
-local function makeDraggable(dragHandle, frame)
-    local dragging = false
-    local dragInput, dragStart, startPos
+-- Create a Tab
+function Library:CreateTab(tabTitle)
+	local tabObj = {}
+	
+	-- Tab Button
+	local tabButton = Instance.new("TextButton")
+	tabButton.Name = tabTitle .. "Tab"
+	tabButton.Size = UDim2.new(0.9, 0, 0, 35)
+	tabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+	tabButton.Text = tabTitle
+	tabButton.TextColor3 = Color3.fromRGB(180, 180, 180)
+	tabButton.Font = Enum.Font.GothamSemibold
+	tabButton.TextSize = 14
+	tabButton.BorderSizePixel = 0
+	tabButton.AutoButtonColor = false
+	tabButton.Parent = self.TabBar
 
-    dragHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 6)
+	btnCorner.Parent = tabButton
 
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
+	-- Tab Page (Scrolling Content area)
+	local tabPage = Instance.new("ScrollingFrame")
+	tabPage.Name = tabTitle .. "Page"
+	tabPage.Size = UDim2.new(1, 0, 1, 0)
+	tabPage.BackgroundTransparency = 1
+	tabPage.BorderSizePixel = 0
+	tabPage.Visible = false
+	tabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+	tabPage.ScrollBarThickness = 4
+	tabPage.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 85)
+	tabPage.Parent = self.Container
 
-    dragHandle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
+	local pageLayout = Instance.new("UIListLayout")
+	pageLayout.Padding = UDim.new(0, 8)
+	pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	pageLayout.Parent = tabPage
 
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-end
+	local pagePadding = Instance.new("UIPadding")
+	pagePadding.PaddingTop = UDim.new(0, 10)
+	pagePadding.Parent = tabPage
 
-function Library:CreateWindow(config)
-    config = config or {}
-    local title = config.Title or "Window"
-    local description = config.Description or ""
+	-- Auto-canvas resizing
+	pageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		tabPage.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 20)
+	end)
 
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "SimpleUI"
-    screenGui.ResetOnSpawn = false
-    screenGui.IgnoreGuiInset = true
-    screenGui.DisplayOrder = 999
-    screenGui.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+	-- Tab switching logic
+	local function activate()
+		if self.ActiveTab then
+			self.ActiveTab.Button.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+			self.ActiveTab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
+			self.ActiveTab.Page.Visible = false
+		end
+		
+		tabButton.BackgroundColor3 = Color3.fromRGB(80, 100, 240) -- Highlight Color
+		tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		tabPage.Visible = true
+		self.ActiveTab = tabObj
+	end
 
-    local main = Instance.new("Frame")
-    main.Name = "Main"
-    main.Size = UDim2.fromOffset(480, 320)
-    main.Position = UDim2.new(0.5, -240, 0.5, -160)
-    main.BackgroundColor3 = Theme.Background
-    main.BorderSizePixel = 0
-    main.ClipsDescendants = true
-    main.Parent = screenGui
-    corner(14, main)
+	tabButton.MouseButton1Click:Connect(activate)
 
-    local topBar = Instance.new("Frame")
-    topBar.Name = "TopBar"
-    topBar.Size = UDim2.new(1, 0, 0, 50)
-    topBar.BackgroundColor3 = Theme.Sidebar
-    topBar.BorderSizePixel = 0
-    topBar.Parent = main
-    corner(14, topBar)
+	-- Automatically activate the first tab created
+	if not self.ActiveTab then
+		activate()
+	end
 
-    local topBarFix = Instance.new("Frame")
-    topBarFix.BackgroundColor3 = Theme.Sidebar
-    topBarFix.BorderSizePixel = 0
-    topBarFix.Position = UDim2.new(0, 0, 1, -14)
-    topBarFix.Size = UDim2.new(1, 0, 0, 14)
-    topBarFix.Parent = topBar
+	tabObj.Button = tabButton
+	tabObj.Page = tabPage
+	
+	-- Add Toggle method to the Tab
+	function tabObj:CreateToggle(toggleTitle, toggleDesc, callback)
+		local toggleActive = false
+		callback = callback or function() end
 
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Position = UDim2.fromOffset(16, 6)
-    titleLabel.Size = UDim2.new(1, -32, 0, 20)
-    titleLabel.Font = Theme.Font
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Theme.Text
-    titleLabel.TextSize = 16
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = topBar
+		-- Main Toggle Frame
+		local toggleFrame = Instance.new("Frame")
+		toggleFrame.Name = toggleTitle .. "Toggle"
+		toggleFrame.Size = UDim2.new(0.92, 0, 0, 50)
+		toggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+		toggleFrame.BorderSizePixel = 0
+		toggleFrame.Parent = tabPage
 
-    local descLabel = Instance.new("TextLabel")
-    descLabel.BackgroundTransparency = 1
-    descLabel.Position = UDim2.fromOffset(16, 26)
-    descLabel.Size = UDim2.new(1, -32, 0, 18)
-    descLabel.Font = Theme.FontRegular
-    descLabel.Text = description
-    descLabel.TextColor3 = Theme.SubText
-    descLabel.TextSize = 13
-    descLabel.TextXAlignment = Enum.TextXAlignment.Left
-    descLabel.Parent = topBar
+		local toggleCorner = Instance.new("UICorner")
+		toggleCorner.CornerRadius = UDim.new(0, 6)
+		toggleCorner.Parent = toggleFrame
 
-    makeDraggable(topBar, main)
+		-- Title Text
+		local titleText = Instance.new("TextLabel")
+		titleText.Size = UDim2.new(0.7, 0, 0, 22)
+		titleText.Position = UDim2.new(0, 12, 0, 6)
+		titleText.BackgroundTransparency = 1
+		titleText.Text = toggleTitle
+		titleText.TextColor3 = Color3.fromRGB(240, 240, 240)
+		titleText.Font = Enum.Font.GothamBold
+		titleText.TextSize = 14
+		titleText.TextXAlignment = Enum.TextXAlignment.Left
+		titleText.Parent = toggleFrame
 
-    local tabList = Instance.new("Frame")
-    tabList.Name = "TabList"
-    tabList.Size = UDim2.new(0, 130, 1, -50)
-    tabList.Position = UDim2.fromOffset(0, 50)
-    tabList.BackgroundColor3 = Theme.Sidebar
-    tabList.BorderSizePixel = 0
-    tabList.Parent = main
+		-- Description Text
+		local descText = Instance.new("TextLabel")
+		descText.Size = UDim2.new(0.7, 0, 0, 16)
+		descText.Position = UDim2.new(0, 12, 0, 26)
+		descText.BackgroundTransparency = 1
+		descText.Text = toggleDesc
+		descText.TextColor3 = Color3.fromRGB(150, 150, 150)
+		descText.Font = Enum.Font.Gotham
+		descText.TextSize = 11
+		descText.TextXAlignment = Enum.TextXAlignment.Left
+		descText.Parent = toggleFrame
 
-    local tabListLayout = Instance.new("UIListLayout")
-    tabListLayout.Padding = UDim.new(0, 6)
-    tabListLayout.Parent = tabList
+		-- Toggle Switch Button Outer Boundary
+		local switchBg = Instance.new("TextButton")
+		switchBg.Size = UDim2.new(0, 45, 0, 22)
+		switchBg.Position = UDim2.new(1, -57, 0.5, -11)
+		switchBg.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+		switchBg.Text = ""
+		switchBg.AutoButtonColor = false
+		switchBg.Parent = toggleFrame
 
-    local tabListPadding = Instance.new("UIPadding")
-    tabListPadding.PaddingTop = UDim.new(0, 10)
-    tabListPadding.PaddingLeft = UDim.new(0, 8)
-    tabListPadding.PaddingRight = UDim.new(0, 8)
-    tabListPadding.Parent = tabList
+		local switchCorner = Instance.new("UICorner")
+		switchCorner.CornerRadius = UDim.new(1, 0)
+		switchCorner.Parent = switchBg
 
-    local contentArea = Instance.new("Frame")
-    contentArea.Name = "ContentArea"
-    contentArea.Size = UDim2.new(1, -130, 1, -50)
-    contentArea.Position = UDim2.fromOffset(130, 50)
-    contentArea.BackgroundTransparency = 1
-    contentArea.Parent = main
+		-- Switch Circle Indicator
+		local indicator = Instance.new("Frame")
+		indicator.Size = UDim2.new(0, 16, 0, 16)
+		indicator.Position = UDim2.new(0, 3, 0.5, -8)
+		indicator.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+		indicator.BorderSizePixel = 0
+		indicator.Parent = switchBg
 
-    local window = setmetatable({}, Window)
-    window.ScreenGui = screenGui
-    window.Main = main
-    window.TabList = tabList
-    window.ContentArea = contentArea
-    window.Tabs = {}
+		local indCorner = Instance.new("UICorner")
+		indCorner.CornerRadius = UDim.new(1, 0)
+		indCorner.Parent = indicator
 
-    return window
-end
+		-- Interactive Toggle Click
+		switchBg.MouseButton1Click:Connect(function()
+			toggleActive = not toggleActive
+			
+			local goalColor = toggleActive and Color3.fromRGB(80, 100, 240) or Color3.fromRGB(50, 50, 55)
+			local goalPos = toggleActive and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
-function Window:CreateTab(config)
-    local title
-    if type(config) == "string" then
-        title = config
-    else
-        title = (config and config.Title) or "Tab"
-    end
+			TweenService:Create(switchBg, TweenInfo.new(0.2), {BackgroundColor3 = goalColor}):Play()
+			TweenService:Create(indicator, TweenInfo.new(0.2), {Position = goalPos}):Play()
 
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 32)
-    button.BackgroundColor3 = Theme.Element
-    button.AutoButtonColor = false
-    button.Text = title
-    button.Font = Theme.Font
-    button.TextSize = 13
-    button.TextColor3 = Theme.SubText
-    button.Parent = self.TabList
-    corner(10, button)
+			task.spawn(callback, toggleActive)
+		end)
+	end
 
-    local page = Instance.new("ScrollingFrame")
-    page.Size = UDim2.new(1, 0, 1, 0)
-    page.BackgroundTransparency = 1
-    page.BorderSizePixel = 0
-    page.ScrollBarThickness = 3
-    page.ScrollBarImageColor3 = Theme.Accent
-    page.CanvasSize = UDim2.new(0, 0, 0, 0)
-    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    page.Visible = false
-    page.Parent = self.ContentArea
-
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
-    layout.Parent = page
-
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, 12)
-    padding.PaddingLeft = UDim.new(0, 12)
-    padding.PaddingRight = UDim.new(0, 12)
-    padding.PaddingBottom = UDim.new(0, 12)
-    padding.Parent = page
-
-    local tab = setmetatable({}, Tab)
-    tab.Page = page
-    tab.Button = button
-    tab.Window = self
-
-    button.MouseButton1Click:Connect(function()
-        for _, t in ipairs(self.Tabs) do
-            t.Page.Visible = false
-            t.Button.BackgroundColor3 = Theme.Element
-            t.Button.TextColor3 = Theme.SubText
-        end
-        page.Visible = true
-        button.BackgroundColor3 = Theme.Accent
-        button.TextColor3 = Theme.Text
-    end)
-
-    table.insert(self.Tabs, tab)
-
-    if #self.Tabs == 1 then
-        page.Visible = true
-        button.BackgroundColor3 = Theme.Accent
-        button.TextColor3 = Theme.Text
-    end
-
-    return tab
-end
-
-function Tab:CreateToggle(config)
-    config = config or {}
-    local title = config.Title or "Toggle"
-    local description = config.Description or ""
-    local default = config.Default == true
-    local callback = config.Callback or function() end
-
-    local hasDescription = description ~= ""
-    local holderHeight = hasDescription and 52 or 38
-
-    local holder = Instance.new("Frame")
-    holder.Size = UDim2.new(1, 0, 0, holderHeight)
-    holder.BackgroundColor3 = Theme.Element
-    holder.Parent = self.Page
-    corner(10, holder)
-
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Position = UDim2.fromOffset(12, hasDescription and 6 or 10)
-    titleLabel.Size = UDim2.new(1, -60, 0, 18)
-    titleLabel.Font = Theme.Font
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Theme.Text
-    titleLabel.TextSize = 13
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = holder
-
-    if hasDescription then
-        local descLabel = Instance.new("TextLabel")
-        descLabel.BackgroundTransparency = 1
-        descLabel.Position = UDim2.fromOffset(12, 26)
-        descLabel.Size = UDim2.new(1, -60, 0, 16)
-        descLabel.Font = Theme.FontRegular
-        descLabel.Text = description
-        descLabel.TextColor3 = Theme.SubText
-        descLabel.TextSize = 11
-        descLabel.TextXAlignment = Enum.TextXAlignment.Left
-        descLabel.Parent = holder
-    end
-
-    local switchBg = Instance.new("Frame")
-    switchBg.Size = UDim2.fromOffset(38, 20)
-    switchBg.Position = UDim2.new(1, -48, 0.5, -10)
-    switchBg.BackgroundColor3 = default and Theme.Accent or Theme.Off
-    switchBg.Parent = holder
-    corner(10, switchBg)
-
-    local knob = Instance.new("Frame")
-    knob.Size = UDim2.fromOffset(16, 16)
-    knob.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    knob.Parent = switchBg
-    corner(8, knob)
-
-    local clickButton = Instance.new("TextButton")
-    clickButton.Size = UDim2.new(1, 0, 1, 0)
-    clickButton.BackgroundTransparency = 1
-    clickButton.Text = ""
-    clickButton.Parent = holder
-
-    local toggle = setmetatable({}, Toggle)
-    toggle.Value = default
-
-    local function setState(state)
-        toggle.Value = state
-        tween(switchBg, {BackgroundColor3 = state and Theme.Accent or Theme.Off}, 0.15)
-        tween(knob, {Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}, 0.15)
-        callback(state)
-    end
-
-    clickButton.MouseButton1Click:Connect(function()
-        setState(not toggle.Value)
-    end)
-
-    function toggle:Set(state)
-        setState(state)
-    end
-
-    return toggle
+	return tabObj
 end
 
 return Library
