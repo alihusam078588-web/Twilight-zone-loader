@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://protected.obscuravm.com/d065863b6174254897439a0d/7a0f25962523bf7a5c903f7fc0881bfcb7247cf3e5b7071b/download"))()
+loadstring(game:HttpGet("https://protected.obscuravm.com/7267a873d14777221a242a8a/8e2d2bbb85d9829ee925a8d824751819ef1aec572c10dc3d/download"))()
