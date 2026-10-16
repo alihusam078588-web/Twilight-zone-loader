@@ -10,18 +10,18 @@ if type(previous) == "table" and type(previous.Stop) == "function" then
     pcall(previous.Stop)
 end
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.66/main.lua"))()
 
 local CFG = {
     Enabled = true,
     DangerMode = "VERY_CLOSE",
 
     -- PREDICTIVE protects the selected player before predicted contact.
-    -- HEART_LOSS re-guards after the selected player's metal/shield-heart count drops.
+    -- HEART_LOSS re-guards after the selected player's health or ShieldHearts decreases.
     Mode = "PREDICTIVE",
     SelectedPlayer = "AUTO",
-    -- A metal-heart loss waits for ability cooldown to clear, but won't remain queued forever.
-    HeartLossQueueWindow = 10.0,
+    -- A detected heart/health loss waits for ability cooldown/active guard to clear.
+    HeartLossQueueWindow = 30.0,
     HeartEventDebounce = 0.18,
 
     PollRate = 0.02,
@@ -788,8 +788,8 @@ local function findMostDangerousTarget(myCharacter)
     return best
 end
 
--- Heart tracking reads Humanoid.Health for real heart loss and the replicated
--- ShieldHearts attribute for Soul Shield's metallic/guard heart being consumed.
+-- HEART_LOSS watches both Humanoid.Health and the replicated ShieldHearts attribute.
+-- The game can signal a hit through either path, so don't rely on only one of them.
 local heartTracking = setmetatable({}, { __mode = "k" })
 local pendingHeartLoss = setmetatable({}, { __mode = "k" })
 local lastHeartEvent = setmetatable({}, { __mode = "k" })
@@ -808,8 +808,8 @@ local function readShieldHearts(character)
 end
 
 local function queueHeartLoss(character, reason, oldValue, newValue)
-    -- This mode specifically watches the game's ShieldHearts count (the metal
-    -- heart shown by the HUD), not ordinary Humanoid health loss.
+    -- Queue both normal health loss and ShieldHearts loss. The mode reacts after
+    -- a loss is observed; it cannot undo the damage that has already happened.
     if not RUNNING or CFG.Mode ~= "HEART_LOSS" or not character or character == LocalPlayer.Character then
         return
     end
@@ -878,14 +878,12 @@ local function trackHeartCharacter(character)
     }
     heartTracking[character] = state
 
-    -- Ordinary health loss is deliberately not this mode's trigger. The
-    -- requested second mode is specifically keyed to ShieldHearts decreasing.
     state.healthConnection = humanoid.HealthChanged:Connect(function(newHealth)
         local previousHealth = state.health
         state.health = newHealth
         if newHealth < previousHealth - 0.01 then
-            log("HEALTH CHANGE", character.Name, tostring(previousHealth), "->", tostring(newHealth),
-                "(not the metal-heart trigger)")
+            log("HEALTH LOST", character.Name, tostring(previousHealth), "->", tostring(newHealth))
+            queueHeartLoss(character, "health-decreased", previousHealth, newHealth)
         end
     end)
 
@@ -1277,7 +1275,7 @@ local function applyDangerProfile(mode)
         local slider = tuningSliders[key]
         if slider then
             pcall(function()
-                slider:Set(value)
+                if slider.SetValue then slider:SetValue(value) elseif slider.Set then slider:Set(value) end
             end)
         end
     end
@@ -1321,7 +1319,7 @@ local function refreshRadiusSliders()
     for name, slider in pairs(radiusSliders) do
         local value = CFG.RadiusValues[name] or TWISTED_SETTINGS[name].KillRadius
         pcall(function()
-            slider:Set(value)
+            if slider.SetValue then slider:SetValue(value) elseif slider.Set then slider:Set(value) end
         end)
     end
 end
@@ -1371,14 +1369,14 @@ local function createSoulAutoWindUI()
         Author = "TZ HUB",
         Folder = "TZHub_SoulAuto",
         Theme = "Lunar",
-        Size = UDim2.fromOffset(720, 560),
-        MinSize = Vector2.new(520, 400),
-        MaxSize = Vector2.new(960, 760),
+        Size = UDim2.fromOffset(520, 520),
+        MinSize = Vector2.new(320, 360),
+        MaxSize = Vector2.new(780, 760),
+        SideBarWidth = 145,
         ToggleKey = Enum.KeyCode.RightControl,
         Resizable = true,
         HideSearchBar = false,
         ScrollBarEnabled = true,
-        AutoScale = true,
     })
 
     pcall(function()
@@ -1415,7 +1413,7 @@ local function createSoulAutoWindUI()
 
     MainTab:Dropdown({
         Title = "Protection Mode",
-        Desc = "Predictive mode attempts protection before contact. Heart-loss mode reacts after a ShieldHearts decrease.",
+        Desc = "Predictive mode attempts protection before contact. Heart-loss mode queues protection after normal health or ShieldHearts decreases.",
         Values = { "Predict before hit", "After metal-heart loss" },
         Value = CFG.Mode == "HEART_LOSS" and "After metal-heart loss" or "Predict before hit",
         Flag = "soulauto_mode",
@@ -1516,18 +1514,40 @@ local function createSoulAutoWindUI()
         Desc = "Each slider controls the radius SoulAuto uses when predicting danger. This is a local trigger threshold, not a server-side hitbox edit. Listed defaults came from the supplied decompiled modules; Razzle & Dazzle and Rodger set KillRadius from InstantRadius in that source.",
     })
 
-    local decreaseInput = RadiusTab:Input({
-        Title = "Decrease every Twisted by",
-        Desc = "Enter a non-negative number of studs. Press the button below to subtract it from all listed radii.",
-        Value = tostring(CFG.PendingGlobalDecrease or "1.5"),
-        Placeholder = "e.g. 1.5",
-        Type = "Input",
-        InputIcon = "minus-circle",
-        Flag = "soulauto_global_decrease",
-        Callback = function(value)
-            CFG.PendingGlobalDecrease = tostring(value)
-        end,
-    })
+    local decreaseInput
+    local inputOk, inputResult = pcall(function()
+        return RadiusTab:Input({
+            Title = "Decrease every Twisted by",
+            Desc = "Enter a non-negative number of studs, then press Apply.",
+            Value = tostring(CFG.PendingGlobalDecrease or "1.5"),
+            Placeholder = "e.g. 1.5",
+            Type = "Default",
+            Icon = "minus-circle",
+            Flag = "soulauto_global_decrease",
+            Callback = function(value)
+                CFG.PendingGlobalDecrease = tostring(value)
+            end,
+        })
+    end)
+    if inputOk then
+        decreaseInput = inputResult
+    else
+        log("WindUI Input creation failed:", tostring(inputResult))
+        RadiusTab:Paragraph({
+            Title = "Input fallback",
+            Desc = "WindUI text input failed to initialize. Use the supported numeric textbox slider below, then press Apply.",
+        })
+        decreaseInput = RadiusTab:Slider({
+            Title = "Decrease amount (studs)",
+            Desc = "Numeric textbox fallback if the input control is unsupported.",
+            Step = 0.1,
+            IsTextbox = true,
+            Value = { Min = 0, Max = 60, Default = tonumber(CFG.PendingGlobalDecrease) or 1.5 },
+            Callback = function(value)
+                CFG.PendingGlobalDecrease = tostring(value)
+            end,
+        })
+    end
 
     RadiusTab:Button({
         Title = "Apply Decrease to ALL Twisteds",
@@ -1535,14 +1555,6 @@ local function createSoulAutoWindUI()
         Icon = "check-check",
         Callback = function()
             local raw = CFG.PendingGlobalDecrease
-            if decreaseInput and type(decreaseInput.Get) == "function" then
-                local ok, value = pcall(function()
-                    return decreaseInput:Get()
-                end)
-                if ok and value ~= nil then
-                    raw = value
-                end
-            end
             applyGlobalDecrease(raw)
         end,
     })
@@ -1559,21 +1571,49 @@ local function createSoulAutoWindUI()
     local twistedNames = sortedTwistedNames()
     for _, twistedName in ipairs(twistedNames) do
         local defaultRadius = CFG.RadiusValues[twistedName] or TWISTED_SETTINGS[twistedName].KillRadius
-        radiusSliders[twistedName] = RadiusTab:Slider({
-            Title = twistedName .. " — radius",
-            Desc = "SoulAuto trigger radius in studs. Source default: " .. tostring(TWISTED_SETTINGS[twistedName].KillRadius),
-            Step = 0.01,
-            Value = {
-                Min = 0.5,
-                Max = 60,
-                Default = defaultRadius,
-            },
-            Flag = "soulauto_radius_" .. twistedName:gsub("[^%w]", "_"),
-            Callback = function(value)
-                setRadius(twistedName, value)
-            end,
-        })
+        local sliderOk, sliderOrError = pcall(function()
+            return RadiusTab:Slider({
+                Title = twistedName .. " — radius",
+                Desc = "SoulAuto trigger radius in studs. Source default: " .. tostring(TWISTED_SETTINGS[twistedName].KillRadius),
+                Step = 0.01,
+                IsTextbox = true,
+                Value = {
+                    Min = 0.5,
+                    Max = 60,
+                    Default = defaultRadius,
+                },
+                Flag = "soulauto_radius_" .. twistedName:gsub("[^%w]", "_"),
+                Callback = function(value)
+                    setRadius(twistedName, value)
+                end,
+            })
+        end)
+        if sliderOk then
+            radiusSliders[twistedName] = sliderOrError
+        else
+            log("Radius slider creation failed:", twistedName, tostring(sliderOrError))
+        end
     end
+
+    -- Populate Info early so a later unsupported Settings control cannot leave it blank.
+    InfoTab:Paragraph({
+        Title = "What these controls change",
+        Desc = "Twisted Radii changes SoulAuto's client-side danger thresholds only; it cannot change actual server collision/damage hitboxes. Global decrease is cumulative and clamps every radius at 0.5 studs. Use Reset All Radii to restore module defaults.",
+    })
+    InfoTab:Paragraph({
+        Title = "Protection modes",
+        Desc = "Predict before hit uses motion and proximity prediction. Heart-loss mode watches both Humanoid.Health and ShieldHearts decreases, then protects when the target is eligible and the ability is ready. It cannot restore a lost heart.",
+    })
+    InfoTab:Button({
+        Title = "Print Current Radius Table",
+        Desc = "Prints every current effective radius to Output.",
+        Icon = "list-check",
+        Callback = function()
+            for _, name in ipairs(sortedTwistedNames()) do
+                log("RADIUS", name, round(CFG.RadiusValues[name] or TWISTED_SETTINGS[name].KillRadius, 3))
+            end
+        end,
+    })
 
     SettingsTab:Paragraph({
         Title = "Prediction tuning",
@@ -1581,16 +1621,24 @@ local function createSoulAutoWindUI()
     })
 
     local function addTuneSlider(title, key, minimum, maximum, step, description)
-        tuningSliders[key] = SettingsTab:Slider({
-            Title = title,
-            Desc = description or ("Current value: " .. tostring(CFG[key])),
-            Step = step,
-            Value = { Min = minimum, Max = maximum, Default = CFG[key] },
-            Flag = "soulauto_tune_" .. key,
-            Callback = function(value)
-                CFG[key] = value
-            end,
-        })
+        local ok, element = pcall(function()
+            return SettingsTab:Slider({
+                Title = title,
+                Desc = description or ("Current value: " .. tostring(CFG[key])),
+                Step = step,
+                IsTextbox = true,
+                Value = { Min = minimum, Max = maximum, Default = CFG[key] },
+                Flag = "soulauto_tune_" .. key,
+                Callback = function(value)
+                    CFG[key] = value
+                end,
+            })
+        end)
+        if ok then
+            tuningSliders[key] = element
+        else
+            log("Settings slider creation failed:", key, tostring(element))
+        end
     end
 
     addTuneSlider("Max Track Distance", "MaxTrackDistance", 5, 150, 1, "Ignore Twisteds farther away than this distance.")
@@ -1612,7 +1660,7 @@ local function createSoulAutoWindUI()
     addTuneSlider("Recast Delay", "RecastDelay", 0.1, 2, 0.05, "Minimum delay between ability requests.")
     addTuneSlider("Target Protection Lockout", "TargetProtectionLockout", 0, 20, 0.25, "Prevents immediate duplicate attempts on the same protected player.")
     addTuneSlider("Failed Request Lockout", "FailedRequestLockout", 0.1, 5, 0.05, "Retry delay after an unaccepted or failed attempt.")
-    addTuneSlider("Heart-Loss Queue Window", "HeartLossQueueWindow", 1, 30, 1, "How long a detected shield-heart loss waits for ability readiness.")
+    addTuneSlider("Heart-Loss Queue Window", "HeartLossQueueWindow", 1, 60, 1, "How long a detected health/shield-heart loss waits for ability readiness and the current guard to clear.")
     addTuneSlider("Heart Event Debounce", "HeartEventDebounce", 0.05, 1, 0.05, "Suppress duplicate heart-loss events within this interval.")
     addTuneSlider("Minimum Soulvester Health", "MinHealth", 1, 4, 1, "Stop sending new requests if Soulvester health is below this value.")
 
@@ -1641,7 +1689,10 @@ local function createSoulAutoWindUI()
     local configProfile
     pcall(function()
         if SoulAutoWindow.ConfigManager then
-            configProfile = SoulAutoWindow.ConfigManager:Config("SoulAuto_Default")
+            configProfile = SoulAutoWindow.ConfigManager:CreateConfig("SoulAuto_Default", false)
+            if configProfile and configProfile.SetAsCurrent then
+                configProfile:SetAsCurrent()
+            end
         end
     end)
 
@@ -1678,25 +1729,6 @@ local function createSoulAutoWindUI()
                 notify("Configuration loaded", "Loaded SoulAuto_Default.")
             else
                 notify("Load failed", tostring(err))
-            end
-        end,
-    })
-
-    InfoTab:Paragraph({
-        Title = "What these controls change",
-        Desc = "Twisted Radii changes SoulAuto's client-side danger thresholds only; it cannot change actual server collision/damage hitboxes. Global decrease is cumulative and clamps every radius at 0.5 studs. Use Reset All Radii to restore module defaults.",
-    })
-    InfoTab:Paragraph({
-        Title = "Protection modes",
-        Desc = "Predict before hit uses motion and proximity prediction. After metal-heart loss watches ShieldHearts decrease and attempts protection when eligible. A lost heart cannot be restored by SoulAuto.",
-    })
-    InfoTab:Button({
-        Title = "Print Current Radius Table",
-        Desc = "Prints every current effective radius to Output.",
-        Icon = "list-check",
-        Callback = function()
-            for _, name in ipairs(sortedTwistedNames()) do
-                log("RADIUS", name, round(CFG.RadiusValues[name] or TWISTED_SETTINGS[name].KillRadius, 3))
             end
         end,
     })
@@ -1764,7 +1796,7 @@ task.spawn(function()
                             castSoulvester(character, threat)
                         else
                             if CFG.Mode == "HEART_LOSS" then
-                                gate = "WATCHING: waiting for selected player's heart or shield-heart to drop"
+                                gate = "WATCHING: waiting for selected player's health or ShieldHearts to decrease"
                             else
                                 gate = "WATCHING: no selected target currently meets close-danger conditions"
                             end
